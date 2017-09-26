@@ -6,7 +6,7 @@ Redigere denne readme filen og sett inn navnene på de som jobber på prosjektet
 
 Du er nå klar til å begynne på prosjektet :-).
 
-[Beskrivelse av prosjektet](https://bitbucket.org/okolloen/imt3281-project2-2016/wiki/Home)
+[Beskrivelse av prosjektet](https://bitbucket.org/okolloen/imt3281-project2-2017/wiki/Home)
 
 [Trelloboard fra utviklingen av løsningsforslaget](https://trello.com/b/rRweyGja/ludo-2016)
 
