@@ -587,7 +587,9 @@ public class LudoTest {
         // Red and blue moving on (***MOVE3***)
         for (int i = 0; i < 3; i++) {
             ludo.throwDice(6);
+            System.out.println("------------------------------------------");
             ludo.movePiece(Ludo.RED, (17 * i) + 8, (17 * i) + 14);
+            System.out.println("------------------------------------------");
             ludo.throwDice(6);
             ludo.movePiece(Ludo.RED, (17 * i) + 14, (17 * i) + 20);
             ludo.throwDice(5);
@@ -759,7 +761,7 @@ public class LudoTest {
 
         // Red and blue moving along (***MOVE3***)
         for (int i = 0; i < 3; i++) { // RED piece 0 moves to finish, BLUE piece 0 moves to 5
-            de = new DiceEvent(ludo, Ludo.RED, 6); // RED threw a six
+        	de = new DiceEvent(ludo, Ludo.RED, 6); // RED threw a six
             order.verify(diceListener).diceThrown(de);
             pe = new PieceEvent(ludo, Ludo.RED, 0, (17 * i) + 8, (17 * i) + 14);
             order.verify(pieceListener).pieceMoved(pe);

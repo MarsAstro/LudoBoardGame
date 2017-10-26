@@ -18,7 +18,11 @@ public class Ludo {
 	public static final int GREEN = 3;
 	
 	private Vector<String> playerNames;
+	private Vector<DiceListener> diceListeners;
+	private Vector<PieceListener> pieceListeners;
+	private Vector<PlayerListener> playerListeners;
 	private int piecePositions[][];
+	private int globalPiecePositions[][];
 	private int activePlayer = 0;
 	private int numThrows = 0;
 	private int dice = 0;
@@ -28,7 +32,11 @@ public class Ludo {
 	 */
 	public Ludo() {
 		playerNames = new Vector<String>();
+		diceListeners = new Vector<DiceListener>();
+		pieceListeners = new Vector<PieceListener>();
+		playerListeners = new Vector<PlayerListener>();
 		piecePositions = new int[4][4];
+		globalPiecePositions = new int[4][4];
 	}
 	
 	/**
@@ -41,6 +49,10 @@ public class Ludo {
 	 */
 	public Ludo(String name1, String name2, String name3, String name4) throws NotEnoughPlayersException {
 		piecePositions = new int[4][4];
+		globalPiecePositions = new int[4][4];
+		diceListeners = new Vector<DiceListener>();
+		pieceListeners = new Vector<PieceListener>();
+		playerListeners = new Vector<PlayerListener>();
 		playerNames = new Vector<String>();
 		playerNames.addElement(name1);
 		playerNames.addElement(name2);
@@ -93,8 +105,16 @@ public class Ludo {
 	 */
 	public void removePlayer(String name) {
 		for (int i = 0; i < playerNames.size() ; i++) {
-			if (playerNames.elementAt(i).equals(name)){
+			if (playerNames.elementAt(i) != null && playerNames.elementAt(i).equals(name)){
 				playerNames.set(i, "Inactive: " + playerNames.elementAt(i));
+				
+				for (PlayerListener listener : playerListeners) {
+					listener.playerStateChanged(new PlayerEvent(this, i, PlayerEvent.LEFTGAME));
+				}
+				
+				if (i == activePlayer) {
+					nextPlayer();
+				}
 			}
 		}
 	}
@@ -142,7 +162,9 @@ public class Ludo {
 	 */
 	public int throwDice(int dice) {
 		this.dice = dice;
-		System.out.println("Throws: " + numThrows);
+		for (DiceListener listener : diceListeners) {
+			listener.diceThrown(new DiceEvent(this, activePlayer, dice));
+		}
 		if (allHome()) {
 			numThrows++;
 			if (numThrows >= 3 && dice != 6) {
@@ -157,7 +179,6 @@ public class Ludo {
 				}
 			}
 			else {
-				System.out.println("whaaa");
 				nextPlayer();
 			}
 		}
@@ -171,6 +192,9 @@ public class Ludo {
 	private boolean canMove() {
 		boolean movable = false;
 		for (int i = 0; i < 4; i ++) {
+			if (isBlocked(i)) {
+				break;
+			}
 			if ((piecePositions[activePlayer][i] + dice < 60 && piecePositions[activePlayer][i] != 0) 
 					|| (piecePositions[activePlayer][i] == 0 && dice == 6)) {
 				movable = true;
@@ -179,15 +203,52 @@ public class Ludo {
 		}
 		return movable;
 	}
+	
+	/**
+	 * Checks if a piece is blocked by a tower
+	 * @param currentPiece piece to check for current player
+	 * @return if piece is blocked
+	 */
+	private boolean isBlocked(int currentPiece) {
+		for(int player = 0; player < playerNames.size(); player++) {
+			if(player != activePlayer) {
+				for(int piece = 0; piece < 4; piece++) {
+					for(int otherPiece = piece + 1; otherPiece < 4; otherPiece++) {
+						if (piecePositions[player][piece] == piecePositions[player][otherPiece]){
+							for (int i = 1; i <= dice; i++) {
+								// TODO check for special cases
+								if (globalPiecePositions[player][piece] == globalPiecePositions[activePlayer][currentPiece] + i) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Sets the next player as active
 	 */
 	private void nextPlayer() {
 		numThrows = 0;
-		System.out.println(activePlayer);
-		activePlayer = (activePlayer + 1) % nrOfPlayers();
-		System.out.println(activePlayer);
+		
+		for (PlayerListener listener : playerListeners) {
+			listener.playerStateChanged(new PlayerEvent(this, activePlayer, PlayerEvent.WAITING));
+		}
+		
+		activePlayer = (activePlayer + 1) % playerNames.size();
+		
+		for (PlayerListener listener : playerListeners) {
+			listener.playerStateChanged(new PlayerEvent(this, activePlayer, PlayerEvent.PLAYING));
+		}
+		
+		if (playerNames.elementAt(activePlayer) == null || playerNames.elementAt(activePlayer).contains("Inactive: ")) {
+			nextPlayer();
+		}
+		
 	}
 
 	/**
@@ -202,12 +263,17 @@ public class Ludo {
 		for (int i = 0; i < 4; i++) {
 			if(piecePositions[player][i] == from) {
 				piecePositions[player][i] = to;
+				for (PieceListener listener : pieceListeners) {
+					System.out.println(new String(player + ", " + i + ", " + from + ", " + to));
+					listener.pieceMoved(new PieceEvent(this, player, i, from, to));
+				}
 				success = true;
-				System.out.println(from);
 				if (numThrows >= 3 || dice != 6 || from == 0) {
 					nextPlayer();
 				}
 				checkForOpponents(player, to);
+				updateGlobalPositions();
+				checkWinner();
 				break;
 			}
 		}
@@ -259,9 +325,23 @@ public class Ludo {
 		}
 		return true;
 	}
-	
+
 	private void checkWinner() {
-		
+		for (int i = 0; i < playerNames.size(); i++) {
+			boolean finished = true;
+			for (int j = 0; j < 4; j++) {
+				if (piecePositions[i][j] != 59) {
+					finished = false;
+				}
+			}
+			if (finished) {
+				activePlayer = i;
+				for (PlayerListener listener : playerListeners) {
+					listener.playerStateChanged(new PlayerEvent(this, i, PlayerEvent.WON));
+				}
+				break;
+			}
+		}
 	}
 
 	/**
@@ -286,21 +366,61 @@ public class Ludo {
 	
 	/**
 	 * Checks whether someone stands on a piece's destination position.
+	 * And moves them back if landed on
 	 * @param player
 	 * @param pos
 	 */
 	private void checkForOpponents(int player, int pos) {
 		int playerPos = userGridToLudoBoardGrid(player, pos);
-		for (int i = 0; i < playerNames.size(); i++) {
-			if (i != player) {
-				for (int j = 0; j < 4; j++) {
-					if (userGridToLudoBoardGrid(i, piecePositions[i][j]) == playerPos) {
-						piecePositions[i][j] = 0;
-						System.out.println("heee");
+		for (int otherPlayer = 0; otherPlayer < playerNames.size(); otherPlayer++) {
+			if (otherPlayer != player) {
+				for (int piece = 0; piece < 4; piece++) {
+					if (userGridToLudoBoardGrid(otherPlayer, piecePositions[otherPlayer][piece]) == playerPos) {
+						for (PieceListener listener : pieceListeners) {
+							listener.pieceMoved(new PieceEvent(this, otherPlayer, piece, piecePositions[otherPlayer][piece], 0));
+						}
+						piecePositions[otherPlayer][piece] = 0;
 					}
 				}
 			}
 		}
+	}
+	
+	/**
+	 * updates array of global piece positions
+	 */
+	private void updateGlobalPositions() {
+		for (int player = 0; player < playerNames.size(); player++) {
+			for (int piece = 0; piece < 4; piece++) {
+				if (piecePositions[player][piece] > 0) {
+					globalPiecePositions[player][piece] = userGridToLudoBoardGrid(player, piecePositions[player][piece]);
+				}
+			}
+		}
+	}
+
+	/**
+	 * adds dice listener
+	 * @param diceListener
+	 */
+	public void addDiceListener(DiceListener diceListener) {
+		diceListeners.addElement(diceListener);
+	}
+
+	/**
+	 * adds piece listener
+	 * @param pieceListener
+	 */
+	public void addPieceListener(PieceListener pieceListener) {
+		pieceListeners.addElement(pieceListener);
+	}
+
+	/**
+	 * adds player listener
+	 * @param playerListener
+	 */
+	public void addPlayerListener(PlayerListener playerListener) {
+		playerListeners.addElement(playerListener);
 	}
 	
 }
