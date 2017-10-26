@@ -33,8 +33,8 @@ public class PlayerEvent extends EventObject implements PlayerListener {
 			PlayerEvent event = (PlayerEvent)other;
 			return activePlayer == event.activePlayer && state == event.state;
 		}
-		catch (Exception e) {
-			// Is different object
+		catch (RuntimeException e) {
+			e.printStackTrace();
 		}
 		return false;
 	}

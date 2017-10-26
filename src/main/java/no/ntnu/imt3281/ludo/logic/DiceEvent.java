@@ -27,8 +27,8 @@ public class DiceEvent extends EventObject implements DiceListener {
 			DiceEvent event = (DiceEvent) other;
 			return player == event.player && dice == event.dice;
 		}
-		catch (Exception e) {
-			// Is different object
+		catch (RuntimeException e) {
+			e.printStackTrace();
 		}
 		return false;
 	}

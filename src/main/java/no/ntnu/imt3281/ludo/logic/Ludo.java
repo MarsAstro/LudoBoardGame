@@ -104,15 +104,15 @@ public class Ludo {
 	 * @param name name of player to be set inactive
 	 */
 	public void removePlayer(String name) {
-		for (int i = 0; i < playerNames.size() ; i++) {
-			if (playerNames.elementAt(i) != null && playerNames.elementAt(i).equals(name)){
-				playerNames.set(i, "Inactive: " + playerNames.elementAt(i));
+		for (int player = 0; player < playerNames.size() ; player++) {
+			if (playerNames.elementAt(player) != null && playerNames.elementAt(player).equals(name)){
+				playerNames.set(player, "Inactive: " + playerNames.elementAt(player));
 				
 				for (PlayerListener listener : playerListeners) {
-					listener.playerStateChanged(new PlayerEvent(this, i, PlayerEvent.LEFTGAME));
+					listener.playerStateChanged(new PlayerEvent(this, player, PlayerEvent.LEFTGAME));
 				}
 				
-				if (i == activePlayer) {
+				if (player == activePlayer) {
 					nextPlayer();
 				}
 			}
@@ -162,9 +162,11 @@ public class Ludo {
 	 */
 	public int throwDice(int dice) {
 		this.dice = dice;
+		
 		for (DiceListener listener : diceListeners) {
 			listener.diceThrown(new DiceEvent(this, activePlayer, dice));
 		}
+		
 		if (allHome()) {
 			numThrows++;
 			if (numThrows >= 3 && dice != 6) {
@@ -245,7 +247,9 @@ public class Ludo {
 			listener.playerStateChanged(new PlayerEvent(this, activePlayer, PlayerEvent.PLAYING));
 		}
 		
-		if (playerNames.elementAt(activePlayer) == null || playerNames.elementAt(activePlayer).contains("Inactive: ")) {
+		if (playerNames.elementAt(activePlayer) == null 
+				|| playerNames.elementAt(activePlayer).contains("Inactive: ")
+				|| playerNames.elementAt(activePlayer).contains("Winner: ")) {
 			nextPlayer();
 		}
 		
@@ -264,16 +268,16 @@ public class Ludo {
 			if(piecePositions[player][i] == from) {
 				piecePositions[player][i] = to;
 				for (PieceListener listener : pieceListeners) {
-					System.out.println(new String(player + ", " + i + ", " + from + ", " + to));
 					listener.pieceMoved(new PieceEvent(this, player, i, from, to));
 				}
 				success = true;
+				checkWinner();
+				
 				if (numThrows >= 3 || dice != 6 || from == 0) {
 					nextPlayer();
 				}
 				checkForOpponents(player, to);
 				updateGlobalPositions();
-				checkWinner();
 				break;
 			}
 		}
@@ -311,7 +315,15 @@ public class Ludo {
 	 * @return winner
 	 */
 	public int getWinner() {
-		return activePlayer;
+		int winner = -1;
+		
+		for (int player = 0; player < playerNames.size(); ++player) {
+			if (playerNames.elementAt(player) != null && playerNames.elementAt(player).contains("Winner: ")) {
+				winner = player;
+			}
+		}
+		
+		return winner;
 	}
 
 	/**
@@ -327,19 +339,18 @@ public class Ludo {
 	}
 
 	private void checkWinner() {
-		for (int i = 0; i < playerNames.size(); i++) {
-			boolean finished = true;
-			for (int j = 0; j < 4; j++) {
-				if (piecePositions[i][j] != 59) {
-					finished = false;
-				}
+		boolean finished = true;
+		for (int piece = 0; piece < 4; piece++) {
+			if (piecePositions[activePlayer][piece] != 59) {
+				finished = false;
 			}
-			if (finished) {
-				activePlayer = i;
-				for (PlayerListener listener : playerListeners) {
-					listener.playerStateChanged(new PlayerEvent(this, i, PlayerEvent.WON));
-				}
-				break;
+		}
+		
+		if (finished && getWinner() == -1) {
+			playerNames.set(activePlayer, new String("Winner: " + playerNames.elementAt(activePlayer)));
+			
+			for (PlayerListener listener : playerListeners) {
+				listener.playerStateChanged(new PlayerEvent(this, activePlayer, PlayerEvent.WON));
 			}
 		}
 	}

@@ -35,8 +35,8 @@ public class PieceEvent extends EventObject implements PieceListener {
 			PieceEvent event = (PieceEvent)other;
 			return player == event.player && piece == event.piece && from == event.from && to == event.to;
 		}
-		catch (Exception e) {
-			// Is different object
+		catch (RuntimeException e) {
+			e.printStackTrace();
 		}
 		return false;
 	}
