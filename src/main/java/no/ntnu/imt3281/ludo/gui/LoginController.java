@@ -4,6 +4,7 @@
 
 package no.ntnu.imt3281.ludo.gui;
 
+import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.logging.Logger;
@@ -50,17 +51,19 @@ public class LoginController {
     @FXML
     void login(ActionEvent event) {
         if (bothFieldsValid()) {
-            try {
-                owner.connectToServer(InetAddress.getLocalHost(), 9003);
-            } catch (UnknownHostException e) {
-                LOGGER.warning(e.getMessage());
-            }
+            byte[] message = ("Login:" + username.getText() + ";" + password.getText()).getBytes();
+            DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
+            owner.sendPacket(datagramPacket);
         }
     }
 
     @FXML
     void register(ActionEvent event) {
-        //TODO this
+        if (bothFieldsValid()) {
+            byte[] message = ("Register:" + username.getText() + ";" + password.getText()).getBytes();
+            DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
+            owner.sendPacket(datagramPacket);
+        }
     }
 
     private boolean bothFieldsValid() {
