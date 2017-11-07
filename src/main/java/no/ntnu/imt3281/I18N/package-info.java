@@ -2,7 +2,7 @@
  * This package includes all internationalization related code
  */
 /**
- * @author 
+ * @author
  *
  */
 package no.ntnu.imt3281.I18N;

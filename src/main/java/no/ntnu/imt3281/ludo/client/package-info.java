@@ -2,7 +2,7 @@
  * This package includes all purely client related classes
  */
 /**
- * @author 
+ * @author
  *
  */
 package no.ntnu.imt3281.ludo.client;

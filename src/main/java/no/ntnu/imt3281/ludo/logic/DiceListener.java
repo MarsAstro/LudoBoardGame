@@ -3,12 +3,19 @@ package no.ntnu.imt3281.ludo.logic;
 import java.util.EventListener;
 
 /**
- * ayyyyy
+ * A listener for DiceEvents
+ * 
  * @author oyste
  *
  */
 public interface DiceListener extends EventListener {
 
-	void diceThrown(DiceEvent diceEvent);
+    /**
+     * Abstract function to implement
+     * 
+     * @param diceEvent
+     *            The event to handle
+     */
+    void diceThrown(DiceEvent diceEvent);
 
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 
@@ -17,55 +18,60 @@ import javax.swing.JFrame;
  */
 public class Server {
     private DatagramSocket socket;
+    private static final Logger LOGGER = Logger
+            .getLogger(Server.class.getName());
 
     /**
      * Sets port number and opens the server GUI
      */
     public Server() {
 
-	// TODO don't do this
-	JFrame frame = new JFrame("Servers gonna serve");
-	frame.setSize(200, 971);
-	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	frame.setVisible(true);
+        // TODO don't do this pleas
+        JFrame frame = new JFrame("Servers gonna serve");
+        frame.setSize(200, 971);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
 
-	try {
-	    socket = new DatagramSocket(9003);
-	} catch (SocketException se) {
-	    se.printStackTrace();
-	    System.exit(1);
-	}
+        try {
+            socket = new DatagramSocket(9003);
+        } catch (SocketException e) {
+            LOGGER.warning(e.getMessage());
+        }
     }
 
     /**
      * Waits until a packet is received, then handles it
      */
     public void waitForPackets() {
-	while (true) {
-	    try {
-		byte[] data = new byte[100];
-		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
+        while (!socket.isClosed()) {
+            try {
+                byte[] data = new byte[100];
+                DatagramPacket receivePacket = new DatagramPacket(data,
+                        data.length);
 
-		socket.receive(receivePacket);
+                socket.receive(receivePacket);
 
-		String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                String message = new String(receivePacket.getData(), 0,
+                        receivePacket.getLength());
 
-		if (message.equals("conplz")) {
-		    System.out.println("bitch connected, yo");
-		}
+                if (message.equals("conplz")) {
+                    System.out.println("bitch connected, yo");
+                }
 
-		sendPacketToClient(receivePacket);
-	    } catch (IOException ioe) {
-		ioe.printStackTrace();
-	    }
-	}
+                sendPacketToClient(receivePacket);
+            } catch (IOException e) {
+                LOGGER.warning(e.getMessage());
+            }
+        }
     }
 
-    private void sendPacketToClient(DatagramPacket receivePacket) throws IOException {
-	DatagramPacket sendPacket = new DatagramPacket(receivePacket.getData(), receivePacket.getLength(),
-		receivePacket.getAddress(), receivePacket.getPort());
+    private void sendPacketToClient(DatagramPacket receivePacket)
+            throws IOException {
+        DatagramPacket sendPacket = new DatagramPacket(receivePacket.getData(),
+                receivePacket.getLength(), receivePacket.getAddress(),
+                receivePacket.getPort());
 
-	socket.send(sendPacket);
+        socket.send(sendPacket);
     }
 
     /**
@@ -75,7 +81,7 @@ public class Server {
      *            Command line arguments
      */
     public static void main(String[] args) {
-	Server application = new Server();
-	application.waitForPackets();
+        Server application = new Server();
+        application.waitForPackets();
     }
 }

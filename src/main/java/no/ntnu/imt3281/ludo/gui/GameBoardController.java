@@ -11,6 +11,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.image.ImageView;
 
+/**
+ * Controls the gameBoard UI
+ * 
+ * @author Marius
+ *
+ */
 public class GameBoardController {
 
     @FXML
@@ -27,7 +33,7 @@ public class GameBoardController {
 
     @FXML
     private Label player3Name;
-    
+
     @FXML
     private ImageView player3Active;
 
@@ -36,10 +42,10 @@ public class GameBoardController {
 
     @FXML
     private ImageView player4Active;
-    
+
     @FXML
     private ImageView diceThrown;
-    
+
     @FXML
     private Button throwTheDice;
 

@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -23,44 +24,48 @@ import no.ntnu.imt3281.ludo.gui.LudoController;
  */
 public class Client extends Application {
     private DatagramSocket socket;
+    private static final Logger LOGGER = Logger
+            .getLogger(Client.class.getName());
 
     /**
      * @see javafx.application.Application
      */
     @Override
     public void start(Stage primaryStage) {
-	try {
-	    FXMLLoader loader = new FXMLLoader(getClass().getResource("../gui/Ludo.fxml"));
-	    AnchorPane root = (AnchorPane) loader.load();
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("../gui/Ludo.fxml"));
+            AnchorPane root = (AnchorPane) loader.load();
 
-	    Scene scene = new Scene(root);
-	    primaryStage.setScene(scene);
-	    primaryStage.show();
-	    primaryStage.setOnCloseRequest(e -> System.exit(0));
+            Scene scene = new Scene(root);
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            primaryStage.setOnCloseRequest(e -> System.exit(0));
 
-	    LudoController controller = loader.getController();
-	    controller.setOwner(this);
-	} catch (Exception e) {
-	    e.printStackTrace();
-	}
+            LudoController controller = loader.getController();
+            controller.setOwner(this);
+        } catch (Exception e) {
+            LOGGER.warning(e.getMessage());
+        }
     }
 
     /**
      * Launches the JavaFX GUI and makes client wait for packets
      * 
      * @param args
+     *            Command line arguments
      */
     public static void main(String[] args) {
-	launch(args);
-	Client application = new Client();
-	application.waitForPackets();
+        launch(args);
+        Client application = new Client();
+        application.waitForPackets();
     }
 
     /**
      * Constructor
      */
     public Client() {
-	// TODO maybe?
+        LOGGER.setLevel(Level.INFO);
     }
 
     /**
@@ -72,30 +77,30 @@ public class Client extends Application {
      *            The port to communicate through
      */
     public void connectToServer(InetAddress address, int port) {
-	try {
-	    socket = new DatagramSocket();
-	    socket.connect(address, port);
-	    byte[] message = new String("conplz").getBytes();
-	    socket.send(new DatagramPacket(message, message.length));
-	} catch (IOException e) {
-	    e.printStackTrace();
-	    System.exit(1);
-	}
+        try {
+            socket = new DatagramSocket();
+            socket.connect(address, port);
+            byte[] message = "conplz".getBytes();
+            socket.send(new DatagramPacket(message, message.length));
+        } catch (IOException e) {
+            LOGGER.warning(e.getMessage());
+        }
     }
 
     /**
      * Waits until a packet is received, then handles it
      */
     public void waitForPackets() {
-	while (true) {
-	    try {
-		byte[] data = new byte[100];
-		DatagramPacket receivePacket = new DatagramPacket(data, data.length);
+        while (!socket.isClosed()) {
+            try {
+                byte[] data = new byte[100];
+                DatagramPacket receivePacket = new DatagramPacket(data,
+                        data.length);
 
-		socket.receive(receivePacket);
-	    } catch (IOException ioe) {
-		ioe.printStackTrace();
-	    }
-	}
+                socket.receive(receivePacket);
+            } catch (IOException ioe) {
+                LOGGER.warning(ioe.getMessage());
+            }
+        }
     }
 }
