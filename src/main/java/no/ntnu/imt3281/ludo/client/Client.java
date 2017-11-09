@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
@@ -26,10 +27,10 @@ import no.ntnu.imt3281.ludo.gui.LudoController;
  *
  */
 public class Client extends Application {
-    public static LudoController ludoController;
-    public static ConnectController connectController;
+    static LudoController ludoController;
+    static ConnectController connectController;
 
-    protected static DatagramSocket socket;
+    static DatagramSocket socket;
     private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
 
     /**
@@ -39,7 +40,7 @@ public class Client extends Application {
     public void start(Stage primaryStage) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("../gui/Ludo.fxml"));
-            loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.I18N.i18n"));
+            loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
             AnchorPane root = (AnchorPane) loader.load();
 
             Scene scene = new Scene(root);
@@ -47,9 +48,9 @@ public class Client extends Application {
             primaryStage.show();
             primaryStage.setOnCloseRequest(e -> System.exit(0));
 
-            ludoController = loader.getController();
+            Client.ludoController = loader.getController();
         } catch (Exception e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
 
@@ -66,7 +67,7 @@ public class Client extends Application {
         ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.execute(networkTask);
         executorService.shutdown();
-        
+
         launch(args);
     }
 
@@ -81,7 +82,7 @@ public class Client extends Application {
             socket = new DatagramSocket();
             socket.connect(InetAddress.getLocalHost(), port);
         } catch (IOException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
 
@@ -95,8 +96,22 @@ public class Client extends Application {
         try {
             socket.send(datagramPacket);
         } catch (IOException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
+    }
+
+    /**
+     * @return The client's current ludo controller
+     */
+    public static LudoController getLudoController() {
+        return ludoController;
+    }
+
+    /**
+     * @return The client's current connect controller
+     */
+    public static ConnectController getConnectController() {
+        return connectController;
     }
 
     /**
@@ -109,4 +124,5 @@ public class Client extends Application {
     public static void setConnectController(ConnectController connectController) {
         Client.connectController = connectController;
     }
+
 }

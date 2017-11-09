@@ -75,7 +75,7 @@ public class PlayerEvent extends EventObject implements PlayerListener {
                 PlayerEvent event = (PlayerEvent) other;
                 return activePlayer == event.activePlayer && state == event.state;
             } catch (RuntimeException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
 

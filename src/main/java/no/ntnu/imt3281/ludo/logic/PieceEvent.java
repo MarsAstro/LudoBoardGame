@@ -65,7 +65,7 @@ public class PieceEvent extends EventObject implements PieceListener {
                 return player == event.player && piece == event.piece && from == event.from
                         && to == event.to;
             } catch (RuntimeException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
 

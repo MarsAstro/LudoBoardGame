@@ -5,11 +5,10 @@ package no.ntnu.imt3281.ludo.client;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
-import no.ntnu.imt3281.ludo.server.Server;
 
 /**
  * @author Marius
@@ -17,7 +16,6 @@ import no.ntnu.imt3281.ludo.server.Server;
  */
 public class ClientNetworkTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
-
 
     /**
      * Run
@@ -33,8 +31,8 @@ public class ClientNetworkTask implements Runnable {
 
                 handleReceivedPacket(receivePacket);
 
-            } catch (IOException ioe) {
-                LOGGER.warning(ioe.getMessage());
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
     }
@@ -48,6 +46,7 @@ public class ClientNetworkTask implements Runnable {
     private void handleReceivedPacket(DatagramPacket receivePacket) {
 
         String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+
         int tagEndIndex = message.indexOf(":") + 1;
         String tag = message.substring(0, tagEndIndex);
 
@@ -59,6 +58,8 @@ public class ClientNetworkTask implements Runnable {
             case "Register:" :
                 Platform.runLater(() -> Client.connectController
                         .handleServerRegisterResponse(message.substring(tagEndIndex)));
+                break;
+            default :
                 break;
         }
     }

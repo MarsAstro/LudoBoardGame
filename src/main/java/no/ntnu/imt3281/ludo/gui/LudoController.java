@@ -3,6 +3,7 @@ package no.ntnu.imt3281.ludo.gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.event.ActionEvent;
@@ -58,7 +59,7 @@ public class LudoController implements Initializable {
     @FXML
     public void joinRandomGame(ActionEvent event) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("GameBoard.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.I18N.i18n"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
         try {
             AnchorPane gameBoard = loader.load();
@@ -66,14 +67,14 @@ public class LudoController implements Initializable {
             tab.setContent(gameBoard);
             tabbedPane.getTabs().add(tab);
         } catch (IOException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
 
     @FXML
     void openLoginRegisterGUI(ActionEvent event) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Connect.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.I18N.i18n"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
         try {
             BorderPane root = (BorderPane) loader.load();
@@ -86,7 +87,7 @@ public class LudoController implements Initializable {
             ConnectController controller = loader.getController();
             Client.setConnectController(controller);
         } catch (IOException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
     }

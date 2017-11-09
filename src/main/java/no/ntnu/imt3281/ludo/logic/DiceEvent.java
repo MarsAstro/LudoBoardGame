@@ -10,6 +10,7 @@ import java.util.logging.Logger;
  * @author oyste
  *
  */
+@SuppressWarnings("serial")
 public class DiceEvent extends EventObject implements DiceListener {
     private static final Logger LOGGER = Logger.getLogger(DiceEvent.class.getName());
     private int player;
@@ -48,7 +49,7 @@ public class DiceEvent extends EventObject implements DiceListener {
                 DiceEvent event = (DiceEvent) other;
                 return player == event.player && dice == event.dice;
             } catch (RuntimeException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
 

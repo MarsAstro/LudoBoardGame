@@ -7,13 +7,13 @@ package no.ntnu.imt3281.ludo.gui;
 import java.net.DatagramPacket;
 import java.net.URL;
 import java.util.ResourceBundle;
-import java.util.logging.Logger;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import no.ntnu.imt3281.ludo.client.Client;
@@ -26,13 +26,12 @@ import no.ntnu.imt3281.ludo.client.Client;
  */
 public class ConnectController implements Initializable {
     private ResourceBundle messages;
-    private static final Logger LOGGER = Logger.getLogger(ConnectController.class.getName());
 
     @FXML // fx:id="username"
     private TextField username; // Value injected by FXMLLoader
 
     @FXML // fx:id="password"
-    private TextField password; // Value injected by FXMLLoader
+    private PasswordField password; // Value injected by FXMLLoader
 
     @FXML // fx:id="errorMessage"
     private Label errorMessage; // Value injected by FXMLLoader
@@ -80,7 +79,7 @@ public class ConnectController implements Initializable {
         if (Integer.parseInt(ackMessage) == -1) {
             errorMessage.setText(messages.getString("login.result.failed"));
         } else {
-            Platform.runLater(() -> Client.ludoController.setLoggedInUser(username.getText()));
+            Platform.runLater(() -> Client.getLudoController().setLoggedInUser(username.getText()));
             closeWindow();
         }
     }
@@ -99,7 +98,8 @@ public class ConnectController implements Initializable {
     public void handleServerRegisterResponse(String ackMessage) {
         switch (Integer.parseInt(ackMessage)) {
             case 1 :
-                Platform.runLater(() -> Client.ludoController.setLoggedInUser(username.getText()));
+                Platform.runLater(
+                        () -> Client.getLudoController().setLoggedInUser(username.getText()));
                 closeWindow();
                 break;
             case -1 :
@@ -112,6 +112,8 @@ public class ConnectController implements Initializable {
             case -3 :
                 errorMessage.setText(messages.getString("login.result.pwdsyntax") + " "
                         + messages.getString("login.result.validsyntax"));
+                break;
+            default :
                 break;
         }
     }

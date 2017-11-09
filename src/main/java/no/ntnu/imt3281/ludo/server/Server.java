@@ -1,29 +1,22 @@
 package no.ntnu.imt3281.ludo.server;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.SocketException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.*;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.JFrame;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import no.ntnu.imt3281.ludo.client.ClientNetworkTask;
 
 /**
  * 
@@ -34,13 +27,13 @@ import no.ntnu.imt3281.ludo.client.ClientNetworkTask;
  *
  */
 public class Server extends Application {
-    
-    protected static DatagramSocket socket;
-    protected static Connection connection;
-    protected static ArrayList<ClientInfo> connectedClients;
-    protected static ServerGUIController serverGUIController;
 
-    private static final String url = "jdbc:mysql://mysql.stud.ntnu.no/mksandbe_Ludo";
+    static DatagramSocket socket;
+    static Connection connection;
+    static ArrayList<ClientInfo> connectedClients;
+    static ServerGUIController serverGUIController;
+
+    private static String url = "jdbc:mysql://mysql.stud.ntnu.no/mksandbe_Ludo";
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
 
     /**
@@ -48,19 +41,21 @@ public class Server extends Application {
      */
     public static void initServer() {
         connectedClients = new ArrayList<>();
+        ResourceBundle messages = ResourceBundle
+                .getBundle("no.ntnu.imt3281.ludo.server.credentials");
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection(url, "mksandbe", "1475963");
+            connection = DriverManager.getConnection(url, messages.getString("dbuser"),
+                    messages.getString("dbpass"));
         } catch (SQLException | ClassNotFoundException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
         try {
             socket = new DatagramSocket(9003);
         } catch (SocketException e) {
-            System.err.println("Socket is fjack");
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
 
@@ -80,7 +75,7 @@ public class Server extends Application {
 
             serverGUIController = loader.getController();
         } catch (Exception e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
 
@@ -92,7 +87,7 @@ public class Server extends Application {
      */
     public static void main(String[] args) {
         initServer();
-        
+
         ServerNetworkTask networkTask = new ServerNetworkTask();
         ExecutorService executorService = Executors.newCachedThreadPool();
         executorService.execute(networkTask);

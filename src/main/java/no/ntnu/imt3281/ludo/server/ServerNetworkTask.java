@@ -5,11 +5,11 @@ package no.ntnu.imt3281.ludo.server;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
@@ -35,7 +35,7 @@ public class ServerNetworkTask implements Runnable {
                 handlePacket(receivePacket);
 
             } catch (IOException e) {
-                LOGGER.warning(e.getMessage());
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
     }
@@ -55,27 +55,32 @@ public class ServerNetworkTask implements Runnable {
                 ackMessage += handleRegisterPacket(datagramPacket.getAddress(),
                         datagramPacket.getPort(), message, tagEndIndex);
                 break;
+            default :
+                break;
         }
 
         try {
             sendPacketToClient(ackMessage, datagramPacket);
         } catch (IOException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
-    
-    private String handleRegisterPacket(InetAddress address, int port, String message, int tagEndIndex) {
+
+    private String handleRegisterPacket(InetAddress address, int port, String message,
+            int tagEndIndex) {
         int splitIndex = message.indexOf(";");
         String username = message.substring(tagEndIndex, splitIndex);
         String password = message.substring(splitIndex + 1);
 
         String ackMessage = "";
         try {
-            ResultSet resultSet = Server.connection.createStatement().executeQuery(
-                    "SELECT Username FROM Accounts WHERE Username='" + username + "'");
+            PreparedStatement userQuery = Server.connection
+                    .prepareStatement("SELECT Username FROM Accounts WHERE Username = ?");
+            userQuery.setString(1, username);
+            ResultSet resultSet = userQuery.executeQuery();
 
             String regexPattern = "^[a-zA-Z][a-zA-Z0-9]{0,15}$";
-            
+
             if (resultSet.next()) {
                 ackMessage = "-1";
             } else if (!username.matches(regexPattern)) {
@@ -83,24 +88,32 @@ public class ServerNetworkTask implements Runnable {
             } else if (!password.matches(regexPattern)) {
                 ackMessage = "-3";
             } else {
-                PreparedStatement pstmt = Server.connection.prepareStatement(
-                        "INSERT INTO Accounts " + "(Username, Password) " + "VALUES (?, ?)");
+                PreparedStatement newUserInsert = Server.connection.prepareStatement(
+                        "INSERT INTO Accounts (Username, Password) VALUES (?, ?)");
+                newUserInsert.setString(1, username);
+                newUserInsert.setString(2, password);
+                newUserInsert.executeUpdate();
 
-                pstmt.setString(1, username);
-                pstmt.setString(2, password);
+                PreparedStatement newUserQuery = Server.connection
+                        .prepareStatement("SELECT UserID FROM Accounts WHERE Username = ?");
+                newUserQuery.setString(1, username);
+                ResultSet newUser = newUserQuery.executeQuery();
 
-                pstmt.executeUpdate();
-                ackMessage = "1";
-                
-                ResultSet newUser = Server.connection.createStatement()
-                        .executeQuery("SELECT UserID FROM Accounts WHERE Username='"
-                                + username + "'");
                 newUser.next();
-                Server.connectedClients.add(new ClientInfo(newUser.getInt(1), address, port));
+                Server.connectedClients
+                        .add(new ClientInfo(newUser.getInt("UserID"), address, port));
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
+
+                newUserInsert.close();
+                newUser.close();
+                newUserQuery.close();
+                ackMessage = "1";
             }
+
+            userQuery.close();
+            resultSet.close();
         } catch (SQLException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
         return ackMessage;
@@ -122,28 +135,35 @@ public class ServerNetworkTask implements Runnable {
         String password = message.substring(splitIndex + 1, message.length());
 
         try {
-            ResultSet resultSet = Server.connection.createStatement()
-                    .executeQuery("SELECT UserID, Username, Password FROM Accounts WHERE Username='"
-                            + username + "' AND Password='" + password + "'");
+
+            PreparedStatement userQuery = Server.connection.prepareStatement(
+                    "SELECT UserID, Username, Password FROM Accounts WHERE Username = ? AND Password = ?");
+            userQuery.setString(1, username);
+            userQuery.setString(2, password);
+            ResultSet resultSet = userQuery.executeQuery();
 
             String ackMessage;
+
             if (resultSet.next()) {
-                ackMessage = "1";
-                int id = resultSet.getInt(1);
-                Server.connectedClients.add(new ClientInfo(id, address, port));
+                Server.connectedClients
+                        .add(new ClientInfo(resultSet.getInt("UserID"), address, port));
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
+                ackMessage = "1";
             } else {
                 ackMessage = "-1";
             }
+
+            userQuery.close();
+            resultSet.close();
             return ackMessage;
 
         } catch (SQLException e) {
-            LOGGER.warning(e.getMessage());
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
         return "Couldn't query database";
     }
-    
+
     private void sendPacketToClient(String message, DatagramPacket datagramPacket)
             throws IOException {
         DatagramPacket sendPacket = new DatagramPacket(message.getBytes(),
@@ -152,4 +172,3 @@ public class ServerNetworkTask implements Runnable {
         Server.socket.send(sendPacket);
     }
 }
-
