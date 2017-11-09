@@ -42,6 +42,7 @@ public class ServerNetworkTask implements Runnable {
 
     private void handlePacket(DatagramPacket datagramPacket) {
         String message = new String(datagramPacket.getData(), 0, datagramPacket.getLength());
+        
         int tagEndIndex = message.indexOf(":") + 1;
         String tag = message.substring(0, tagEndIndex);
         String ackMessage = tag;

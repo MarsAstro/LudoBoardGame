@@ -15,7 +15,7 @@ import javafx.scene.layout.VBox;
 public class ServerGUIController {
 
     @FXML // fx:id="userIDList"
-    private ScrollPane userIDList; // Value injected by FXMLLoader
+    private ScrollPane userIDList;
 
     /**
      * Goes through all of the connected clients and updates a list containing

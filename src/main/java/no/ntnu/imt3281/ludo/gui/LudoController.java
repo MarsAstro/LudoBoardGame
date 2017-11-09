@@ -31,19 +31,19 @@ public class LudoController implements Initializable {
     private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
 
     @FXML // fx:id="loginButton"
-    private MenuItem loginButton; // Value injected by FXMLLoader
+    private MenuItem loginButton;
 
     @FXML // fx:id="logoutButton"
-    private MenuItem logoutButton; // Value injected by FXMLLoader
+    private MenuItem logoutButton;
 
     @FXML // fx:id="random"
-    private MenuItem random; // Value injected by FXMLLoader
+    private MenuItem random;
 
     @FXML // fx:id="loggedInUser"
-    private Menu loggedInUser; // Value injected by FXMLLoader
+    private Menu loggedInUser;
 
     @FXML // fx:id="tabbedPane"
-    private TabPane tabbedPane; // Value injected by FXMLLoader
+    private TabPane tabbedPane;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

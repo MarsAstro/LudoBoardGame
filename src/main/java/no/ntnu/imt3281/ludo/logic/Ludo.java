@@ -3,7 +3,7 @@
  */
 package no.ntnu.imt3281.ludo.logic;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * @author oyste
@@ -32,10 +32,10 @@ public class Ludo {
     public static final int GREEN = 3;
 
     private static final String WINNER = "Winner: ";
-    private Vector<String> playerNames;
-    private Vector<DiceListener> diceListeners;
-    private Vector<PieceListener> pieceListeners;
-    private Vector<PlayerListener> playerListeners;
+    private ArrayList<String> playerNames;
+    private ArrayList<DiceListener> diceListeners;
+    private ArrayList<PieceListener> pieceListeners;
+    private ArrayList<PlayerListener> playerListeners;
     private int[][] piecePositions;
     private int[][] globalPiecePositions;
     private int activePlayer = 0;
@@ -46,10 +46,10 @@ public class Ludo {
      * Initialize a game without players
      */
     public Ludo() {
-        playerNames = new Vector<>();
-        diceListeners = new Vector<>();
-        pieceListeners = new Vector<>();
-        playerListeners = new Vector<>();
+        playerNames = new ArrayList<>();
+        diceListeners = new ArrayList<>();
+        pieceListeners = new ArrayList<>();
+        playerListeners = new ArrayList<>();
         piecePositions = new int[4][4];
         globalPiecePositions = new int[4][4];
     }
@@ -71,14 +71,14 @@ public class Ludo {
     public Ludo(String name1, String name2, String name3, String name4) {
         piecePositions = new int[4][4];
         globalPiecePositions = new int[4][4];
-        diceListeners = new Vector<>();
-        pieceListeners = new Vector<>();
-        playerListeners = new Vector<>();
-        playerNames = new Vector<>();
-        playerNames.addElement(name1);
-        playerNames.addElement(name2);
-        playerNames.addElement(name3);
-        playerNames.addElement(name4);
+        diceListeners = new ArrayList<>();
+        pieceListeners = new ArrayList<>();
+        playerListeners = new ArrayList<>();
+        playerNames = new ArrayList<>();
+        playerNames.add(name1);
+        playerNames.add(name2);
+        playerNames.add(name3);
+        playerNames.add(name4);
         if (nrOfPlayers() < 2) {
             throw new NotEnoughPlayersException();
         }
@@ -90,7 +90,7 @@ public class Ludo {
     public int nrOfPlayers() {
         int numberOfPlayers = 0;
         for (int i = 0; i < playerNames.size(); i++) {
-            if (playerNames.elementAt(i) != null) {
+            if (playerNames.get(i) != null) {
                 numberOfPlayers++;
             }
         }
@@ -105,7 +105,7 @@ public class Ludo {
      * @return name of player at index
      */
     public String getPlayerName(int index) {
-        return playerNames.elementAt(index);
+        return playerNames.get(index);
     }
 
     /**
@@ -118,7 +118,7 @@ public class Ludo {
      */
     public void addPlayer(String newPlayer) {
         if (nrOfPlayers() < 4) {
-            playerNames.addElement(newPlayer);
+            playerNames.add(newPlayer);
         } else {
             throw new NoRoomForMorePlayersException();
         }
@@ -132,9 +132,9 @@ public class Ludo {
      */
     public void removePlayer(String name) {
         for (int player = 0; player < playerNames.size(); player++) {
-            if (playerNames.elementAt(player) != null
-                    && playerNames.elementAt(player).equals(name)) {
-                playerNames.set(player, "Inactive: " + playerNames.elementAt(player));
+            if (playerNames.get(player) != null
+                    && playerNames.get(player).equals(name)) {
+                playerNames.set(player, "Inactive: " + playerNames.get(player));
 
                 for (PlayerListener listener : playerListeners) {
                     listener.playerStateChanged(
@@ -154,7 +154,7 @@ public class Ludo {
     public int activePlayers() {
         int count = 0;
         for (int i = 0; i < playerNames.size(); i++) {
-            if (!playerNames.elementAt(i).contains("Inactive:")) {
+            if (!playerNames.get(i).contains("Inactive:")) {
                 count++;
             }
         }
@@ -282,9 +282,9 @@ public class Ludo {
             listener.playerStateChanged(new PlayerEvent(this, activePlayer, PlayerEvent.PLAYING));
         }
 
-        if (playerNames.elementAt(activePlayer) == null
-                || playerNames.elementAt(activePlayer).contains("Inactive: ")
-                || playerNames.elementAt(activePlayer).contains(WINNER)) {
+        if (playerNames.get(activePlayer) == null
+                || playerNames.get(activePlayer).contains("Inactive: ")
+                || playerNames.get(activePlayer).contains(WINNER)) {
             nextPlayer();
         }
 
@@ -357,8 +357,8 @@ public class Ludo {
         int winner = -1;
 
         for (int player = 0; player < playerNames.size(); ++player) {
-            if (playerNames.elementAt(player) != null
-                    && playerNames.elementAt(player).contains(WINNER)) {
+            if (playerNames.get(player) != null
+                    && playerNames.get(player).contains(WINNER)) {
                 winner = player;
             }
         }
@@ -387,7 +387,7 @@ public class Ludo {
         }
 
         if (finished && getWinner() == -1) {
-            playerNames.set(activePlayer, WINNER + playerNames.elementAt(activePlayer));
+            playerNames.set(activePlayer, WINNER + playerNames.get(activePlayer));
 
             for (PlayerListener listener : playerListeners) {
                 listener.playerStateChanged(new PlayerEvent(this, activePlayer, PlayerEvent.WON));
@@ -464,7 +464,7 @@ public class Ludo {
      *            DiceListener to add
      */
     public void addDiceListener(DiceListener diceListener) {
-        diceListeners.addElement(diceListener);
+        diceListeners.add(diceListener);
     }
 
     /**
@@ -474,7 +474,7 @@ public class Ludo {
      *            PieceListener to add
      */
     public void addPieceListener(PieceListener pieceListener) {
-        pieceListeners.addElement(pieceListener);
+        pieceListeners.add(pieceListener);
     }
 
     /**
@@ -484,7 +484,7 @@ public class Ludo {
      *            PlayerListener to add
      */
     public void addPlayerListener(PlayerListener playerListener) {
-        playerListeners.addElement(playerListener);
+        playerListeners.add(playerListener);
     }
 
 }

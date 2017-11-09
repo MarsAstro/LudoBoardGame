@@ -28,13 +28,13 @@ public class ConnectController implements Initializable {
     private ResourceBundle messages;
 
     @FXML // fx:id="username"
-    private TextField username; // Value injected by FXMLLoader
+    private TextField username;
 
     @FXML // fx:id="password"
-    private PasswordField password; // Value injected by FXMLLoader
+    private PasswordField password;
 
     @FXML // fx:id="errorMessage"
-    private Label errorMessage; // Value injected by FXMLLoader
+    private Label errorMessage;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
