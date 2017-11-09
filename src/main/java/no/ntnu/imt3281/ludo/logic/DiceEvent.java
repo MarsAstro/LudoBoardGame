@@ -11,8 +11,7 @@ import java.util.logging.Logger;
  *
  */
 public class DiceEvent extends EventObject implements DiceListener {
-    private static final Logger LOGGER = Logger
-            .getLogger(DiceEvent.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(DiceEvent.class.getName());
     private int player;
     private int dice;
 

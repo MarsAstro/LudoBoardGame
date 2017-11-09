@@ -6,12 +6,12 @@ import java.util.logging.Logger;
 
 /**
  * A piece event
+ * 
  * @author Marius
  *
  */
 public class PieceEvent extends EventObject implements PieceListener {
-    private static final Logger LOGGER = Logger
-            .getLogger(PieceEvent.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PieceEvent.class.getName());
     private int player;
     private int piece;
     private int from;
@@ -62,8 +62,8 @@ public class PieceEvent extends EventObject implements PieceListener {
         if (!(other == null || this.getClass() != other.getClass())) {
             try {
                 PieceEvent event = (PieceEvent) other;
-                return player == event.player && piece == event.piece
-                        && from == event.from && to == event.to;
+                return player == event.player && piece == event.piece && from == event.from
+                        && to == event.to;
             } catch (RuntimeException e) {
                 LOGGER.warning(e.getMessage());
             }

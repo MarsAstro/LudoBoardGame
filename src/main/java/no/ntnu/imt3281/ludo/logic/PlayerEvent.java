@@ -6,12 +6,12 @@ import java.util.logging.Logger;
 
 /**
  * A player event
+ * 
  * @author Marius
  *
  */
 public class PlayerEvent extends EventObject implements PlayerListener {
-    private static final Logger LOGGER = Logger
-            .getLogger(PlayerEvent.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(PlayerEvent.class.getName());
 
     /**
      * Constant for the Playing state
@@ -73,8 +73,7 @@ public class PlayerEvent extends EventObject implements PlayerListener {
         if (!(other == null || this.getClass() != other.getClass())) {
             try {
                 PlayerEvent event = (PlayerEvent) other;
-                return activePlayer == event.activePlayer
-                        && state == event.state;
+                return activePlayer == event.activePlayer && state == event.state;
             } catch (RuntimeException e) {
                 LOGGER.warning(e.getMessage());
             }

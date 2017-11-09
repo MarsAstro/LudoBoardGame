@@ -4,18 +4,17 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
-
-import com.mysql.jdbc.ConnectionPropertiesTransform;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
+import no.ntnu.imt3281.ludo.gui.ConnectController;
 import no.ntnu.imt3281.ludo.gui.LudoController;
 
 /**
@@ -27,9 +26,11 @@ import no.ntnu.imt3281.ludo.gui.LudoController;
  *
  */
 public class Client extends Application {
-    private static DatagramSocket socket;
-    private static final Logger LOGGER = Logger
-            .getLogger(Client.class.getName());
+    public static LudoController ludoController;
+    public static ConnectController connectController;
+
+    protected static DatagramSocket socket;
+    private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
 
     /**
      * @see javafx.application.Application
@@ -37,8 +38,8 @@ public class Client extends Application {
     @Override
     public void start(Stage primaryStage) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("../gui/Ludo.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("../gui/Ludo.fxml"));
+            loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.I18N.i18n"));
             AnchorPane root = (AnchorPane) loader.load();
 
             Scene scene = new Scene(root);
@@ -46,8 +47,7 @@ public class Client extends Application {
             primaryStage.show();
             primaryStage.setOnCloseRequest(e -> System.exit(0));
 
-            LudoController controller = loader.getController();
-            controller.setOwner(this);
+            ludoController = loader.getController();
         } catch (Exception e) {
             LOGGER.warning(e.getMessage());
         }
@@ -60,26 +60,14 @@ public class Client extends Application {
      *            Command line arguments
      */
     public static void main(String[] args) {
-        
         connectToServer(9003);
-        
-        WaitForPacketTask wTask = new WaitForPacketTask(socket);
-        
-        ExecutorService executorService = Executors.newCachedThreadPool();
-            
-        executorService.execute(wTask);
 
+        ClientNetworkTask networkTask = new ClientNetworkTask();
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        executorService.execute(networkTask);
         executorService.shutdown();
         
         launch(args);
-        
-    }
-
-    /**
-     * Constructor
-     */
-    public Client() {
-        
     }
 
     /**
@@ -103,11 +91,22 @@ public class Client extends Application {
      * @param datagramPacket
      *            The data which should be sent
      */
-    public void sendPacket(DatagramPacket datagramPacket) {
+    public static void sendPacket(DatagramPacket datagramPacket) {
         try {
             socket.send(datagramPacket);
         } catch (IOException e) {
             LOGGER.warning(e.getMessage());
         }
+    }
+
+    /**
+     * Sets the reference to connect controller (called by ludo controller on
+     * connect menu creation)
+     * 
+     * @param connectController
+     *            The new connect controller
+     */
+    public static void setConnectController(ConnectController connectController) {
+        Client.connectController = connectController;
     }
 }

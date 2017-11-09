@@ -13,29 +13,31 @@
          <top>
             <MenuBar BorderPane.alignment="CENTER">
               <menus>
-                <Menu mnemonicParsing="false" text="File">
+                <Menu mnemonicParsing="false" text="%ludo.menubar.file">
                   <items>
-                        <MenuItem mnemonicParsing="false" onAction="#openLoginRegisterGUI" text="Login/Register" />
-                    <MenuItem mnemonicParsing="false" text="Close" />
+                        <MenuItem fx:id="loginButton" mnemonicParsing="false" onAction="#openLoginRegisterGUI" text="%ludo.menubar.file.login" />
+                        <MenuItem fx:id="logoutButton" disable="true" mnemonicParsing="false" onAction="#logout" text="%ludo.menubar.file.logout" />
+                    <MenuItem mnemonicParsing="false" text="%ludo.menubar.file.close" />
                   </items>
                 </Menu>
-                <Menu mnemonicParsing="false" text="Game">
+                <Menu mnemonicParsing="false" text="%ludo.menubar.game">
                   <items>
-                    <MenuItem fx:id="random" mnemonicParsing="false" onAction="#joinRandomGame" text="Random game" />
-                        <MenuItem mnemonicParsing="false" text="Challenge players" />
+                    <MenuItem fx:id="random" mnemonicParsing="false" onAction="#joinRandomGame" text="%ludo.menubar.game.random" />
+                        <MenuItem mnemonicParsing="false" text="%ludo.menubar.game.challenge" />
                   </items>
                 </Menu>
-                  <Menu mnemonicParsing="false" text="Chat">
+                  <Menu mnemonicParsing="false" text="%ludo.menubar.chat">
                     <items>
-                      <MenuItem mnemonicParsing="false" text="Join room" />
-                        <MenuItem mnemonicParsing="false" text="List rooms" />
+                      <MenuItem mnemonicParsing="false" text="%ludo.menubar.chat.join" />
+                        <MenuItem mnemonicParsing="false" text="%ludo.menubar.chat.list" />
                     </items>
                   </Menu>
-                <Menu mnemonicParsing="false" text="Help">
+                <Menu mnemonicParsing="false" text="%ludo.menubar.help">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="About" />
+                    <MenuItem mnemonicParsing="false" text="%ludo.menubar.help.about" />
                   </items>
                 </Menu>
+                  <Menu fx:id="loggedInUser" disable="true" mnemonicParsing="false" text="%ludo.menubar.user.nouser" />
               </menus>
             </MenuBar>
          </top>
