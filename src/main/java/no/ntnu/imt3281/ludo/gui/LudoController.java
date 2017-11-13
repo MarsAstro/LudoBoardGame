@@ -1,6 +1,7 @@
 package no.ntnu.imt3281.ludo.gui;
 
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.net.URL;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -94,14 +95,28 @@ public class LudoController implements Initializable {
 
     @FXML
     void logout(ActionEvent event) {
-        logoutButton.setDisable(true);
-        loginButton.setDisable(false);
-        loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
+        byte[] message = "Logout:".getBytes();
+        DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
+        Client.sendPacket(datagramPacket);
     }
 
     void setLoggedInUser(String username) {
         logoutButton.setDisable(false);
         loginButton.setDisable(true);
         loggedInUser.setText(messages.getString("ludo.menubar.user.logintext") + " " + username);
+    }
+
+    /**
+     * Handles the servers response to a logout request
+     * 
+     * @param ackMessage
+     *            The message returned by server
+     */
+    public void handleServerLogoutResponse(String ackMessage) {
+        if (Integer.parseInt(ackMessage) == 1) {
+            logoutButton.setDisable(true);
+            loginButton.setDisable(false);
+            loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
+        }
     }
 }

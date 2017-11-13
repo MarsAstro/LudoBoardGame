@@ -59,6 +59,9 @@ public class ClientNetworkTask implements Runnable {
                 Platform.runLater(() -> Client.connectController
                         .handleServerRegisterResponse(message.substring(tagEndIndex)));
                 break;
+            case "Logout:" :
+                Platform.runLater(() -> Client.ludoController.handleServerLogoutResponse(message.substring(tagEndIndex)));
+                break;
             default :
                 break;
         }

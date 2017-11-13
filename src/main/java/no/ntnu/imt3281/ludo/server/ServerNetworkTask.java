@@ -42,7 +42,7 @@ public class ServerNetworkTask implements Runnable {
 
     private void handlePacket(DatagramPacket datagramPacket) {
         String message = new String(datagramPacket.getData(), 0, datagramPacket.getLength());
-        
+
         int tagEndIndex = message.indexOf(":") + 1;
         String tag = message.substring(0, tagEndIndex);
         String ackMessage = tag;
@@ -56,6 +56,10 @@ public class ServerNetworkTask implements Runnable {
                 ackMessage += handleRegisterPacket(datagramPacket.getAddress(),
                         datagramPacket.getPort(), message, tagEndIndex);
                 break;
+            case "Logout:" :
+                ackMessage += handleLogoutPacket(datagramPacket.getAddress(),
+                        datagramPacket.getPort(), message, tagEndIndex);
+                break;
             default :
                 break;
         }
@@ -65,6 +69,16 @@ public class ServerNetworkTask implements Runnable {
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
+    }
+
+    private String handleLogoutPacket(InetAddress address, int port, String message,
+            int tagEndIndex) {
+
+        // ID is hardcoded because equals operator disregards clientID
+        ClientInfo client = new ClientInfo(1, address, port);;
+        String result = Server.connectedClients.remove(client) ? "1" : "-1";
+        Platform.runLater(() -> Server.serverGUIController.updateUserList());
+        return result;
     }
 
     private String handleRegisterPacket(InetAddress address, int port, String message,

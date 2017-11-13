@@ -28,4 +28,15 @@ public class ClientInfo {
         this.address = address;
         this.port = port;
     }
+
+    @Override
+    public boolean equals(Object other) {
+        ClientInfo otherInfo = (ClientInfo) other;
+
+        if (otherInfo != null) {
+            return address.equals(otherInfo.address) && port == otherInfo.port;
+        }
+
+        return false;
+    }
 }
