@@ -117,6 +117,7 @@ public class LudoController implements Initializable {
             logoutButton.setDisable(true);
             loginButton.setDisable(false);
             loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
+            Client.disconnectFromServer();
         }
     }
 }

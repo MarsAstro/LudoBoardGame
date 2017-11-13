@@ -5,8 +5,14 @@
 package no.ntnu.imt3281.ludo.gui;
 
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ResourceBundle;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -17,6 +23,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import no.ntnu.imt3281.ludo.client.Client;
+import no.ntnu.imt3281.ludo.client.ClientNetworkTask;
 
 /**
  * Handles logging the user in and connecting to server
@@ -26,6 +33,10 @@ import no.ntnu.imt3281.ludo.client.Client;
  */
 public class ConnectController implements Initializable {
     private ResourceBundle messages;
+    private static final Logger LOGGER = Logger.getLogger(ConnectController.class.getName());
+
+    @FXML // fx:id="IPAddress"
+    private TextField IPAddress;
 
     @FXML // fx:id="username"
     private TextField username;
@@ -48,16 +59,24 @@ public class ConnectController implements Initializable {
 
     @FXML
     void login(ActionEvent event) {
-        if (bothFieldsValid()) {
-            byte[] message = ("Login:" + username.getText() + ";" + password.getText()).getBytes();
-            DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
-            Client.sendPacket(datagramPacket);
+        if (allFieldsValid()) {
+            try {
+                Client.connectToServer(InetAddress.getByName(IPAddress.getText()));
+                
+                byte[] message = ("Login:" + username.getText() + ";" + password.getText()).getBytes();
+                DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
+                Client.sendPacket(datagramPacket);
+            } catch (UnknownHostException e) {
+                errorMessage.setText("Failed to connect to host");
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
+            }
+            
         }
     }
 
     @FXML
     void register(ActionEvent event) {
-        if (bothFieldsValid()) {
+        if (allFieldsValid()) {
             byte[] message = ("Register:" + username.getText() + ";" + password.getText())
                     .getBytes();
             DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
@@ -65,8 +84,9 @@ public class ConnectController implements Initializable {
         }
     }
 
-    private boolean bothFieldsValid() {
-        return !(username.getText().isEmpty() || password.getText().isEmpty());
+    private boolean allFieldsValid() {
+        return !(IPAddress.getText().isEmpty() || username.getText().isEmpty()
+                || password.getText().isEmpty());
     }
 
     /**

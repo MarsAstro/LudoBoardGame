@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -61,13 +62,6 @@ public class Client extends Application {
      *            Command line arguments
      */
     public static void main(String[] args) {
-        connectToServer(9003);
-
-        ClientNetworkTask networkTask = new ClientNetworkTask();
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        executorService.execute(networkTask);
-        executorService.shutdown();
-
         launch(args);
     }
 
@@ -77,10 +71,15 @@ public class Client extends Application {
      * @param port
      *            The port to communicate through
      */
-    public static void connectToServer(int port) {
+    public static void connectToServer(InetAddress address) {
         try {
             socket = new DatagramSocket();
-            socket.connect(InetAddress.getLocalHost(), port);
+            socket.connect(address, 9003);
+            
+            ClientNetworkTask networkTask = new ClientNetworkTask();
+            ExecutorService executorService = Executors.newCachedThreadPool();
+            executorService.execute(networkTask);
+            executorService.shutdown();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
@@ -123,6 +122,13 @@ public class Client extends Application {
      */
     public static void setConnectController(ConnectController connectController) {
         Client.connectController = connectController;
+    }
+
+    /**
+     * Closes the socket that is connected to the server
+     */
+    public static void disconnectFromServer() {
+        socket.close();
     }
 
 }
