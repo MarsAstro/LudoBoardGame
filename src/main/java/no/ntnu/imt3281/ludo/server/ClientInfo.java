@@ -10,6 +10,7 @@ import java.net.InetAddress;
  */
 public class ClientInfo {
     int clientID;
+    String username;
     InetAddress address;
     int port;
 
@@ -23,12 +24,16 @@ public class ClientInfo {
      * @param address
      *            The clients IP address
      */
-    ClientInfo(int clientID, InetAddress address, int port) {
+    ClientInfo(int clientID, InetAddress address, int port, String username) {
         this.clientID = clientID;
         this.address = address;
         this.port = port;
+        this.username = username;
     }
 
+    /**
+     * @see java.lang.Object.equals
+     */
     @Override
     public boolean equals(Object other) {
         ClientInfo otherInfo = (ClientInfo) other;
@@ -38,5 +43,16 @@ public class ClientInfo {
         }
 
         return false;
+    }
+
+    /**
+     * Equals check on username
+     * 
+     * @param username
+     *            The name of the user to check against
+     * @return True if username is equal
+     */
+    public boolean userEquals(String username) {
+        return this.username.equals(username);
     }
 }

@@ -32,6 +32,8 @@ public class Server extends Application {
     static Connection connection;
     static ArrayList<ClientInfo> connectedClients;
     static ServerGUIController serverGUIController;
+    static ArrayList<GameInfo> games;
+    static int nextGameID;
 
     private static String url = "jdbc:mysql://mysql.stud.ntnu.no/mksandbe_Ludo";
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
@@ -41,6 +43,8 @@ public class Server extends Application {
      */
     public static void initServer() {
         connectedClients = new ArrayList<>();
+        games = new ArrayList<>();
+        nextGameID = 0;
         ResourceBundle messages = ResourceBundle
                 .getBundle("no.ntnu.imt3281.ludo.server.credentials");
 

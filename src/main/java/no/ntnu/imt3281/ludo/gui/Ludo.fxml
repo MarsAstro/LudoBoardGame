@@ -17,7 +17,7 @@
                   <items>
                         <MenuItem fx:id="loginButton" mnemonicParsing="false" onAction="#openLoginRegisterGUI" text="%ludo.menubar.file.login" />
                         <MenuItem fx:id="logoutButton" disable="true" mnemonicParsing="false" onAction="#logout" text="%ludo.menubar.file.logout" />
-                    <MenuItem mnemonicParsing="false" text="%ludo.menubar.file.close" />
+                    <MenuItem mnemonicParsing="false" onAction="#closeWindow" text="%ludo.menubar.file.close" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="%ludo.menubar.game">

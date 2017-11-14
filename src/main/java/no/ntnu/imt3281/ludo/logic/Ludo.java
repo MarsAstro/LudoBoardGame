@@ -4,6 +4,7 @@
 package no.ntnu.imt3281.ludo.logic;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * @author oyste
@@ -47,6 +48,9 @@ public class Ludo {
      */
     public Ludo() {
         playerNames = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            playerNames.add(null);
+        }
         diceListeners = new ArrayList<>();
         pieceListeners = new ArrayList<>();
         playerListeners = new ArrayList<>();
@@ -118,9 +122,28 @@ public class Ludo {
      */
     public void addPlayer(String newPlayer) {
         if (nrOfPlayers() < 4) {
-            playerNames.add(newPlayer);
+            for (int player = 0; player < 4; player++) {
+                if (playerNames.get(player) == null) {
+                    playerNames.set(player, newPlayer);
+                    break;
+                }
+            }
         } else {
             throw new NoRoomForMorePlayersException();
+        }
+    }
+
+    /**
+     * Remove player from gave entirely
+     * 
+     * @param name
+     *            Name of player to be discarded
+     */
+    public void discardPlayer(String name) {
+        for (int player = 0; player < playerNames.size(); player++) {
+            if (playerNames.get(player) != null && playerNames.get(player).equals(name)) {
+                playerNames.set(player, null);
+            }
         }
     }
 
@@ -128,13 +151,24 @@ public class Ludo {
      * Sets player with name as inactive
      * 
      * @param name
-     *            name of player to be set inactive
+     *            Name of player to be set inactive
      */
     public void removePlayer(String name) {
         for (int player = 0; player < playerNames.size(); player++) {
-            if (playerNames.get(player) != null
-                    && playerNames.get(player).equals(name)) {
+            if (playerNames.get(player) != null && playerNames.get(player).equals(name)) {
                 playerNames.set(player, "Inactive: " + playerNames.get(player));
+
+                for (int piece = 0; piece < 4; piece++) {
+                    if (piecePositions[player][piece] != 0) {
+                        int prevPos = piecePositions[player][piece];
+
+                        piecePositions[player][piece] = 0;
+                        globalPiecePositions[player][piece] = 0;
+                        for (PieceListener listener : pieceListeners) {
+                            listener.pieceMoved(new PieceEvent(this, player, piece, prevPos, 0));
+                        }
+                    }
+                }
 
                 for (PlayerListener listener : playerListeners) {
                     listener.playerStateChanged(
@@ -153,8 +187,8 @@ public class Ludo {
      */
     public int activePlayers() {
         int count = 0;
-        for (int i = 0; i < playerNames.size(); i++) {
-            if (!playerNames.get(i).contains("Inactive:")) {
+        for (int player = 0; player < playerNames.size(); player++) {
+            if (playerNames.get(player) != null && !playerNames.get(player).contains("Inactive:")) {
                 count++;
             }
         }
@@ -185,7 +219,9 @@ public class Ludo {
      * @return A randomly generated die throw
      */
     public int throwDice() {
-        return 0;
+        Random random = new Random();
+        random.setSeed(System.currentTimeMillis());
+        return throwDice(random.nextInt(6) + 1);
     }
 
     /**
@@ -357,8 +393,7 @@ public class Ludo {
         int winner = -1;
 
         for (int player = 0; player < playerNames.size(); ++player) {
-            if (playerNames.get(player) != null
-                    && playerNames.get(player).contains(WINNER)) {
+            if (playerNames.get(player) != null && playerNames.get(player).contains(WINNER)) {
                 winner = player;
             }
         }
@@ -487,4 +522,21 @@ public class Ludo {
         playerListeners.add(playerListener);
     }
 
+    /**
+     * Gets the index of player
+     * 
+     * @param name
+     *            The suggested player name
+     * @return Index of player
+     */
+    public int getIndexOfPlayer(String name) {
+        int index = -1;
+        for (int player = 0; player < 4; player++) {
+            if (playerNames.get(player) != null && playerNames.get(player).equals(name)) {
+                index = player;
+                break;
+            }
+        }
+        return index;
+    }
 }

@@ -1,8 +1,8 @@
 package no.ntnu.imt3281.ludo.gui;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,6 +16,7 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -29,6 +30,7 @@ import no.ntnu.imt3281.ludo.client.Client;
  */
 public class LudoController implements Initializable {
     private ResourceBundle messages;
+    private ArrayList<GameBoardController> gameBoards;
     private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
 
     @FXML // fx:id="loginButton"
@@ -49,6 +51,8 @@ public class LudoController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         messages = resources;
+        gameBoards = new ArrayList<>();
+        tabbedPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
     }
 
     /**
@@ -59,17 +63,7 @@ public class LudoController implements Initializable {
      */
     @FXML
     public void joinRandomGame(ActionEvent event) {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("GameBoard.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
-
-        try {
-            AnchorPane gameBoard = loader.load();
-            Tab tab = new Tab("Game");
-            tab.setContent(gameBoard);
-            tabbedPane.getTabs().add(tab);
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
-        }
+        Client.sendPacket("Ludo.JoinRandom:");
     }
 
     @FXML
@@ -95,9 +89,7 @@ public class LudoController implements Initializable {
 
     @FXML
     void logout(ActionEvent event) {
-        byte[] message = "Logout:".getBytes();
-        DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
-        Client.sendPacket(datagramPacket);
+        Client.sendPacket("User.Logout:");
     }
 
     void setLoggedInUser(String username) {
@@ -117,7 +109,72 @@ public class LudoController implements Initializable {
             logoutButton.setDisable(true);
             loginButton.setDisable(false);
             loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
-            Client.disconnectFromServer();
         }
+    }
+
+    /**
+     * Handles received ackMessage when trying to join a game
+     * 
+     * @param ackMessage
+     *            Message indicating if connection was a success
+     */
+    public void handleServerJoinGame(String ackMessage) {
+        int endIndex = ackMessage.indexOf(",");
+        
+        int gameID = Integer.parseInt(ackMessage.substring(0, endIndex));
+        int playerID = Integer.parseInt(ackMessage.substring(endIndex + 1));
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("GameBoard.fxml"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+
+        try {
+            AnchorPane gameBoard = loader.load();
+            Tab tab = new Tab("Game");
+            tab.setContent(gameBoard);
+            tab.setOnCloseRequest(e -> ((GameBoardController) loader.getController()).leaveGame());
+            tabbedPane.getTabs().add(tab);
+
+            ((GameBoardController) loader.getController()).gameID = gameID;
+            ((GameBoardController) loader.getController()).playerID = playerID;
+            gameBoards.add(loader.getController());
+
+            Client.sendPacket("Ludo.Init:" + gameID);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Disconnects from server and closes window
+     * 
+     * @param event
+     *            Event triggering method
+     */
+    @FXML
+    public void closeWindow(ActionEvent event) {
+        if (Client.isConnected()) {
+            logout(event);
+        }
+        Stage stage = (Stage) tabbedPane.getScene().getWindow();
+        stage.close();
+        System.exit(0);
+    }
+
+    /**
+     * Gets game board controller from gameID
+     * 
+     * @param gameID
+     *            The gameID referencing a possible game board controller
+     * @return True if gameID reference a game board controller
+     */
+    public GameBoardController getGameBoardController(int gameID) {
+        GameBoardController temp = null;
+        for (GameBoardController gbc : gameBoards) {
+            if (gameID == gbc.gameID) {
+                temp = gbc;
+                break;
+            }
+        }
+        return temp;
     }
 }

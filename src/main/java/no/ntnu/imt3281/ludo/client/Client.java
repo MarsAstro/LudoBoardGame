@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -47,7 +47,8 @@ public class Client extends Application {
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
             primaryStage.show();
-            primaryStage.setOnCloseRequest(e -> System.exit(0));
+            primaryStage
+                    .setOnCloseRequest(e -> Client.ludoController.closeWindow(new ActionEvent()));
 
             Client.ludoController = loader.getController();
         } catch (Exception e) {
@@ -68,14 +69,14 @@ public class Client extends Application {
     /**
      * Attempts to connect the client to the given server
      * 
-     * @param port
-     *            The port to communicate through
+     * @param address
+     *            Address to connect to server
      */
     public static void connectToServer(InetAddress address) {
         try {
             socket = new DatagramSocket();
             socket.connect(address, 9003);
-            
+
             ClientNetworkTask networkTask = new ClientNetworkTask();
             ExecutorService executorService = Executors.newCachedThreadPool();
             executorService.execute(networkTask);
@@ -88,10 +89,12 @@ public class Client extends Application {
     /**
      * Generic function that sends packet to server
      * 
-     * @param datagramPacket
-     *            The data which should be sent
+     * @param text
+     *            The text that should be sent
      */
-    public static void sendPacket(DatagramPacket datagramPacket) {
+    public static void sendPacket(String text) {
+        byte[] message = text.getBytes();
+        DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
         try {
             socket.send(datagramPacket);
         } catch (IOException e) {
@@ -125,10 +128,11 @@ public class Client extends Application {
     }
 
     /**
-     * Closes the socket that is connected to the server
+     * Checks if client is connected to a server
+     * 
+     * @return if socket is connected
      */
-    public static void disconnectFromServer() {
-        socket.close();
+    public static boolean isConnected() {
+        return socket != null && socket.isConnected();
     }
-
 }

@@ -1,0 +1,38 @@
+Network Packets
+Server-side
+	User.Login		Login request from user
+	User.Register	Register request from user
+	User.Logout		Logout request from user
+	User.Ping		User is still connected
+	
+	Ludo.Throw		User requests a dice throw
+	Ludo.Move		User requests to move a piece
+	Ludo.JoinRandom	User requests to join a random game
+	Ludo.Challenge	User requests to challenge another user
+	Ludo.Leave		User left
+	Ludo.Chat		User sent chat message in chat tied to a game
+	Ludo.Init		User requests all game info 
+	
+	Chat.Send		User sent a chat message
+
+Client-side
+	User.Login 		Server response to a login attempt
+	User.Register	Server response to a register attempt
+	User.Logout 	Server response to a logout attempt
+	
+	#Sent all players in a game
+	Ludo.Dice		The value of the current dice throw
+	Ludo.Piece		Information about the location of a piece on the board
+	Ludo.Name		Contains the name of a specific player in a game
+	Ludo.Finish		Game has ended
+	Ludo.Player		Updated info on player turn
+	Ludo.Chat		Chat message
+	
+	#Sent only to specific clients
+	Ludo.Challenge	Server response to a a challenge attempt
+	Ludo.Leave		Server response to a leave attempt
+	Ludo.Join		Server response to a join attempt
+	
+	
+	Chat.Update		Updated chat info from when chat changes
+	Chat.Join		Join new chat

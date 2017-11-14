@@ -4,13 +4,10 @@
 
 package no.ntnu.imt3281.ludo.gui;
 
-import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ResourceBundle;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +20,6 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import no.ntnu.imt3281.ludo.client.Client;
-import no.ntnu.imt3281.ludo.client.ClientNetworkTask;
 
 /**
  * Handles logging the user in and connecting to server
@@ -62,25 +58,36 @@ public class ConnectController implements Initializable {
         if (allFieldsValid()) {
             try {
                 Client.connectToServer(InetAddress.getByName(IPAddress.getText()));
-                
-                byte[] message = ("Login:" + username.getText() + ";" + password.getText()).getBytes();
-                DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
-                Client.sendPacket(datagramPacket);
+
+                Client.sendPacket("User.Login:" + username.getText() + ";" + password.getText());
             } catch (UnknownHostException e) {
-                errorMessage.setText("Failed to connect to host");
+                errorMessage.setText(messages.getString("login.result.nohost"));
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
-            
+
+        }
+        else
+        {
+            errorMessage.setText(messages.getString("login.fill"));
         }
     }
 
     @FXML
     void register(ActionEvent event) {
         if (allFieldsValid()) {
-            byte[] message = ("Register:" + username.getText() + ";" + password.getText())
-                    .getBytes();
-            DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
-            Client.sendPacket(datagramPacket);
+            try {
+                Client.connectToServer(InetAddress.getByName(IPAddress.getText()));
+                
+                Client.sendPacket("User.Register:" + username.getText() + ";" + password.getText());
+            } catch (UnknownHostException e) {
+                errorMessage.setText(messages.getString("login.result.nohost"));
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
+            }
+
+        }
+        else
+        {
+            errorMessage.setText(messages.getString("login.fill"));
         }
     }
 
@@ -96,11 +103,20 @@ public class ConnectController implements Initializable {
      *            The servers response
      */
     public void handleServerLoginResponse(String ackMessage) {
-        if (Integer.parseInt(ackMessage) == -1) {
-            errorMessage.setText(messages.getString("login.result.failed"));
-        } else {
-            Platform.runLater(() -> Client.getLudoController().setLoggedInUser(username.getText()));
-            closeWindow();
+        switch (Integer.parseInt(ackMessage)) {
+            case 1 :
+                Platform.runLater(() -> Client.getLudoController().setLoggedInUser(username.getText()));
+                closeWindow();
+                break;
+            case -1 :
+                errorMessage.setText(messages.getString("login.result.failed"));
+                break;
+            case -2 :
+                errorMessage.setText(messages.getString("login.result.sneaky"));
+                break;
+            default :
+                errorMessage.setText(messages.getString("login.result.unknown"));
+                break;
         }
     }
 
