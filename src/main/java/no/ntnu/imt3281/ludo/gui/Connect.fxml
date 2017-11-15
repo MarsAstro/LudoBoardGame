@@ -28,7 +28,7 @@
             <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="64.0" layoutY="95.0" text="IP" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             <Label text="%login.username" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
             <Label text="%login.password" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
-            <TextField fx:id="IPAddress" onAction="#login" text="172.18.83.203" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <TextField fx:id="IPAddress" onAction="#login" text="172.18.84.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets right="30.0" />
                </GridPane.margin>

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,7 +33,7 @@ public class Client extends Application {
     static LudoController ludoController;
     static ConnectController connectController;
 
-    static DatagramSocket socket;
+    static Socket socket;
     private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
 
     /**
@@ -74,10 +76,9 @@ public class Client extends Application {
      */
     public static void connectToServer(InetAddress address) {
         try {
-            socket = new DatagramSocket();
-            socket.connect(address, 9003);
+            socket = new Socket(address, 9003);
 
-            ClientNetworkTask networkTask = new ClientNetworkTask();
+            ClientInputTask networkTask = new ClientInputTask();
             ExecutorService executorService = Executors.newCachedThreadPool();
             executorService.execute(networkTask);
             executorService.shutdown();
@@ -89,14 +90,13 @@ public class Client extends Application {
     /**
      * Generic function that sends packet to server
      * 
-     * @param text
+     * @param message
      *            The text that should be sent
      */
-    public static void sendPacket(String text) {
-        byte[] message = text.getBytes();
-        DatagramPacket datagramPacket = new DatagramPacket(message, message.length);
+    public static void sendMessage(String message) {
         try {
-            socket.send(datagramPacket);
+            socket.getOutputStream().write(message.getBytes());
+            socket.getOutputStream().flush();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }

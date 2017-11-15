@@ -90,11 +90,11 @@ public class GameBoardController implements Initializable {
 
     @FXML
     void throwDice(ActionEvent event) {
-        Client.sendPacket("Ludo.Throw:");
+        Client.sendMessage("Ludo.Throw:");
     }
 
     void leaveGame() {
-        Client.sendPacket("Ludo.Leave:" + gameID);
+        Client.sendMessage("Ludo.Leave:" + gameID);
     }
 
     /**

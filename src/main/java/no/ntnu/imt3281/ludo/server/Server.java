@@ -1,7 +1,7 @@
 package no.ntnu.imt3281.ludo.server;
 
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,13 +29,13 @@ import javafx.stage.Stage;
  *
  */
 public class Server extends Application {
-
-    static DatagramSocket socket;
-    static Connection connection;
-    static ArrayList<ClientInfo> connectedClients;
+    static ServerSocket serverSocket;
+    static ArrayList<ClientInfo> connections;
+    static Connection database;
     static ServerGUIController serverGUIController;
     static ArrayList<GameInfo> games;
     static int nextGameID;
+    static ReadWriteLock lock;
 
     private static String url = "jdbc:mysql://mysql.stud.ntnu.no/mksandbe_Ludo";
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
@@ -42,7 +44,13 @@ public class Server extends Application {
      * Sets port number and opens the server GUI
      */
     public static void initServer() {
-        connectedClients = new ArrayList<>();
+        try {
+            serverSocket = new ServerSocket(9003, 256);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+        
+        connections = new ArrayList<>();
         games = new ArrayList<>();
         nextGameID = 0;
         ResourceBundle messages = ResourceBundle
@@ -50,17 +58,13 @@ public class Server extends Application {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection(url, messages.getString("dbuser"),
+            database = DriverManager.getConnection(url, messages.getString("dbuser"),
                     messages.getString("dbpass"));
         } catch (SQLException | ClassNotFoundException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
-        try {
-            socket = new DatagramSocket(9003);
-        } catch (SocketException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
-        }
+
     }
 
     /**
@@ -91,10 +95,26 @@ public class Server extends Application {
      */
     public static void main(String[] args) {
         initServer();
+        
+        lock = new ReentrantReadWriteLock();
 
-        ServerNetworkTask networkTask = new ServerNetworkTask();
         ExecutorService executorService = Executors.newCachedThreadPool();
-        executorService.execute(networkTask);
+        
+        UserTask userTask = new UserTask();
+        LudoTask ludoTask = new LudoTask();
+        ChatTask chatTask = new ChatTask();
+        ServerInputTask inputTask = new ServerInputTask();
+        SendToClientTask sendTask = new SendToClientTask();
+        UserCleanupTask cleanupTask = new UserCleanupTask();
+        ClientConnectionTask clientConTask = new ClientConnectionTask();
+        
+        executorService.execute(userTask);
+        executorService.execute(ludoTask);
+        executorService.execute(chatTask);
+        executorService.execute(inputTask);
+        executorService.execute(sendTask);
+        executorService.execute(cleanupTask);
+        executorService.execute(clientConTask);
         executorService.shutdown();
 
         launch(args);

@@ -1,6 +1,6 @@
 package no.ntnu.imt3281.ludo.server;
 
-import java.net.InetAddress;
+import java.net.Socket;
 
 /**
  * Data structure containing the data the server needs to identify a logged in
@@ -9,10 +9,19 @@ import java.net.InetAddress;
  * @author Mars
  */
 public class ClientInfo {
+    Socket connection;
     int clientID;
     String username;
-    InetAddress address;
-    int port;
+
+    /**
+     * Constructor for temporary objects used for searching
+     * 
+     * @param clientID
+     *            ID is the only parameter relevant for equals operator
+     */
+    ClientInfo(int clientID) {
+        this.clientID = clientID;
+    }
 
     /**
      * A constructor
@@ -24,10 +33,9 @@ public class ClientInfo {
      * @param address
      *            The clients IP address
      */
-    ClientInfo(int clientID, InetAddress address, int port, String username) {
+    ClientInfo(Socket connection, int clientID, String username) {
         this.clientID = clientID;
-        this.address = address;
-        this.port = port;
+        this.connection = connection;
         this.username = username;
     }
 
@@ -36,13 +44,14 @@ public class ClientInfo {
      */
     @Override
     public boolean equals(Object other) {
-        ClientInfo otherInfo = (ClientInfo) other;
+        boolean isEqual = false;
 
+        ClientInfo otherInfo = (ClientInfo) other;
         if (otherInfo != null) {
-            return address.equals(otherInfo.address) && port == otherInfo.port;
+            isEqual = clientID == otherInfo.clientID;
         }
 
-        return false;
+        return isEqual;
     }
 
     /**

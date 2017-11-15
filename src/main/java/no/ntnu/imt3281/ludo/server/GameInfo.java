@@ -4,6 +4,7 @@
 package no.ntnu.imt3281.ludo.server;
 
 import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import no.ntnu.imt3281.ludo.logic.Ludo;
@@ -32,7 +33,7 @@ public class GameInfo {
                 break;
             }
         }
-        
+
         return !isAlreadyInGame && clients.size() < 4 && ludo.getStatus().equals("Initiated");
     }
 
@@ -56,33 +57,34 @@ public class GameInfo {
     /**
      * Removing player from game, if game has not started
      * 
-     * @param client
-     *            The client to be added
+     * @param clientID
+     *            The client to be removed
      */
-    public void removePlayer(ClientInfo client) {
-        String status = ludo.getStatus();
-        if (status == "Initiated") {
-            clients.remove(client);
-            ludo.discardPlayer(client.username);
-        } else if (status == "Started") {
-            clients.remove(client);
-            ludo.removePlayer(client.username);
+    public void removePlayer(int clientID) {
+        int index = clients.indexOf(new ClientInfo(clientID));
+        if (index != -1) {
+            ClientInfo client = clients.get(index);
+
+            String status = ludo.getStatus();
+            if (status == "Initiated") {
+                clients.remove(index);
+                ludo.discardPlayer(client.username);
+            } else if (status == "Started") {
+                clients.remove(index);
+                ludo.removePlayer(client.username);
+            }
         }
     }
 
     /**
-     * Gets ClientInfo from address and port. ID and username is hardcoded when
-     * searching for client because equals operator only considers address and
-     * port.
+     * Gets ClientInfo from ID
      * 
-     * @param address
-     *            Address client is connected from
-     * @param port
-     *            Port client is connected to
+     * @param clientID
+     *            ID of client to be searched for
      * @return Client info or null if player doesn't exist
      */
-    public ClientInfo getClient(InetAddress address, int port) {
-        int index = clients.indexOf(new ClientInfo(-1, address, port, "Random name"));
+    public ClientInfo getClient(int clientID) {
+        int index = clients.indexOf(new ClientInfo(clientID));
         return index == -1 ? null : clients.get(index);
     }
 }

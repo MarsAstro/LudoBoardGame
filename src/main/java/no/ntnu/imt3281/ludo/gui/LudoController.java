@@ -63,7 +63,7 @@ public class LudoController implements Initializable {
      */
     @FXML
     public void joinRandomGame(ActionEvent event) {
-        Client.sendPacket("Ludo.JoinRandom:");
+        Client.sendMessage("Ludo.JoinRandom:");
     }
 
     @FXML
@@ -89,7 +89,7 @@ public class LudoController implements Initializable {
 
     @FXML
     void logout(ActionEvent event) {
-        Client.sendPacket("User.Logout:");
+        Client.sendMessage("User.Logout:");
     }
 
     void setLoggedInUser(String username) {
@@ -138,7 +138,7 @@ public class LudoController implements Initializable {
             ((GameBoardController) loader.getController()).playerID = playerID;
             gameBoards.add(loader.getController());
 
-            Client.sendPacket("Ludo.Init:" + gameID);
+            Client.sendMessage("Ludo.Init:" + gameID);
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }

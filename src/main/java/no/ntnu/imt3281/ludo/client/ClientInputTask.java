@@ -4,7 +4,6 @@
 package no.ntnu.imt3281.ludo.client;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,8 +14,8 @@ import no.ntnu.imt3281.ludo.gui.GameBoardController;
  * @author Marius
  *
  */
-public class ClientNetworkTask implements Runnable {
-    private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
+public class ClientInputTask implements Runnable {
+    private static final Logger LOGGER = Logger.getLogger(ClientInputTask.class.getName());
 
     /**
      * Run
@@ -25,12 +24,11 @@ public class ClientNetworkTask implements Runnable {
     public void run() {
         while (!Client.socket.isClosed()) {
             try {
-                byte[] data = new byte[100];
-                DatagramPacket receivePacket = new DatagramPacket(data, data.length);
+                byte[] inputData = new byte[100];
+                
+                Client.socket.getInputStream().read(inputData);
 
-                Client.socket.receive(receivePacket);
-
-                handleReceivedPacket(receivePacket);
+                handleReceivedPacket(inputData);
 
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -41,16 +39,16 @@ public class ClientNetworkTask implements Runnable {
     /**
      * Handles received packet
      * 
-     * @param receivePacket
+     * @param inputData
      *            The received packet
      */
-    private void handleReceivedPacket(DatagramPacket receivePacket) {
-        String message = new String(receivePacket.getData(), 0, receivePacket.getLength());
+    private void handleReceivedPacket(byte[] inputData) {
+        String message = new String(inputData, 0, inputData.length);
 
         int tagEndIndex = message.indexOf(".") + 1;
         String tag = message.substring(0, tagEndIndex);
-        String ackMessage = message.substring(tagEndIndex);
-
+        String ackMessage = message.substring(tagEndIndex, message.indexOf("\0"));
+        System.out.println(message);
         switch (tag) {
             case "User." :
                 handleReceivedUserPacket(ackMessage);
@@ -142,10 +140,15 @@ public class ClientNetworkTask implements Runnable {
                         () -> Client.connectController.handleServerRegisterResponse(ackMessage));
                 break;
             case "Logout:" :
+                System.out.println(ackMessage);
                 Platform.runLater(
                         () -> Client.ludoController.handleServerLogoutResponse(ackMessage));
                 if (Integer.parseInt(ackMessage) == 1) {
-                    Client.socket.close();
+                    try {
+                        Client.socket.close();
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, e.getMessage(), e);
+                    }
                 }
                 break;
             default :

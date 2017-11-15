@@ -59,7 +59,7 @@ public class ConnectController implements Initializable {
             try {
                 Client.connectToServer(InetAddress.getByName(IPAddress.getText()));
 
-                Client.sendPacket("User.Login:" + username.getText() + ";" + password.getText());
+                Client.sendMessage("User.Login:" + username.getText() + ";" + password.getText());
             } catch (UnknownHostException e) {
                 errorMessage.setText(messages.getString("login.result.nohost"));
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -78,7 +78,7 @@ public class ConnectController implements Initializable {
             try {
                 Client.connectToServer(InetAddress.getByName(IPAddress.getText()));
                 
-                Client.sendPacket("User.Register:" + username.getText() + ";" + password.getText());
+                Client.sendMessage("User.Register:" + username.getText() + ";" + password.getText());
             } catch (UnknownHostException e) {
                 errorMessage.setText(messages.getString("login.result.nohost"));
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
