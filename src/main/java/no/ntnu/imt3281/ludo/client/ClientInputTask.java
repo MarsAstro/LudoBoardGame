@@ -27,8 +27,12 @@ public class ClientInputTask implements Runnable {
                 byte[] inputData = new byte[100];
                 
                 Client.socket.getInputStream().read(inputData);
-
-                handleReceivedPacket(inputData);
+                
+                String packet = new String(inputData, 0, inputData.length);
+                String[] messages = packet.split(";");
+                for (String message : messages) {
+                    handleReceivedPacket(message);
+                }
 
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -42,12 +46,10 @@ public class ClientInputTask implements Runnable {
      * @param inputData
      *            The received packet
      */
-    private void handleReceivedPacket(byte[] inputData) {
-        String message = new String(inputData, 0, inputData.length);
-
+    private void handleReceivedPacket(String message) {
         int tagEndIndex = message.indexOf(".") + 1;
         String tag = message.substring(0, tagEndIndex);
-        String ackMessage = message.substring(tagEndIndex, message.indexOf("\0"));
+        String ackMessage = message.substring(tagEndIndex);
         System.out.println(message);
         switch (tag) {
             case "User." :

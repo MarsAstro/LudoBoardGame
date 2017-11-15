@@ -54,7 +54,7 @@ public class ClientConnectionTask implements Runnable {
     }
 
     private void handleUserRegister(Socket newClientSocket, String content) {
-        int splitIndex = content.indexOf(";");
+        int splitIndex = content.indexOf(",");
         String username = content.substring(0, splitIndex);
         String password = content.substring(splitIndex + 1);
 
@@ -86,8 +86,10 @@ public class ClientConnectionTask implements Runnable {
                 ResultSet newUser = newUserQuery.executeQuery();
 
                 newUser.next();
+                Server.lock.writeLock().lock();
                 Server.connections
                         .add(new ClientInfo(newClientSocket, newUser.getInt("UserID"), username));
+                Server.lock.writeLock().unlock();
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
 
                 newUserInsert.close();
@@ -99,6 +101,7 @@ public class ClientConnectionTask implements Runnable {
             userQuery.close();
             resultSet.close();
 
+            ackMessage += ";";
             newClientSocket.getOutputStream().write(ackMessage.getBytes());
             newClientSocket.getOutputStream().flush();
         } catch (SQLException | IOException e) {
@@ -107,7 +110,7 @@ public class ClientConnectionTask implements Runnable {
     }
 
     private void handleUserLogin(Socket newClientSocket, String content) {
-        int splitIndex = content.indexOf(";");
+        int splitIndex = content.indexOf(",");
         String username = content.substring(0, splitIndex);
         String password = content.substring(splitIndex + 1);
 
@@ -131,8 +134,10 @@ public class ClientConnectionTask implements Runnable {
             if (alreadyLoggedIn) {
                 ackMessage += "-2";
             } else if (resultSet.next()) {
+                Server.lock.writeLock().lock();
                 Server.connections
                         .add(new ClientInfo(newClientSocket, resultSet.getInt("UserID"), username));
+                Server.lock.writeLock().unlock();
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
                 ackMessage += "1";
             } else {
@@ -142,6 +147,7 @@ public class ClientConnectionTask implements Runnable {
             userQuery.close();
             resultSet.close();
 
+            ackMessage += ";";
             newClientSocket.getOutputStream().write(ackMessage.getBytes());
             newClientSocket.getOutputStream().flush();
         } catch (SQLException | IOException e) {

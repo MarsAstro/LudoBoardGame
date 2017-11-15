@@ -25,7 +25,7 @@ public class SendToClientTask implements Runnable {
 
                 int idEndIndex = currentTask.indexOf(".");
                 Integer clientID = Integer.parseInt(currentTask.substring(0, idEndIndex));
-                currentTask = currentTask.substring(idEndIndex + 1);
+                currentTask = currentTask.substring(idEndIndex + 1) + ";";
 
                 Server.lock.readLock().lock();
                 int connectionIndex = Server.connections
