@@ -80,16 +80,16 @@ public class LudoTask implements Runnable {
     private void handleLudoInitPacket(String message) {
         int gameID = Integer.parseInt(message);
 
-        for (GameInfo game : Server.games) {
-            if (game.gameID == gameID) {
-                for (ClientInfo clientInGame : game.clients) {
-                    for (int i = 0; i < game.ludo.nrOfPlayers(); i++) {
-                        SendToClientTask.send(clientInGame.clientID + ".Ludo.Name:" + message + ","
-                                + i + "," + game.ludo.getPlayerName(i));
-                        if (game.ludo.activePlayers() > 1) {
-                            SendToClientTask.send(clientInGame.clientID + ".Ludo.Player:" + gameID
-                                    + "," + Ludo.RED + "," + PlayerEvent.PLAYING);
-                        }
+        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+        if (gameIndex >= 0) {
+            GameInfo game = Server.games.get(gameIndex);
+            for (ClientInfo clientInGame : game.clients) {
+                for (int i = 0; i < game.ludo.nrOfPlayers(); i++) {
+                    SendToClientTask.send(clientInGame.clientID + ".Ludo.Name:" + message + "," + i
+                            + "," + game.ludo.getPlayerName(i));
+                    if (game.ludo.activePlayers() > 1) {
+                        SendToClientTask.send(clientInGame.clientID + ".Ludo.Player:" + gameID + ","
+                                + Ludo.RED + "," + PlayerEvent.PLAYING);
                     }
                 }
             }
@@ -99,9 +99,8 @@ public class LudoTask implements Runnable {
     private void handleLudoJoinRandomPacket(int clientID, String message) {
         StringBuilder ackMessage = new StringBuilder("Ludo.Join:");
 
-        ClientInfo client = new ClientInfo(clientID);
-        int index = Server.connections.indexOf(client);
-        client = Server.connections.get(index);
+        int index = Server.connections.indexOf(new ClientInfo(clientID));
+        ClientInfo client = Server.connections.get(index);
 
         boolean foundGame = false;
         for (GameInfo game : Server.games) {
