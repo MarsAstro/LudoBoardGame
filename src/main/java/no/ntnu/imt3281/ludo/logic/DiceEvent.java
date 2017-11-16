@@ -69,6 +69,6 @@ public class DiceEvent extends EventObject implements DiceListener {
 
     @Override
     public String toString() {
-        return player + ", " + dice;
+        return player + "," + dice;
     }
 }

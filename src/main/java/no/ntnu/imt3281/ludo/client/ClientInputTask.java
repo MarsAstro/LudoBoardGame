@@ -73,6 +73,7 @@ public class ClientInputTask implements Runnable {
 
         switch (tag) {
             case "Dice:" :
+                handleReceivedLudoDice(ackMessage);
                 break;
             case "Piece:" :
                 break;
@@ -96,18 +97,24 @@ public class ClientInputTask implements Runnable {
         }
     }
 
-    private void handleReceivedLudoPlayer(String ackMessage) {
-        int endIndex = ackMessage.indexOf(",");
-        int gameID = Integer.parseInt(ackMessage.substring(0, endIndex));
-        
-        ackMessage = ackMessage.substring(endIndex + 1);
-        
-        int indIndex = ackMessage.indexOf(",");
-        int playerID = Integer.parseInt(ackMessage.substring(0, indIndex));
-        int playerState = Integer.parseInt(ackMessage.substring(indIndex + 1));
+    private void handleReceivedLudoDice(String ackMessage) {
+        String[] messageInfos = ackMessage.split(",");
+        int gameID = Integer.parseInt(messageInfos[0]);
+        int playerIndex = Integer.parseInt(messageInfos[1]);
+        int dice = Integer.parseInt(messageInfos[2]);
         
         GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
-        Platform.runLater(() -> gbc.updateActivePlayer(playerID, playerState));
+        Platform.runLater(() -> gbc.updateDice(playerIndex, dice));
+    }
+
+    private void handleReceivedLudoPlayer(String ackMessage) {
+        String[] messageInfos = ackMessage.split(",");
+        int gameID = Integer.parseInt(messageInfos[0]);
+        int playerIndex = Integer.parseInt(messageInfos[1]);
+        int playerState = Integer.parseInt(messageInfos[2]);
+        
+        GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
+        Platform.runLater(() -> gbc.updateActivePlayer(playerIndex, playerState));
     }
 
     private void handleReceivedLudoNamePacket(String message) {

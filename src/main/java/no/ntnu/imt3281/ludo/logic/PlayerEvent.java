@@ -90,6 +90,6 @@ public class PlayerEvent extends EventObject implements PlayerListener {
 
     @Override
     public String toString() {
-        return activePlayer + ", " + state;
+        return activePlayer + "," + state;
     }
 }

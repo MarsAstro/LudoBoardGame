@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import no.ntnu.imt3281.ludo.client.Client;
 import no.ntnu.imt3281.ludo.logic.PlayerEvent;
@@ -27,6 +28,7 @@ public class GameBoardController implements Initializable {
 
     ArrayList<Label> playerNames;
     ArrayList<ImageView> activeTokens;
+    ArrayList<Image> diceImages;
 
     @FXML // fx:id="player1Active"
     private ImageView player1Active;
@@ -71,6 +73,7 @@ public class GameBoardController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         playerNames = new ArrayList<>();
         activeTokens = new ArrayList<>();
+        diceImages = new ArrayList<>();
 
         playerNames.add(player1Name);
         playerNames.add(player2Name);
@@ -81,6 +84,11 @@ public class GameBoardController implements Initializable {
         activeTokens.add(player2Active);
         activeTokens.add(player3Active);
         activeTokens.add(player4Active);
+
+        diceImages.add(new Image("/images/rolldice.png"));
+        for (int i = 1; i <= 6; ++i) {
+            diceImages.add(new Image("/images/dice" + i + ".png"));
+        }
     }
 
     @FXML
@@ -90,7 +98,8 @@ public class GameBoardController implements Initializable {
 
     @FXML
     void throwDice(ActionEvent event) {
-        Client.sendMessage("Ludo.Throw:");
+        diceThrown.setImage(diceImages.get(0));
+        Client.sendMessage("Ludo.Throw:" + gameID);
     }
 
     void leaveGame() {
@@ -112,25 +121,40 @@ public class GameBoardController implements Initializable {
     /**
      * Updates the active player token when player changes state
      * 
-     * @param player
+     * @param playerIndex
      *            The player that changed state
      * @param state
      *            Which state the player is at
      */
-    public void updateActivePlayer(int player, int state) {
+    public void updateActivePlayer(int playerIndex, int state) {
         throwTheDice.setDisable(true);
         switch (state) {
             case PlayerEvent.PLAYING :
-                activeTokens.get(player).setVisible(true);
-                if (player == playerID) {
+                activeTokens.get(playerIndex).setVisible(true);
+                if (playerIndex == playerID) {
                     throwTheDice.setDisable(false);
                 }
                 break;
             case PlayerEvent.WAITING :
-                activeTokens.get(player).setVisible(false);
+                activeTokens.get(playerIndex).setVisible(false);
                 break;
             default :
                 break;
+        }
+    }
+
+    /**
+     * Updates the game board to reflect the result of a dice throw
+     * 
+     * @param playerIndex
+     *            Index of the throwing player
+     * @param dice
+     *            The dice thrown
+     */
+    public void updateDice(int playerIndex, int dice) {
+        diceThrown.setImage(diceImages.get(dice));
+        if (playerIndex == playerID) {
+            // TODO can move
         }
     }
 }

@@ -121,7 +121,13 @@ public class LudoTask implements Runnable {
     }
 
     private void handleLudoThrowPacket(int clientID, String message) {
-        // TODO
+        int gameID = Integer.parseInt(message);
+
+        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+        if (gameIndex >= 0) {
+            GameInfo game = Server.games.get(gameIndex);
+            game.ludo.throwDice();
+        }
     }
 
     private void handleLudoMovePacket(int clientID, String message) {
@@ -131,14 +137,14 @@ public class LudoTask implements Runnable {
     private void handleLudoLeavePacket(int clientID, String message) {
         int gameID = Integer.parseInt(message);
 
-        for (GameInfo game : Server.games) {
-            if (game.gameID == gameID) {
-                game.removePlayer(clientID);
-                if (game.ludo.activePlayers() <= 0) {
-                    Server.games.remove(game);
-                }
-                break;
+        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+        if (gameIndex >= 0) {
+            GameInfo game = Server.games.get(gameIndex);
+            game.removePlayer(clientID);
+            if (game.ludo.activePlayers() <= 0) {
+                Server.games.remove(game);
             }
         }
+
     }
 }
