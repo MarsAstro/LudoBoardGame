@@ -16,7 +16,7 @@ import no.ntnu.imt3281.ludo.gui.GameBoardController;
  */
 public class ClientInputTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ClientInputTask.class.getName());
-    private byte[] inputData = new byte[100];
+    private byte[] inputData = new byte[256];
 
     /**
      * Run

@@ -16,7 +16,7 @@ import no.ntnu.imt3281.ludo.client.Client;
  */
 public class ServerInputTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
-    private byte[] inputData = new byte[100];
+    private byte[] inputData = new byte[256];
     
     /**
      * Run

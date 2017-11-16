@@ -18,7 +18,7 @@ import javafx.application.Platform;
  */
 public class ClientConnectionTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ClientConnectionTask.class.getName());
-    private byte[] inputData = new byte[100];
+    private byte[] inputData = new byte[256];
     private String charset = "UTF-8";
     
     /**
