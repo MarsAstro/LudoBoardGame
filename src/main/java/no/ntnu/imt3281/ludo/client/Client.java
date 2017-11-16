@@ -46,11 +46,8 @@ public class Client extends Application {
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
             primaryStage.show();
-            primaryStage.setOnCloseRequest(e -> {
-                if (!Client.socket.isClosed()) {
-                    Client.ludoController.closeWindow(new ActionEvent());
-                }
-            });
+            primaryStage
+                    .setOnCloseRequest(e -> Client.ludoController.closeWindow(new ActionEvent()));
 
             Client.ludoController = loader.getController();
         } catch (Exception e) {
