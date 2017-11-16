@@ -1,7 +1,6 @@
 package no.ntnu.imt3281.ludo.server;
 
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,30 +18,29 @@ import javafx.application.Platform;
  */
 public class ClientConnectionTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ClientConnectionTask.class.getName());
-
+    private byte[] inputData = new byte[100];
+    private String charset = "UTF-8";
+    
     /**
      * Runs
      */
     @Override
     public void run() {
-        byte[] inputData = new byte[100];
-
         while (!Server.serverSocket.isClosed()) {
             try {
                 Socket newClientSocket = Server.serverSocket.accept();
-                newClientSocket.getInputStream().read(inputData);
+                int length = newClientSocket.getInputStream().read(inputData);
+                newClientSocket.setSoTimeout(10000);
 
-                String message = new String(inputData, 0, inputData.length);
-                message = message.substring(0, message.indexOf("\0"));
+                String message = new String(inputData, 0, length, charset);
+                message = message.substring(0, message.indexOf(";"));
 
                 int tagEndIndex = message.indexOf(":") + 1;
-
                 String tag = message.substring(0, tagEndIndex);
                 
-                
-                if (tag.equals("User.Login:")) {
+                if ("User.Login:".equals(tag)) {
                     handleUserLogin(newClientSocket, message.substring(tagEndIndex));
-                } else if (tag.equals("User.Register:")) {
+                } else if ("User.Register:".equals(tag)) {
                     handleUserRegister(newClientSocket, message.substring(tagEndIndex));
                 } else {
                     newClientSocket.close();
@@ -102,7 +100,7 @@ public class ClientConnectionTask implements Runnable {
             resultSet.close();
 
             ackMessage += ";";
-            newClientSocket.getOutputStream().write(ackMessage.getBytes());
+            newClientSocket.getOutputStream().write(ackMessage.getBytes(charset));
             newClientSocket.getOutputStream().flush();
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -148,7 +146,7 @@ public class ClientConnectionTask implements Runnable {
             resultSet.close();
 
             ackMessage += ";";
-            newClientSocket.getOutputStream().write(ackMessage.getBytes());
+            newClientSocket.getOutputStream().write(ackMessage.getBytes(charset));
             newClientSocket.getOutputStream().flush();
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);

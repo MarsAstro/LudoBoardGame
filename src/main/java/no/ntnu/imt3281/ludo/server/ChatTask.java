@@ -11,7 +11,7 @@ import java.util.logging.Logger;
  *
  */
 public class ChatTask implements Runnable {
-    private static ArrayBlockingQueue<String> chatTasks;
+    private static ArrayBlockingQueue<String> chatTasks = new ArrayBlockingQueue<>(256);
     private static final Logger LOGGER = Logger.getLogger(ChatTask.class.getName());
 
     @Override

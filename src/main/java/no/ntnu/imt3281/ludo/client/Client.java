@@ -1,11 +1,8 @@
 package no.ntnu.imt3281.ludo.client;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.util.ResourceBundle;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,8 +46,11 @@ public class Client extends Application {
             Scene scene = new Scene(root);
             primaryStage.setScene(scene);
             primaryStage.show();
-            primaryStage
-                    .setOnCloseRequest(e -> Client.ludoController.closeWindow(new ActionEvent()));
+            primaryStage.setOnCloseRequest(e -> {
+                if (!Client.socket.isClosed()) {
+                    Client.ludoController.closeWindow(new ActionEvent());
+                }
+            });
 
             Client.ludoController = loader.getController();
         } catch (Exception e) {
@@ -95,7 +95,8 @@ public class Client extends Application {
      */
     public static void sendMessage(String message) {
         try {
-            socket.getOutputStream().write(message.getBytes());
+            message += ";";
+            socket.getOutputStream().write(message.getBytes("UTF-8"));
             socket.getOutputStream().flush();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);

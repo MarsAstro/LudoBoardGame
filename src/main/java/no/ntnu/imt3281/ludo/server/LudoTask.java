@@ -1,7 +1,5 @@
 package no.ntnu.imt3281.ludo.server;
 
-import java.net.DatagramPacket;
-import java.net.Socket;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,13 +15,12 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
  */
 public class LudoTask implements Runnable {
 
-    private static ArrayBlockingQueue<String> ludoTasks;
+    private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
     private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
     String currentTask;
 
     @Override
     public void run() {
-        ludoTasks = new ArrayBlockingQueue<>(256);
         while (!Server.serverSocket.isClosed()) {
             try {
                 currentTask = ludoTasks.take();
@@ -100,9 +97,9 @@ public class LudoTask implements Runnable {
     }
 
     private void handleLudoJoinRandomPacket(int clientID, String message) {
-        String ackMessage = "Ludo.Join:";
+        StringBuilder ackMessage = new StringBuilder("Ludo.Join:");
 
-        ClientInfo client = new ClientInfo(new Socket(), clientID, "RandomName");
+        ClientInfo client = new ClientInfo(clientID);
         int index = Server.connections.indexOf(client);
         client = Server.connections.get(index);
 
@@ -110,13 +107,13 @@ public class LudoTask implements Runnable {
         for (GameInfo game : Server.games) {
             if (game.addPlayer(client)) {
                 foundGame = true;
-                ackMessage += Integer.toString(game.gameID) + ","
-                        + game.ludo.getIndexOfPlayer(client.username);
+                ackMessage.append(Integer.toString(game.gameID) + ","
+                        + game.ludo.getIndexOfPlayer(client.username));
                 break;
             }
         }
         if (!foundGame) {
-            ackMessage += Integer.toString(Server.nextGameID) + "," + 0;
+            ackMessage.append(Integer.toString(Server.nextGameID) + "," + 0);
             Server.games.add(new GameInfo(Server.nextGameID++, client));
         }
 
@@ -124,13 +121,10 @@ public class LudoTask implements Runnable {
     }
 
     private void handleLudoThrowPacket(int clientID, String message) {
-        String ackMessage = "";
-
         // TODO
     }
 
     private void handleLudoMovePacket(int clientID, String message) {
-        String ackMessage = "";
         // TODO
     }
 

@@ -6,6 +6,7 @@ package no.ntnu.imt3281.ludo.logic;
  * @author oyste
  *
  */
+@SuppressWarnings("serial")
 public class NotEnoughPlayersException extends RuntimeException {
 
 }

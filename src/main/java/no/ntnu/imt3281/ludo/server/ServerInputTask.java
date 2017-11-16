@@ -4,17 +4,11 @@
 package no.ntnu.imt3281.ludo.server;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javafx.application.Platform;
 import no.ntnu.imt3281.ludo.client.Client;
-import no.ntnu.imt3281.ludo.logic.Ludo;
-import no.ntnu.imt3281.ludo.logic.PlayerEvent;
 
 /**
  * @author Marius
@@ -22,7 +16,8 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
  */
 public class ServerInputTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
-
+    private byte[] inputData = new byte[100];
+    
     /**
      * Run
      */
@@ -33,10 +28,14 @@ public class ServerInputTask implements Runnable {
             for (ClientInfo client : Server.connections) {
                 try {
                     if (client.connection.getInputStream().available() > 0) {
-                        byte[] inputData = new byte[100];
-                        client.connection.getInputStream().read(inputData);
+                        
+                        int length = client.connection.getInputStream().read(inputData);
 
-                        handleMessage(client.clientID, inputData);
+                        String packet = new String(inputData, 0, length, "UTF-8");
+                        String[] messages = packet.split(";");
+                        for (String message : messages) {
+                            handleMessage(client.clientID, message);
+                        }
                     }
                 } catch (IOException e) {
                     // TODO handle closed connection
@@ -47,11 +46,10 @@ public class ServerInputTask implements Runnable {
         }
     }
 
-    private void handleMessage(int clientID, byte[] inputData) {
-        String message = new String(inputData, 0, inputData.length);
-        message = message.substring(0, message.indexOf("\0"));
+    private void handleMessage(int clientID, String message) {
         int tagEndIndex = message.indexOf(".");
         String tag = message.substring(0, tagEndIndex + 1);
+
         switch (tag) {
             case "User." :
                 UserTask.blockingPut(clientID + message.substring(tagEndIndex));

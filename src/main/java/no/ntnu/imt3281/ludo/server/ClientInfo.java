@@ -39,19 +39,21 @@ public class ClientInfo {
         this.username = username;
     }
 
-    /**
-     * @see java.lang.Object.equals
-     */
     @Override
     public boolean equals(Object other) {
         boolean isEqual = false;
 
-        ClientInfo otherInfo = (ClientInfo) other;
-        if (otherInfo != null) {
+        if (other instanceof ClientInfo) {
+            ClientInfo otherInfo = (ClientInfo) other;
             isEqual = clientID == otherInfo.clientID;
         }
 
         return isEqual;
+    }
+
+    @Override
+    public int hashCode() {
+        return clientID * 42 / 34 % 17;
     }
 
     /**

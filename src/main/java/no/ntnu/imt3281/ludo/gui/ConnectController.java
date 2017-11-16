@@ -32,7 +32,7 @@ public class ConnectController implements Initializable {
     private static final Logger LOGGER = Logger.getLogger(ConnectController.class.getName());
 
     @FXML // fx:id="IPAddress"
-    private TextField IPAddress;
+    private TextField ipAddress;
 
     @FXML // fx:id="username"
     private TextField username;
@@ -57,7 +57,7 @@ public class ConnectController implements Initializable {
     void login(ActionEvent event) {
         if (allFieldsValid()) {
             try {
-                Client.connectToServer(InetAddress.getByName(IPAddress.getText()));
+                Client.connectToServer(InetAddress.getByName(ipAddress.getText()));
 
                 Client.sendMessage("User.Login:" + username.getText() + "," + password.getText());
             } catch (UnknownHostException e) {
@@ -65,9 +65,7 @@ public class ConnectController implements Initializable {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
 
-        }
-        else
-        {
+        } else {
             errorMessage.setText(messages.getString("login.fill"));
         }
     }
@@ -76,23 +74,22 @@ public class ConnectController implements Initializable {
     void register(ActionEvent event) {
         if (allFieldsValid()) {
             try {
-                Client.connectToServer(InetAddress.getByName(IPAddress.getText()));
-                
-                Client.sendMessage("User.Register:" + username.getText() + "," + password.getText());
+                Client.connectToServer(InetAddress.getByName(ipAddress.getText()));
+
+                Client.sendMessage(
+                        "User.Register:" + username.getText() + "," + password.getText());
             } catch (UnknownHostException e) {
                 errorMessage.setText(messages.getString("login.result.nohost"));
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
 
-        }
-        else
-        {
+        } else {
             errorMessage.setText(messages.getString("login.fill"));
         }
     }
 
     private boolean allFieldsValid() {
-        return !(IPAddress.getText().isEmpty() || username.getText().isEmpty()
+        return !(ipAddress.getText().isEmpty() || username.getText().isEmpty()
                 || password.getText().isEmpty());
     }
 
@@ -105,7 +102,8 @@ public class ConnectController implements Initializable {
     public void handleServerLoginResponse(String ackMessage) {
         switch (Integer.parseInt(ackMessage)) {
             case 1 :
-                Platform.runLater(() -> Client.getLudoController().setLoggedInUser(username.getText()));
+                Platform.runLater(
+                        () -> Client.getLudoController().setLoggedInUser(username.getText()));
                 closeWindow();
                 break;
             case -1 :

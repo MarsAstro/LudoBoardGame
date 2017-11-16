@@ -16,6 +16,7 @@ import no.ntnu.imt3281.ludo.gui.GameBoardController;
  */
 public class ClientInputTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ClientInputTask.class.getName());
+    private byte[] inputData = new byte[100];
 
     /**
      * Run
@@ -24,11 +25,9 @@ public class ClientInputTask implements Runnable {
     public void run() {
         while (!Client.socket.isClosed()) {
             try {
-                byte[] inputData = new byte[100];
+                int length = Client.socket.getInputStream().read(inputData);
                 
-                Client.socket.getInputStream().read(inputData);
-                
-                String packet = new String(inputData, 0, inputData.length);
+                String packet = new String(inputData, 0, length, "UTF-8");
                 String[] messages = packet.split(";");
                 for (String message : messages) {
                     handleReceivedPacket(message);
@@ -50,7 +49,6 @@ public class ClientInputTask implements Runnable {
         int tagEndIndex = message.indexOf(".") + 1;
         String tag = message.substring(0, tagEndIndex);
         String ackMessage = message.substring(tagEndIndex);
-        System.out.println(message);
         switch (tag) {
             case "User." :
                 handleReceivedUserPacket(ackMessage);
@@ -142,19 +140,22 @@ public class ClientInputTask implements Runnable {
                         () -> Client.connectController.handleServerRegisterResponse(ackMessage));
                 break;
             case "Logout:" :
-                System.out.println(ackMessage);
-                Platform.runLater(
-                        () -> Client.ludoController.handleServerLogoutResponse(ackMessage));
-                if (Integer.parseInt(ackMessage) == 1) {
-                    try {
-                        Client.socket.close();
-                    } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, e.getMessage(), e);
-                    }
-                }
+                handleLogoutResponse(ackMessage);
                 break;
             default :
                 break;
+        }
+    }
+
+    private void handleLogoutResponse(String ackMessage) {
+        Platform.runLater(
+                () -> Client.ludoController.handleServerLogoutResponse(ackMessage));
+        if (Integer.parseInt(ackMessage) == 1) {
+            try {
+                Client.socket.close();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
+            }
         }
     }
 

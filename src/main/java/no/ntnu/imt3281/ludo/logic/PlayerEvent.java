@@ -10,6 +10,7 @@ import java.util.logging.Logger;
  * @author Marius
  *
  */
+@SuppressWarnings("serial")
 public class PlayerEvent extends EventObject implements PlayerListener {
     private static final Logger LOGGER = Logger.getLogger(PlayerEvent.class.getName());
 

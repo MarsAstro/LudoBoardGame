@@ -3,8 +3,6 @@
  */
 package no.ntnu.imt3281.ludo.server;
 
-import java.net.InetAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 
 import no.ntnu.imt3281.ludo.logic.Ludo;
@@ -34,7 +32,7 @@ public class GameInfo {
             }
         }
 
-        return !isAlreadyInGame && clients.size() < 4 && ludo.getStatus().equals("Initiated");
+        return !isAlreadyInGame && clients.size() < 4 && "Initiated".equals(ludo.getStatus());
     }
 
     /**
@@ -62,14 +60,14 @@ public class GameInfo {
      */
     public void removePlayer(int clientID) {
         int index = clients.indexOf(new ClientInfo(clientID));
-        if (index != -1) {
+        if (index >= 0) {
             ClientInfo client = clients.get(index);
 
             String status = ludo.getStatus();
-            if (status == "Initiated") {
+            if ("Initiated".equals(status)) {
                 clients.remove(index);
                 ludo.discardPlayer(client.username);
-            } else if (status == "Started") {
+            } else if ("Started".equals(status)) {
                 clients.remove(index);
                 ludo.removePlayer(client.username);
             }
