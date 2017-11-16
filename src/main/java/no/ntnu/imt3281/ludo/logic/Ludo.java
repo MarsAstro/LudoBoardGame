@@ -450,6 +450,41 @@ public class Ludo {
         }
         return result;
     }
+    
+    /**
+     * 
+     * @param player
+     * @param pos
+     * @return
+     */
+    public int ludoBoardGridToUserGrid(int player, int pos) {
+        int result = 0;
+        
+        if (pos < 16) {
+            result = 0;
+        } else if (pos < 68) {
+            int mod = player;
+            if (player % 2 == 1) {
+                if (player == 1) {
+                    mod += 2;
+                }
+                else {
+                    mod -= 2;
+                }
+                result = pos - 15 + 13 * mod % 54;
+            } else {
+                result = 68 + player * 6;
+            }
+            
+            return result;
+        }
+        
+        
+        
+        if (result > )
+        
+        return result;
+    }
 
     /**
      * Checks whether someone stands on a piece's destination position. And

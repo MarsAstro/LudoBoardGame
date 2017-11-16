@@ -130,7 +130,17 @@ public class LudoTask implements Runnable {
     }
 
     private void handleLudoMovePacket(int clientID, String message) {
-        // TODO
+        String[] messages = message.split(",");
+        int gameID = Integer.parseInt(messages[0]);
+        int playerID = Integer.parseInt(messages[1]);
+        int from = Integer.parseInt(messages[2]);
+        int to = Integer.parseInt(messages[3]);
+        
+        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+        if (gameIndex >= 0) {
+            GameInfo game = Server.games.get(gameIndex);
+            game.ludo.movePiece(playerID, from, to);
+        }
     }
 
     private void handleLudoLeavePacket(int clientID, String message) {

@@ -76,6 +76,7 @@ public class ClientInputTask implements Runnable {
                 handleReceivedLudoDice(ackMessage);
                 break;
             case "Piece:" :
+                handleReceivedLudoPiece(ackMessage);
                 break;
             case "Player:" :
                 handleReceivedLudoPlayer(ackMessage);
@@ -95,6 +96,18 @@ public class ClientInputTask implements Runnable {
             default :
                 break;
         }
+    }
+
+    private void handleReceivedLudoPiece(String ackMessage) {
+        String[] messageInfos = ackMessage.split(",");
+        int gameID = Integer.parseInt(messageInfos[0]);
+        int playerID = Integer.parseInt(messageInfos[1]);
+        int piece = Integer.parseInt(messageInfos[2]);
+        int from = Integer.parseInt(messageInfos[3]);
+        int to = Integer.parseInt(messageInfos[4]);
+        
+        GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
+        Platform.runLater(() -> gbc.updatePiece(playerID, piece, from, to));
     }
 
     private void handleReceivedLudoDice(String ackMessage) {
