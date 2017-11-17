@@ -146,25 +146,18 @@ public class LudoTask implements Runnable {
                     newFrom = game.ludo.piecePositions[playerID][piece];
                 } ;
             }
-            System.out.println("To: " + to + ", From: " + from);
-            System.out.println("NewFrom: " + newFrom);
+
             if (from < 16) {
                 game.ludo.movePiece(playerID, 0, 1);
-                System.out.println("At home");
             } else if (to < from && newFrom != -1) {
                 int newTo = newFrom + to - from + 52;
                 game.ludo.movePiece(playerID, newFrom, newTo);
-                System.out.println("To less than from, newTo: " + newTo);
             } else if (to < 68 && newFrom != -1) {
                 int newTo = newFrom + (to - from);
                 game.ludo.movePiece(playerID, newFrom, newTo);
-                System.out.println("Below global 68, newTo: " + newTo);
             } else if (newFrom != -1) {
                 int newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
                 game.ludo.movePiece(playerID, newFrom, newTo);
-                System.out.println("Finish line, newTo: " + newTo);
-            } else {
-                System.out.println("Shouldn't be here, no cases true");
             }
         }
     }
