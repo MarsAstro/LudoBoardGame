@@ -32,7 +32,14 @@ public class Ludo {
      */
     public static final int GREEN = 3;
 
+    /**
+     * The positions of all the pieces in their own user space
+     */
     public int[][] piecePositions;
+
+    /**
+     * The positions of all the pieces in the board space
+     */
     public int[][] globalPiecePositions;
 
     private static final String WINNER = "Winner: ";
@@ -248,6 +255,7 @@ public class Ludo {
             if (canMove()) {
                 numThrows++;
                 if (dice == 6 && numThrows > 2) {
+                    
                     nextPlayer();
                 }
             } else {
@@ -308,6 +316,7 @@ public class Ludo {
      */
     private void nextPlayer() {
         numThrows = 0;
+        dice = 0;
 
         for (PlayerListener listener : playerListeners) {
             listener.playerStateChanged(new PlayerEvent(this, activePlayer, PlayerEvent.WAITING));

@@ -332,12 +332,17 @@ public class GameBoardController implements Initializable {
      */
     public void updateActivePlayer(int playerIndex, int state) {
         throwTheDice.setDisable(true);
+        diceThrown.setVisible(false);
         switch (state) {
             case PlayerEvent.PLAYING :
                 activeTokens.get(playerIndex).setVisible(true);
                 if (playerIndex == playerID) {
-                    throwTheDice.setText(messages.getString("ludogameboard.throwDiceButton"));
+                    throwTheDice.setText(messages.getString("ludogameboard.throwdice"));
                     throwTheDice.setDisable(false);
+                }
+                else
+                {
+                    throwTheDice.setText(messages.getString("ludogameboard.wait"));
                 }
                 break;
             case PlayerEvent.WAITING :
@@ -359,6 +364,7 @@ public class GameBoardController implements Initializable {
      */
     public void updateDice(int playerIndex, int dice, boolean canMove) {
         diceThrown.setImage(diceImages.get(dice));
+        diceThrown.setVisible(true);
         if (playerIndex == playerID && canMove) {
             throwTheDice.setText(messages.getString("ludogameboard.move"));
             throwTheDice.setDisable(true);
@@ -380,5 +386,11 @@ public class GameBoardController implements Initializable {
     public void updatePiece(int playerID, int piece, int from, int to) {
         playerTokens[playerID][piece].setX(points.get(to).getX());
         playerTokens[playerID][piece].setY(points.get(to).getY());
+        
+        if (playerID == this.playerID)
+        {
+            throwTheDice.setDisable(false);
+            throwTheDice.setText(messages.getString("ludogameboard.throwdice"));
+        }
     }
 }

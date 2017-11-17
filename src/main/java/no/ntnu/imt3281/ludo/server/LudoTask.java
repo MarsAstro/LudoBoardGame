@@ -152,6 +152,9 @@ public class LudoTask implements Runnable {
             } else if (to < 68 && newFrom != -1) {
                 int newTo = newFrom + (to - from);
                 game.ludo.movePiece(playerID, newFrom, newTo);
+            } else if (to < from && newFrom != -1) {
+                int newTo = newFrom + to - from + 52;
+                game.ludo.movePiece(playerID, newFrom, newTo);
             } else if (newFrom != -1) {
                 int newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
                 game.ludo.movePiece(playerID, newFrom, newTo);

@@ -52,13 +52,14 @@ public class GameInfo {
 
         ludo.addDiceListener(e -> {
             for (ClientInfo currentClient : clients) {
-                SendToClientTask.send(currentClient.clientID + ".Ludo.Dice:" + gameID + "," + e);
+                SendToClientTask.send(currentClient.clientID + ".Ludo.Dice:" + gameID + "," + e
+                        + "," + ludo.canMove());
             }
         });
-        
+
         ludo.addPieceListener(e -> {
             for (ClientInfo currentClient : clients) {
-                SendToClientTask.send(currentClient.clientID + ".Ludo.Piece:" + gameID + "," + e + "," + ludo.canMove());
+                SendToClientTask.send(currentClient.clientID + ".Ludo.Piece:" + gameID + "," + e);
             }
         });
 
