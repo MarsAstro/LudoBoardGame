@@ -139,11 +139,14 @@ public class LudoTask implements Runnable {
         int gameIndex = Server.games.indexOf(new GameInfo(gameID));
         if (gameIndex >= 0) {
             GameInfo game = Server.games.get(gameIndex);
+            
+            int[][] globalPiecePositions = game.ludo.getGlobalPiecePositions();
+            int[][] piecePositions = game.ludo.getPiecePositions();
 
             int newFrom = -1;
             for (int piece = 0; piece < 4; ++piece) {
-                if (game.ludo.globalPiecePositions[playerID][piece] == from) {
-                    newFrom = game.ludo.piecePositions[playerID][piece];
+                if (globalPiecePositions[playerID][piece] == from) {
+                    newFrom = piecePositions[playerID][piece];
                 } ;
             }
 

@@ -32,21 +32,14 @@ public class Ludo {
      */
     public static final int GREEN = 3;
 
-    /**
-     * The positions of all the pieces in their own user space
-     */
-    public int[][] piecePositions;
-
-    /**
-     * The positions of all the pieces in the board space
-     */
-    public int[][] globalPiecePositions;
-
+    
     private static final String WINNER = "Winner: ";
     private ArrayList<String> playerNames;
     private ArrayList<DiceListener> diceListeners;
     private ArrayList<PieceListener> pieceListeners;
     private ArrayList<PlayerListener> playerListeners;
+    private int[][] piecePositions;
+    private int[][] globalPiecePositions;
     private int activePlayer = 0;
     private int numThrows = 0;
     private int dice = -1;
@@ -571,5 +564,19 @@ public class Ludo {
             }
         }
         return index;
+    }
+    
+    /**
+     * @return the piecePositions
+     */
+    public int[][] getPiecePositions() {
+        return piecePositions;
+    }
+
+    /**
+     * @return the globalPiecePositions
+     */
+    public int[][] getGlobalPiecePositions() {
+        return globalPiecePositions;
     }
 }

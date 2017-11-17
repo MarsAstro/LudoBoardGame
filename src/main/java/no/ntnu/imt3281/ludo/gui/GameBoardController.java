@@ -35,7 +35,7 @@ public class GameBoardController implements Initializable {
     
     int gameID;
     int playerID;
-    final int TILESIZE = 48;
+    static final int TILESIZE = 48;
     Rectangle selectedToken;
     int selectedTokenTilePos;
 

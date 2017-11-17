@@ -18,10 +18,6 @@ public class GameInfo {
     ArrayList<ClientInfo> clients;
     Ludo ludo;
 
-    PlayerListener playerListener;
-    DiceListener diceListener;
-    PieceListener pieceListener;
-
     /**
      * Only initializes the gameID field, used for language-specific search
      * methods
