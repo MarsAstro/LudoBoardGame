@@ -80,6 +80,9 @@ public class PieceEvent extends EventObject implements PieceListener {
 
     @Override
     public String toString() {
+        System.out
+                .println("Returned from Server, From: " + Ludo.userGridToLudoBoardGrid(player, from)
+                        + "," + ", To:" + Ludo.userGridToLudoBoardGrid(player, to));
         return player + "," + piece + "," + Ludo.userGridToLudoBoardGrid(player, from) + ","
                 + Ludo.userGridToLudoBoardGrid(player, to);
     }

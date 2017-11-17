@@ -255,7 +255,7 @@ public class Ludo {
             if (canMove()) {
                 numThrows++;
                 if (dice == 6 && numThrows > 2) {
-                    
+
                     nextPlayer();
                 }
             } else {
@@ -297,11 +297,10 @@ public class Ludo {
                 for (int piece = 0; piece < 4; piece++) {
                     for (int otherPiece = piece + 1; otherPiece < 4; otherPiece++) {
                         if (piecePositions[player][piece] == piecePositions[player][otherPiece]) {
-                            for (int i = 1; i <= dice; i++) {
-                                if (globalPiecePositions[player][piece] == globalPiecePositions[activePlayer][currentPiece]
-                                        + i) {
-                                    return true;
-                                }
+                            if (globalPiecePositions[player][piece] <= globalPiecePositions[activePlayer][currentPiece]
+                                    + dice
+                                    && globalPiecePositions[player][piece] > globalPiecePositions[activePlayer][currentPiece]) {
+                                return true;
                             }
                         }
                     }
@@ -352,7 +351,7 @@ public class Ludo {
 
         if (((from == 0 && dice == 6) || from + dice == to) && player == activePlayer) {
             for (int i = 0; i < 4; i++) {
-                if (piecePositions[player][i] == from) {
+                if (piecePositions[player][i] == from && !isBlocked(i)) {
                     piecePositions[player][i] = to;
                     for (PieceListener listener : pieceListeners) {
                         listener.pieceMoved(new PieceEvent(this, player, i, from, to));
@@ -458,9 +457,9 @@ public class Ludo {
         if (pos == 0) {
             result = 4 * player;
         } else if (pos < 54) {
-            result = (player * 13 + pos) % 52 + 15;
+            result = (player * 13 + pos - 1) % 52 + 16;
         } else {
-            result = 53 + 6 * player + 15;
+            result = 68 + (pos - 54) + 6 * player;
         }
         return result;
     }

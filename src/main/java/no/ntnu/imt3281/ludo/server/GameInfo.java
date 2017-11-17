@@ -121,7 +121,8 @@ public class GameInfo {
      * @param clientID
      *            The client to be removed
      */
-    public void removePlayer(int clientID) {
+    public String removePlayer(int clientID) {
+        String returnName = "";
         int index = clients.indexOf(new ClientInfo(clientID));
         if (index >= 0) {
             ClientInfo client = clients.get(index);
@@ -130,11 +131,15 @@ public class GameInfo {
             if ("Initiated".equals(status)) {
                 clients.remove(index);
                 ludo.discardPlayer(client.username);
+                returnName = "No Player";
             } else if ("Started".equals(status)) {
                 clients.remove(index);
                 ludo.removePlayer(client.username);
+                returnName = client.username;
             }
         }
+        
+        return returnName;
     }
 
     /**

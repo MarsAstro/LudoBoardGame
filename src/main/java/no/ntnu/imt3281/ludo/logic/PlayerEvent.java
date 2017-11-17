@@ -92,4 +92,11 @@ public class PlayerEvent extends EventObject implements PlayerListener {
     public String toString() {
         return activePlayer + "," + state;
     }
+
+    /**
+     * @return The state of this event
+     */
+    public int getState() {
+        return state;
+    }
 }

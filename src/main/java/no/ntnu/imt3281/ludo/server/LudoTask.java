@@ -139,25 +139,32 @@ public class LudoTask implements Runnable {
         int gameIndex = Server.games.indexOf(new GameInfo(gameID));
         if (gameIndex >= 0) {
             GameInfo game = Server.games.get(gameIndex);
-            
+
             int newFrom = -1;
             for (int piece = 0; piece < 4; ++piece) {
                 if (game.ludo.globalPiecePositions[playerID][piece] == from) {
                     newFrom = game.ludo.piecePositions[playerID][piece];
                 } ;
             }
-            
+            System.out.println("To: " + to + ", From: " + from);
+            System.out.println("NewFrom: " + newFrom);
             if (from < 16) {
                 game.ludo.movePiece(playerID, 0, 1);
-            } else if (to < 68 && newFrom != -1) {
-                int newTo = newFrom + (to - from);
-                game.ludo.movePiece(playerID, newFrom, newTo);
+                System.out.println("At home");
             } else if (to < from && newFrom != -1) {
                 int newTo = newFrom + to - from + 52;
                 game.ludo.movePiece(playerID, newFrom, newTo);
+                System.out.println("To less than from, newTo: " + newTo);
+            } else if (to < 68 && newFrom != -1) {
+                int newTo = newFrom + (to - from);
+                game.ludo.movePiece(playerID, newFrom, newTo);
+                System.out.println("Below global 68, newTo: " + newTo);
             } else if (newFrom != -1) {
                 int newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
                 game.ludo.movePiece(playerID, newFrom, newTo);
+                System.out.println("Finish line, newTo: " + newTo);
+            } else {
+                System.out.println("Shouldn't be here, no cases true");
             }
         }
     }
@@ -168,10 +175,28 @@ public class LudoTask implements Runnable {
         int gameIndex = Server.games.indexOf(new GameInfo(gameID));
         if (gameIndex >= 0) {
             GameInfo game = Server.games.get(gameIndex);
-            game.removePlayer(clientID);
-            if (game.ludo.activePlayers() <= 0) {
-                Server.games.remove(game);
+            Server.lock.readLock().lock();
+            int removeClientIndex = Server.connections.indexOf(new ClientInfo(clientID));
+
+            if (removeClientIndex >= 0) {
+                ClientInfo removeClient = Server.connections.get(removeClientIndex);
+
+                int playerIndex = game.ludo.getIndexOfPlayer(removeClient.username);
+
+                if (playerIndex >= 0) {
+                    String newName = game.removePlayer(clientID);
+                    if (game.ludo.activePlayers() > 0) {
+                        for (ClientInfo client : game.clients) {
+                            SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID
+                                    + "," + playerIndex + "," + newName);
+                        }
+                    } else {
+                        Server.games.remove(game);
+                    }
+                }
             }
+
+            Server.lock.readLock().unlock();
         }
 
     }
