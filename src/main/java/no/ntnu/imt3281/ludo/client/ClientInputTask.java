@@ -115,9 +115,10 @@ public class ClientInputTask implements Runnable {
         int gameID = Integer.parseInt(messageInfos[0]);
         int playerIndex = Integer.parseInt(messageInfos[1]);
         int dice = Integer.parseInt(messageInfos[2]);
+        boolean canMove = Boolean.parseBoolean(messageInfos[3]);
         
         GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
-        Platform.runLater(() -> gbc.updateDice(playerIndex, dice));
+        Platform.runLater(() -> gbc.updateDice(playerIndex, dice, canMove));
     }
 
     private void handleReceivedLudoPlayer(String ackMessage) {

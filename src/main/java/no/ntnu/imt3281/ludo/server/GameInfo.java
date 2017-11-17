@@ -58,7 +58,7 @@ public class GameInfo {
         
         ludo.addPieceListener(e -> {
             for (ClientInfo currentClient : clients) {
-                SendToClientTask.send(currentClient.clientID + ".Ludo.Piece:" + gameID + "," + e);
+                SendToClientTask.send(currentClient.clientID + ".Ludo.Piece:" + gameID + "," + e + "," + ludo.canMove());
             }
         });
 

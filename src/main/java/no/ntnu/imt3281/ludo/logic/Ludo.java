@@ -263,7 +263,7 @@ public class Ludo {
      * 
      * @return A piece is able to move
      */
-    private boolean canMove() {
+    public boolean canMove() {
         boolean movable = false;
         for (int i = 0; i < 4 && !isBlocked(i); i++) {
             if ((piecePositions[activePlayer][i] + dice < 60

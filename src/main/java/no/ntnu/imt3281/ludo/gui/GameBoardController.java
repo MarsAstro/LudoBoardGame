@@ -355,10 +355,11 @@ public class GameBoardController implements Initializable {
      *            Index of the throwing player
      * @param dice
      *            The dice thrown
+     * @param canMove 
      */
-    public void updateDice(int playerIndex, int dice) {
+    public void updateDice(int playerIndex, int dice, boolean canMove) {
         diceThrown.setImage(diceImages.get(dice));
-        if (playerIndex == playerID) {
+        if (playerIndex == playerID && canMove) {
             throwTheDice.setText(messages.getString("ludogameboard.move"));
             throwTheDice.setDisable(true);
         }
