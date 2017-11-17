@@ -109,9 +109,8 @@ public class GameBoardController implements Initializable {
 
         if (selectedToken != null) {
             int tileIndex = CheckForTile(x, y);
-            System.out.println(selectedTokenTilePos + "," + tileIndex);
             if (tileIndex != -1 && tileIndex != selectedTokenTilePos) {
-                Client.sendMessage("Ludo.move:" + gameID + "," + playerID + ","
+                Client.sendMessage("Ludo.Move:" + gameID + "," + playerID + ","
                         + selectedTokenTilePos + "," + tileIndex);
                 selectedToken.setEffect(null);
                 selectedToken = null;
