@@ -5,8 +5,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
-import com.mysql.jdbc.Messages;
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -33,7 +31,8 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
  * @author Marius
  */
 public class GameBoardController implements Initializable {
-
+    ResourceBundle messages;
+    
     int gameID;
     int playerID;
     final int TILESIZE = 48;
@@ -91,6 +90,8 @@ public class GameBoardController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        messages = resources;
+        
         playerNames = new ArrayList<>();
         activeTokens = new ArrayList<>();
         diceImages = new ArrayList<>();
@@ -335,7 +336,7 @@ public class GameBoardController implements Initializable {
             case PlayerEvent.PLAYING :
                 activeTokens.get(playerIndex).setVisible(true);
                 if (playerIndex == playerID) {
-                    throwTheDice.setText(Messages.getString("ludogameboard.throwDiceButton"));
+                    throwTheDice.setText(messages.getString("ludogameboard.throwDiceButton"));
                     throwTheDice.setDisable(false);
                 }
                 break;
@@ -358,7 +359,7 @@ public class GameBoardController implements Initializable {
     public void updateDice(int playerIndex, int dice) {
         diceThrown.setImage(diceImages.get(dice));
         if (playerIndex == playerID) {
-            throwTheDice.setText(Messages.getString("ludogameboard.move"));
+            throwTheDice.setText(messages.getString("ludogameboard.move"));
             throwTheDice.setDisable(true);
         }
     }
