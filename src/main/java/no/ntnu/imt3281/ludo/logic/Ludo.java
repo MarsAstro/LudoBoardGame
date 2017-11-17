@@ -42,7 +42,7 @@ public class Ludo {
     private ArrayList<PlayerListener> playerListeners;
     private int activePlayer = 0;
     private int numThrows = 0;
-    private int dice = 0;
+    private int dice = -1;
 
     /**
      * Initialize a game without players
@@ -340,21 +340,25 @@ public class Ludo {
      */
     public boolean movePiece(int player, int from, int to) {
         boolean success = false;
-        for (int i = 0; i < 4; i++) {
-            if (piecePositions[player][i] == from) {
-                piecePositions[player][i] = to;
-                for (PieceListener listener : pieceListeners) {
-                    listener.pieceMoved(new PieceEvent(this, player, i, from, to));
-                }
-                success = true;
-                checkWinner();
 
-                if (numThrows >= 3 || dice != 6 || from == 0) {
-                    nextPlayer();
+        if (((from == 0 && dice == 6) || from + dice == to) && player == activePlayer) {
+            for (int i = 0; i < 4; i++) {
+                if (piecePositions[player][i] == from) {
+                    piecePositions[player][i] = to;
+                    for (PieceListener listener : pieceListeners) {
+                        listener.pieceMoved(new PieceEvent(this, player, i, from, to));
+                    }
+                    success = true;
+                    checkWinner();
+
+                    if (numThrows >= 3 || dice != 6 || from == 0) {
+                        nextPlayer();
+                    }
+                    checkForOpponents(player, to);
+                    updateGlobalPositions();
+                    dice = 0;
+                    break;
                 }
-                checkForOpponents(player, to);
-                updateGlobalPositions();
-                break;
             }
         }
         return success;
@@ -368,7 +372,7 @@ public class Ludo {
         if (nrOfPlayers() != 0) {
             state = "Initiated";
         }
-        if (dice != 0) {
+        if (dice != -1) {
             state = "Started";
         }
         for (int i = 0; i < playerNames.size(); i++) {
@@ -464,12 +468,11 @@ public class Ludo {
      */
     public int finalTilesLudoBoardGridToUserGrid(int player, int pos) {
         int result = -1;
-        
-        if (pos > 67)
-        {
+
+        if (pos > 67) {
             result = pos - 14 - player * 6;
         }
-        
+
         return result;
     }
 

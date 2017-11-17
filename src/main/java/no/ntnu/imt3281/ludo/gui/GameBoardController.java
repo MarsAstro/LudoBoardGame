@@ -5,6 +5,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+import com.mysql.jdbc.Messages;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -145,8 +147,7 @@ public class GameBoardController implements Initializable {
     }
 
     private void clickOnPiece(MouseEvent event) {
-
-        if (event.getSource() instanceof Rectangle) {
+        if (event.getSource() instanceof Rectangle && selectedToken == null) {
             Rectangle hitRect = (Rectangle) event.getSource();
             for (int piece = 0; piece < 4; piece++) {
                 playerTokens[playerID][piece].setEffect(null);
@@ -164,8 +165,9 @@ public class GameBoardController implements Initializable {
 
                     Bloom bloom = new Bloom();
                     bloom.setThreshold(0);
-                    bloom.setInput(ds);
-                    selectedToken.setEffect(bloom);
+
+                    ds.setInput(bloom);
+                    selectedToken.setEffect(ds);
                 }
             }
         }
@@ -333,6 +335,7 @@ public class GameBoardController implements Initializable {
             case PlayerEvent.PLAYING :
                 activeTokens.get(playerIndex).setVisible(true);
                 if (playerIndex == playerID) {
+                    throwTheDice.setText(Messages.getString("ludogameboard.throwDiceButton"));
                     throwTheDice.setDisable(false);
                 }
                 break;
@@ -355,7 +358,8 @@ public class GameBoardController implements Initializable {
     public void updateDice(int playerIndex, int dice) {
         diceThrown.setImage(diceImages.get(dice));
         if (playerIndex == playerID) {
-            // TODO can move
+            throwTheDice.setText(Messages.getString("ludogameboard.move"));
+            throwTheDice.setDisable(true);
         }
     }
 
