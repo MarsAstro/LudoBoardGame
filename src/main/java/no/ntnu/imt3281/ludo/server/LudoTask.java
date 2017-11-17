@@ -135,11 +135,27 @@ public class LudoTask implements Runnable {
         int playerID = Integer.parseInt(messages[1]);
         int from = Integer.parseInt(messages[2]);
         int to = Integer.parseInt(messages[3]);
-        
+
         int gameIndex = Server.games.indexOf(new GameInfo(gameID));
         if (gameIndex >= 0) {
             GameInfo game = Server.games.get(gameIndex);
-            game.ludo.movePiece(playerID, from, to);
+            
+            int newFrom = -1;
+            for (int piece = 0; piece < 4; ++piece) {
+                if (game.ludo.globalPiecePositions[playerID][piece] == from) {
+                    newFrom = game.ludo.piecePositions[playerID][piece];
+                } ;
+            }
+            
+            if (from < 16) {
+                game.ludo.movePiece(playerID, 0, 1);
+            } else if (to < 68 && newFrom != -1) {
+                int newTo = newFrom + (to - from);
+                game.ludo.movePiece(playerID, newFrom, newTo);
+            } else if (newFrom != -1) {
+                int newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
+                game.ludo.movePiece(playerID, newFrom, newTo);
+            }
         }
     }
 

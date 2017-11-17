@@ -32,13 +32,14 @@ public class Ludo {
      */
     public static final int GREEN = 3;
 
+    public int[][] piecePositions;
+    public int[][] globalPiecePositions;
+
     private static final String WINNER = "Winner: ";
     private ArrayList<String> playerNames;
     private ArrayList<DiceListener> diceListeners;
     private ArrayList<PieceListener> pieceListeners;
     private ArrayList<PlayerListener> playerListeners;
-    private int[][] piecePositions;
-    private int[][] globalPiecePositions;
     private int activePlayer = 0;
     private int numThrows = 0;
     private int dice = 0;
@@ -439,7 +440,7 @@ public class Ludo {
      *            Player position
      * @return the ludo board grid index
      */
-    public int userGridToLudoBoardGrid(int player, int pos) {
+    public static int userGridToLudoBoardGrid(int player, int pos) {
         int result = 0;
         if (pos == 0) {
             result = 4 * player;
@@ -450,38 +451,24 @@ public class Ludo {
         }
         return result;
     }
-    
+
     /**
+     * Converts global positions above 67 to players local grid
      * 
      * @param player
+     *            The player space to convert to
      * @param pos
-     * @return
+     *            The position to convert
+     * @return Local position of global input for supplied player if global
+     *         input is above 67, -1 otherwise
      */
-    public int ludoBoardGridToUserGrid(int player, int pos) {
-        int result = 0;
+    public int finalTilesLudoBoardGridToUserGrid(int player, int pos) {
+        int result = -1;
         
-        if (pos < 16) {
-            result = 0;
-        } else if (pos < 68) {
-            int mod = player;
-            if (player % 2 == 1) {
-                if (player == 1) {
-                    mod += 2;
-                }
-                else {
-                    mod -= 2;
-                }
-                result = pos - 15 + 13 * mod % 54;
-            } else {
-                result = 68 + player * 6;
-            }
-            
-            return result;
+        if (pos > 67)
+        {
+            result = pos - 14 - player * 6;
         }
-        
-        
-        
-        if (result > )
         
         return result;
     }
