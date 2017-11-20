@@ -132,17 +132,14 @@ public class ClientInputTask implements Runnable {
     }
 
     private void handleReceivedLudoNamePacket(String message) {
-        int endGameIDIndex = message.indexOf(",");
-        int gameID = Integer.parseInt(message.substring(0, endGameIDIndex));
+        String[] messageInfos = message.split(",");
         
-        message = message.substring(endGameIDIndex + 1);
-        
-        int indIndex = message.indexOf(",");
-        int index = Integer.parseInt(message.substring(0, indIndex));
-        String name = message.substring(indIndex + 1);
+        int gameID = Integer.parseInt(messageInfos[0]);
+        int playerIndex = Integer.parseInt(messageInfos[1]);
+        String name = messageInfos[2];
         
         GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
-        Platform.runLater(() -> gbc.updateName(name, index));
+        Platform.runLater(() -> gbc.updateName(name, playerIndex));
     }
 
     private void handleReceivedUserPacket(String message) {

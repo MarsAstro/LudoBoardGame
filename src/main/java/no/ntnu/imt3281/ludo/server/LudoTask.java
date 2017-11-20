@@ -141,7 +141,7 @@ public class LudoTask implements Runnable {
         int gameIndex = Server.games.indexOf(new GameInfo(gameID));
         if (gameIndex >= 0) {
             GameInfo game = Server.games.get(gameIndex);
-            
+
             int[][] globalPiecePositions = game.ludo.getGlobalPiecePositions();
             int[][] piecePositions = game.ludo.getPiecePositions();
 
@@ -163,6 +163,19 @@ public class LudoTask implements Runnable {
             } else if (newFrom != -1) {
                 int newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
                 game.ludo.movePiece(playerID, newFrom, newTo);
+            }
+
+            CheckWinner(game);
+        }
+    }
+
+    private void CheckWinner(GameInfo game) {
+        int winner = game.ludo.getWinner();
+
+        if (winner != -1) {
+            for (ClientInfo client : game.clients) {
+                SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID + "," + winner
+                        + "," + game.ludo.getPlayerName(winner));
             }
         }
     }

@@ -137,7 +137,7 @@ public class GameBoardController implements Initializable {
     private void initPlayerTokens() {
         for (int player = 0; player < 4; player++) {
             for (int piece = 0; piece < 4; piece++) {
-                playerTokens[player][piece] = new Rectangle(40, 40);
+                playerTokens[player][piece] = new Rectangle(TILESIZE - 8, TILESIZE - 8);
                 playerTokens[player][piece].setFill(new ImagePattern(pieceImages.get(player)));
                 playerTokens[player][piece].setX(points.get(player * 4 + piece).getX());
                 playerTokens[player][piece].setY(points.get(player * 4 + piece).getY());
@@ -384,8 +384,8 @@ public class GameBoardController implements Initializable {
      *            The tile piece moved to
      */
     public void updatePiece(int playerID, int piece, int from, int to) {        
-        playerTokens[playerID][piece].setX(points.get(to).getX() + 8 + (4 * piece));
-        playerTokens[playerID][piece].setY(points.get(to).getY() + 8 + (8 * piece));
+        playerTokens[playerID][piece].setX(points.get(to).getX() + 4 * piece);
+        playerTokens[playerID][piece].setY(points.get(to).getY() + 4 * piece);
         
         if (playerID == this.playerID)
         {
