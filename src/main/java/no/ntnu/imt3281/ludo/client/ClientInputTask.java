@@ -27,12 +27,13 @@ public class ClientInputTask implements Runnable {
             try {
                 int length = Client.socket.getInputStream().read(inputData);
                 
-                String packet = new String(inputData, 0, length, "UTF-8");
-                String[] messages = packet.split(";");
-                for (String message : messages) {
-                    handleReceivedPacket(message);
+                if (length != -1) {
+                    String packet = new String(inputData, 0, length, "UTF-8");
+                    String[] messages = packet.split(";");
+                    for (String message : messages) {
+                        handleReceivedPacket(message);
+                    }
                 }
-
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
