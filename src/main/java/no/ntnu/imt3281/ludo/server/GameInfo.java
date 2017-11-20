@@ -122,15 +122,21 @@ public class GameInfo {
         if (index >= 0) {
             ClientInfo client = clients.get(index);
 
-            String status = ludo.getStatus();
-            if ("Initiated".equals(status)) {
-                clients.remove(index);
-                ludo.discardPlayer(client.username);
-                returnName = "Discard";
-            } else if ("Started".equals(status)) {
-                clients.remove(index);
-                ludo.removePlayer(client.username);
-                returnName = "Remove: " + client.username;
+            int playerIndex = ludo.getIndexOfPlayer(client.username);
+
+            if (playerIndex != -1) {
+                String status = ludo.getStatus();
+                String ludoPlayerName = ludo.getPlayerName(playerIndex);
+                
+                if ("Initiated".equals(status)) {
+                    clients.remove(index);
+                    ludo.discardPlayer(ludoPlayerName);
+                    returnName = "Discard";
+                } else if ("Started".equals(status)) {
+                    clients.remove(index);
+                    ludo.removePlayer(ludoPlayerName);
+                    returnName = ludoPlayerName;
+                }
             }
         }
 

@@ -146,8 +146,8 @@ public class ClientInputTask implements Runnable {
 
         if (name.startsWith("Discard")) {
             name = messages.getString("ludogameboard.noplayer");
-        } else if (name.startsWith("Remove")) {
-            name.replaceFirst("Remove", messages.getString("ludogameboard.inactive"));
+        } else if (name.startsWith("Inactive")) {
+            name = name.replaceFirst("Inactive", messages.getString("ludogameboard.inactive"));
         }
 
         // Run later expects a string that is "effectively final", so it only

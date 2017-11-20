@@ -337,23 +337,25 @@ public class Ludo {
 
         String activeName = playerNames.get(activePlayer);
 
-        if (!noPlayingPlayers() && (activePlayers() > 0 && (activeName == null || activeName.contains("Inactive: ")
-                || activeName.contains(WINNER) || activeName.contains(DONE)))) {
+        if (!noPlayingPlayers()
+                && (activePlayers() > 0 && (activeName == null || activeName.contains("Inactive: ")
+                        || activeName.contains(WINNER) || activeName.contains(DONE)))) {
             nextPlayer();
         }
     }
-    
+
     private boolean noPlayingPlayers() {
         boolean bool = true;
         for (int player = 0; player < playerNames.size(); player++) {
-            if (playerNames.get(player) != null && !(playerNames.get(player) == null || playerNames.get(player).contains("Inactive: ")
-                || playerNames.get(player).contains(WINNER) || playerNames.get(player).contains(DONE))) {
+            if (playerNames.get(player) != null && !(playerNames.get(player) == null
+                    || playerNames.get(player).contains("Inactive: ")
+                    || playerNames.get(player).contains(WINNER)
+                    || playerNames.get(player).contains(DONE))) {
                 bool = false;
             }
         }
         return bool;
     }
-    
 
     /**
      * Moves a piece
@@ -595,9 +597,16 @@ public class Ludo {
     public int getIndexOfPlayer(String name) {
         int index = -1;
         for (int player = 0; player < 4; player++) {
-            if (playerNames.get(player) != null && playerNames.get(player).equals(name)) {
-                index = player;
-                break;
+            String playerName = playerNames.get(player);
+            if (playerName != null) {
+                // Strip tags off name to ensure we're comparing the bare
+                // usernames against eachother
+                playerName = playerName.replaceFirst("((Winner: )|(Done: )|(Inactive: )){1}", "");
+
+                if (playerName.equals(name)) {
+                    index = player;
+                    break;
+                }
             }
         }
         return index;

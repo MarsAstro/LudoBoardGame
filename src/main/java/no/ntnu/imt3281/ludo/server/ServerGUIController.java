@@ -27,12 +27,14 @@ public class ServerGUIController {
      */
     public void updateUserList() {
         VBox vBox = new VBox();
+        Server.lock.readLock().lock();
         for (ClientInfo clientInfo : Server.connections) {
             vBox.getChildren()
                     .add(new Label("ID: " + clientInfo.clientID + " Address: "
                             + clientInfo.connection.getInetAddress().toString() + " Port: "
                             + clientInfo.connection.getPort()));
         }
+        Server.lock.readLock().unlock();
         userIDList.setContent(vBox);
     }
     
