@@ -32,7 +32,6 @@ public class Ludo {
      */
     public static final int GREEN = 3;
 
-    
     private static final String WINNER = "Winner: ";
     private ArrayList<String> playerNames;
     private ArrayList<DiceListener> diceListeners;
@@ -248,7 +247,6 @@ public class Ludo {
             if (canMove()) {
                 numThrows++;
                 if (dice == 6 && numThrows > 2) {
-
                     nextPlayer();
                 }
             } else {
@@ -266,10 +264,10 @@ public class Ludo {
      */
     public boolean canMove() {
         boolean movable = false;
-        for (int i = 0; i < 4 && !isBlocked(i); i++) {
-            if ((piecePositions[activePlayer][i] + dice < 60
-                    && piecePositions[activePlayer][i] != 0)
-                    || (piecePositions[activePlayer][i] == 0 && dice == 6)) {
+        for (int piece = 0; piece < 4; piece++) {
+            if (!isBlocked(piece) && ((piecePositions[activePlayer][piece] + dice < 60
+                    && piecePositions[activePlayer][piece] != 0)
+                    || (piecePositions[activePlayer][piece] == 0 && dice == 6))) {
                 movable = true;
                 break;
             }
@@ -320,9 +318,9 @@ public class Ludo {
             listener.playerStateChanged(new PlayerEvent(this, activePlayer, PlayerEvent.PLAYING));
         }
 
-        if (playerNames.get(activePlayer) == null
+        if (activePlayers() > 0 && (playerNames.get(activePlayer) == null
                 || playerNames.get(activePlayer).contains("Inactive: ")
-                || playerNames.get(activePlayer).contains(WINNER)) {
+                || playerNames.get(activePlayer).contains(WINNER))) {
             nextPlayer();
         }
 
@@ -565,7 +563,7 @@ public class Ludo {
         }
         return index;
     }
-    
+
     /**
      * @return the piecePositions
      */

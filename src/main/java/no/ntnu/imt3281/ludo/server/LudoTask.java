@@ -4,6 +4,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import no.ntnu.imt3281.ludo.logic.Ludo;
 import no.ntnu.imt3281.ludo.logic.PlayerEvent;
 
@@ -116,6 +117,7 @@ public class LudoTask implements Runnable {
             Server.games.add(new GameInfo(Server.nextGameID++, client));
         }
 
+        Platform.runLater(() -> Server.serverGUIController.updateGameList());
         SendToClientTask.send(clientID + "." + ackMessage);
     }
 
@@ -175,9 +177,9 @@ public class LudoTask implements Runnable {
             int removeClientIndex = Server.connections.indexOf(new ClientInfo(clientID));
 
             if (removeClientIndex >= 0) {
-                ClientInfo removeClient = Server.connections.get(removeClientIndex);
+                String removeClientName = Server.connections.get(removeClientIndex).username;
 
-                int playerIndex = game.ludo.getIndexOfPlayer(removeClient.username);
+                int playerIndex = game.ludo.getIndexOfPlayer(removeClientName);
 
                 if (playerIndex >= 0) {
                     String newName = game.removePlayer(clientID);
@@ -193,6 +195,7 @@ public class LudoTask implements Runnable {
             }
 
             Server.lock.readLock().unlock();
+            Platform.runLater(() -> Server.serverGUIController.updateGameList());
         }
 
     }

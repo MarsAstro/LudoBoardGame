@@ -18,5 +18,7 @@
    <children>
       <Label alignment="CENTER" contentDisplay="CENTER" text="Users" />
       <ScrollPane fx:id="userIDList" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1" />
+      <ScrollPane fx:id="gameList" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <Label alignment="CENTER" contentDisplay="CENTER" text="Games" GridPane.columnIndex="1" />
    </children>
 </GridPane>

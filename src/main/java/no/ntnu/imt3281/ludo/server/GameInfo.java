@@ -116,6 +116,8 @@ public class GameInfo {
      * 
      * @param clientID
      *            The client to be removed
+     * @return Return the new name of the player removed (either Inactive or No
+     *         player)
      */
     public String removePlayer(int clientID) {
         String returnName = "";
@@ -134,7 +136,7 @@ public class GameInfo {
                 returnName = client.username;
             }
         }
-        
+
         return returnName;
     }
 
