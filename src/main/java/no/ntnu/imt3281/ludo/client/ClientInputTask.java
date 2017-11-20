@@ -4,8 +4,11 @@
 package no.ntnu.imt3281.ludo.client;
 
 import java.io.IOException;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.mysql.jdbc.Messages;
 
 import javafx.application.Platform;
 import no.ntnu.imt3281.ludo.gui.GameBoardController;
@@ -15,6 +18,8 @@ import no.ntnu.imt3281.ludo.gui.GameBoardController;
  *
  */
 public class ClientInputTask implements Runnable {
+    private static final ResourceBundle messages = ResourceBundle
+            .getBundle("no.ntnu.imt3281.i18n.i18n");
     private static final Logger LOGGER = Logger.getLogger(ClientInputTask.class.getName());
     private byte[] inputData = new byte[256];
 
@@ -26,7 +31,7 @@ public class ClientInputTask implements Runnable {
         while (!Client.socket.isClosed()) {
             try {
                 int length = Client.socket.getInputStream().read(inputData);
-                
+
                 if (length != -1) {
                     String packet = new String(inputData, 0, length, "UTF-8");
                     String[] messages = packet.split(";");
@@ -106,7 +111,7 @@ public class ClientInputTask implements Runnable {
         int piece = Integer.parseInt(messageInfos[2]);
         int from = Integer.parseInt(messageInfos[3]);
         int to = Integer.parseInt(messageInfos[4]);
-        
+
         GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
         Platform.runLater(() -> gbc.updatePiece(playerID, piece, from, to));
     }
@@ -117,7 +122,7 @@ public class ClientInputTask implements Runnable {
         int playerIndex = Integer.parseInt(messageInfos[1]);
         int dice = Integer.parseInt(messageInfos[2]);
         boolean canMove = Boolean.parseBoolean(messageInfos[3]);
-        
+
         GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
         Platform.runLater(() -> gbc.updateDice(playerIndex, dice, canMove));
     }
@@ -127,20 +132,30 @@ public class ClientInputTask implements Runnable {
         int gameID = Integer.parseInt(messageInfos[0]);
         int playerIndex = Integer.parseInt(messageInfos[1]);
         int playerState = Integer.parseInt(messageInfos[2]);
-        
+
         GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
         Platform.runLater(() -> gbc.updateActivePlayer(playerIndex, playerState));
     }
 
     private void handleReceivedLudoNamePacket(String message) {
         String[] messageInfos = message.split(",");
-        
+
         int gameID = Integer.parseInt(messageInfos[0]);
         int playerIndex = Integer.parseInt(messageInfos[1]);
         String name = messageInfos[2];
-        
+
+        if (name.startsWith("Discard")) {
+            name = messages.getString("ludogameboard.noplayer");
+        } else if (name.startsWith("Remove")) {
+            name.replaceFirst("Remove", messages.getString("ludogameboard.inactive"));
+        }
+
+        // Run later expects a string that is "effectively final", so it only
+        // accepts a variable that has been assigned to once
+        String newName = name;
+
         GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
-        Platform.runLater(() -> gbc.updateName(name, playerIndex));
+        Platform.runLater(() -> gbc.updateName(newName, playerIndex));
     }
 
     private void handleReceivedUserPacket(String message) {
@@ -167,8 +182,7 @@ public class ClientInputTask implements Runnable {
     }
 
     private void handleLogoutResponse(String ackMessage) {
-        Platform.runLater(
-                () -> Client.ludoController.handleServerLogoutResponse(ackMessage));
+        Platform.runLater(() -> Client.ludoController.handleServerLogoutResponse(ackMessage));
         if (Integer.parseInt(ackMessage) == 1) {
             try {
                 Client.socket.close();

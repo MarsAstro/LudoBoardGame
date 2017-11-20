@@ -126,11 +126,11 @@ public class GameInfo {
             if ("Initiated".equals(status)) {
                 clients.remove(index);
                 ludo.discardPlayer(client.username);
-                returnName = "No Player";
+                returnName = "Discard";
             } else if ("Started".equals(status)) {
                 clients.remove(index);
                 ludo.removePlayer(client.username);
-                returnName = client.username;
+                returnName = "Remove: " + client.username;
             }
         }
 

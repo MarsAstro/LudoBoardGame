@@ -33,6 +33,11 @@ public class PlayerEvent extends EventObject implements PlayerListener {
      * Constant for the WON state
      */
     public static final int WON = 3;
+    
+    /**
+     * Constant for the DONE state
+     */
+    public static final int DONE = 4;
 
     private int activePlayer;
     private int state;

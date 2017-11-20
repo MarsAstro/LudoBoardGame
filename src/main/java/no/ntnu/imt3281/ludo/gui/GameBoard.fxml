@@ -51,7 +51,7 @@
                                           <Image url="@../../../../../images/rolldice.png" />
                                        </image>
                                     </ImageView>
-                                    <Label fx:id="player1Name" layoutX="7.0" layoutY="27.0" text="%ludogameboard.player">
+                                    <Label fx:id="player1Name" layoutX="7.0" layoutY="27.0" text="%ludogameboard.noplayer">
                                        <font>
                                           <Font name="System Bold" size="15.0" />
                                        </font>
@@ -70,7 +70,7 @@
                                           <Image url="@../../../../../images/rolldice.png" />
                                        </image>
                                     </ImageView>
-                                    <Label fx:id="player2Name" layoutX="7.0" layoutY="27.0" text="%ludogameboard.player">
+                                    <Label fx:id="player2Name" layoutX="7.0" layoutY="27.0" text="%ludogameboard.noplayer">
                                        <font>
                                           <Font name="System Bold" size="15.0" />
                                        </font>
@@ -88,7 +88,7 @@
                                           <Image url="@../../../../../images/rolldice.png" />
                                        </image>
                                     </ImageView>
-                                    <Label fx:id="player3Name" layoutX="7.0" layoutY="27.0" text="%ludogameboard.player">
+                                    <Label fx:id="player3Name" layoutX="7.0" layoutY="27.0" text="%ludogameboard.noplayer">
                                        <font>
                                           <Font name="System Bold" size="15.0" />
                                        </font>
@@ -106,7 +106,7 @@
                                           <Image url="@../../../../../images/rolldice.png" />
                                        </image>
                                     </ImageView>
-                                    <Label fx:id="player4Name" layoutX="7.0" layoutY="27.0" text="%ludogameboard.player">
+                                    <Label fx:id="player4Name" layoutX="7.0" layoutY="27.0" text="%ludogameboard.noplayer">
                                        <font>
                                           <Font name="System Bold" size="15.0" />
                                        </font>

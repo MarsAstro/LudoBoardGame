@@ -20,7 +20,7 @@ public class ClientConnectionTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ClientConnectionTask.class.getName());
     private byte[] inputData = new byte[256];
     private String charset = "UTF-8";
-    
+
     /**
      * Runs
      */
@@ -37,7 +37,7 @@ public class ClientConnectionTask implements Runnable {
 
                 int tagEndIndex = message.indexOf(":") + 1;
                 String tag = message.substring(0, tagEndIndex);
-                
+
                 if ("User.Login:".equals(tag)) {
                     handleUserLogin(newClientSocket, message.substring(tagEndIndex));
                 } else if ("User.Register:".equals(tag)) {
@@ -67,7 +67,8 @@ public class ClientConnectionTask implements Runnable {
 
             if (resultSet.next()) {
                 ackMessage += "-1";
-            } else if (!username.matches(regexPattern)) {
+            } else if (!username.matches(regexPattern) && !username.startsWith("Remove")
+                    && !username.startsWith("Discard")) {
                 ackMessage += "-2";
             } else if (!password.matches(regexPattern)) {
                 ackMessage += "-3";
