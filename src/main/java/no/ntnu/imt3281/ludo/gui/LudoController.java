@@ -120,7 +120,7 @@ public class LudoController implements Initializable {
      */
     public void handleServerJoinGame(String ackMessage) {
         int endIndex = ackMessage.indexOf(",");
-        
+
         int gameID = Integer.parseInt(ackMessage.substring(0, endIndex));
         int playerID = Integer.parseInt(ackMessage.substring(endIndex + 1));
 
@@ -128,14 +128,18 @@ public class LudoController implements Initializable {
         loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
         try {
+            GameBoardController newController = ((GameBoardController) loader.getController());
             AnchorPane gameBoard = loader.load();
             Tab tab = new Tab("Game");
             tab.setContent(gameBoard);
-            tab.setOnCloseRequest(e -> ((GameBoardController) loader.getController()).leaveGame());
+            tab.setOnCloseRequest(e -> {
+                newController.leaveGame();
+                gameBoards.remove(newController);
+            });
             tabbedPane.getTabs().add(tab);
 
-            ((GameBoardController) loader.getController()).gameID = gameID;
-            ((GameBoardController) loader.getController()).playerID = playerID;
+            newController.gameID = gameID;
+            newController.playerID = playerID;
             gameBoards.add(loader.getController());
 
             Client.sendMessage("Ludo.Init:" + gameID);
@@ -168,13 +172,13 @@ public class LudoController implements Initializable {
      * @return True if gameID reference a game board controller
      */
     public GameBoardController getGameBoardController(int gameID) {
-        GameBoardController temp = null;
+        GameBoardController controller = null;
         for (GameBoardController gbc : gameBoards) {
             if (gameID == gbc.gameID) {
-                temp = gbc;
+                controller = gbc;
                 break;
             }
         }
-        return temp;
+        return controller;
     }
 }
