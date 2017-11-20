@@ -128,8 +128,8 @@ public class LudoController implements Initializable {
         loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
         try {
-            GameBoardController newController = ((GameBoardController) loader.getController());
             AnchorPane gameBoard = loader.load();
+            GameBoardController newController = ((GameBoardController) loader.getController());
             Tab tab = new Tab("Game");
             tab.setContent(gameBoard);
             tab.setOnCloseRequest(e -> {
