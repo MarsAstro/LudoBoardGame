@@ -384,8 +384,8 @@ public class GameBoardController implements Initializable {
      *            The tile piece moved to
      */
     public void updatePiece(int playerID, int piece, int from, int to) {
-        playerTokens[playerID][piece].setX(points.get(to).getX());
-        playerTokens[playerID][piece].setY(points.get(to).getY());
+        playerTokens[playerID][piece].setX(points.get(to).getX() + 4 * piece);
+        playerTokens[playerID][piece].setY(points.get(to).getY() + 4 * piece);
         
         if (playerID == this.playerID)
         {
