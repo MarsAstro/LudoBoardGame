@@ -137,7 +137,7 @@ public class GameBoardController implements Initializable {
     private void initPlayerTokens() {
         for (int player = 0; player < 4; player++) {
             for (int piece = 0; piece < 4; piece++) {
-                playerTokens[player][piece] = new Rectangle(TILESIZE, TILESIZE);
+                playerTokens[player][piece] = new Rectangle(40, 40);
                 playerTokens[player][piece].setFill(new ImagePattern(pieceImages.get(player)));
                 playerTokens[player][piece].setX(points.get(player * 4 + piece).getX());
                 playerTokens[player][piece].setY(points.get(player * 4 + piece).getY());
