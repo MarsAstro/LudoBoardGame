@@ -18,6 +18,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.control.TitledPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -136,7 +138,7 @@ public class LudoController implements Initializable {
      *            Message indicating if connection was a success
      */
     public void handleServerJoinRandomGame(String ackMessage) {
-        // TODO deactivate giffy
+        random.setDisable(false);
         int gameID = handleServerJoinGame(ackMessage);
         Client.sendMessage("Ludo.Init:" + gameID);
     }
@@ -167,6 +169,7 @@ public class LudoController implements Initializable {
                 gameBoards.remove(newController);
             });
             tabbedPane.getTabs().add(tab);
+            tabbedPane.getSelectionModel().select(tab);
 
             newController.gameID = gameID;
             newController.playerID = playerID;
@@ -215,6 +218,6 @@ public class LudoController implements Initializable {
      * Display acknowledgment that client is in queue for random game
      */
     public void JoinRandomSuccess() {
-        // TODO activate giffy
+        random.setDisable(true);
     }
 }
