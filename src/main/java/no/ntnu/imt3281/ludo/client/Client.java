@@ -75,9 +75,18 @@ public class Client extends Application {
         try {
             socket = new Socket(address, 9003);
 
-            ClientInputTask networkTask = new ClientInputTask();
             ExecutorService executorService = Executors.newCachedThreadPool();
+
+            ClientInputTask networkTask = new ClientInputTask();
+            ClientLudoTask ludoTask = new ClientLudoTask();
+            ClientUserTask userTask = new ClientUserTask();
+            ClientChatTask chatTask = new ClientChatTask();
+            
             executorService.execute(networkTask);
+            executorService.execute(ludoTask);
+            executorService.execute(userTask);
+            executorService.execute(chatTask);
+            
             executorService.shutdown();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
