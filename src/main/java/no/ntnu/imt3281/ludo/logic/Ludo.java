@@ -602,7 +602,6 @@ public class Ludo {
                 // Strip tags off name to ensure we're comparing the bare
                 // usernames against eachother
                 String strippedName = playerName.replaceFirst("((Winner: )|(Done: )|(Inactive: )){1}", "");
-
                 if (strippedName.equals(name)) {
                     index = player;
                     break;
