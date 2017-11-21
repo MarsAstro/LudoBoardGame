@@ -34,6 +34,7 @@ public class Server extends Application {
     static Connection database;
     static ServerGUIController serverGUIController;
     static ArrayList<GameInfo> games;
+    static ArrayList<ChatInfo> chats;
     static int nextGameID;
     static ReadWriteLock lock;
 
