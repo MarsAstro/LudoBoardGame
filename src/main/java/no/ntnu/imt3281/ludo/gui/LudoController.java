@@ -114,6 +114,10 @@ public class LudoController implements Initializable {
 			mainTab.setContent(mainChat);
 			mainTab.setClosable(false);
 			tabbedPane.getTabs().add(mainTab);
+
+			ChatWindowController newController = (ChatWindowController) loader.getController();
+			chatWindows.add(newController);
+			Client.sendMessage("Chat.InitGlobal:" + 0);
 		} catch (IOException e) {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
