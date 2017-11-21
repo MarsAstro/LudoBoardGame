@@ -104,6 +104,7 @@ public class Server extends Application {
         initServer();
         
         clientLock = new ReentrantReadWriteLock();
+        gameLock = new ReentrantReadWriteLock();
 
         ExecutorService executorService = Executors.newCachedThreadPool();
         
