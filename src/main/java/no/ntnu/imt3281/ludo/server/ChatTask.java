@@ -94,14 +94,14 @@ public class ChatTask implements Runnable {
 		int chatID = Integer.parseInt(messages[0]);
 		int clientID = Integer.parseInt(messages[1]);
 
-		int clientConnectionID = Server.connections.indexOf(clientID);
+		int clientConnectionID = Server.connections.indexOf(new ClientInfo(clientID));
 
 		if (clientConnectionID >= 0) {
-			int chatIndex = Server.chats.indexOf(chatID);
+			int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
 
 			if (chatIndex >= 0) {
 				ChatInfo chat = Server.chats.get(chatIndex);
-				int clientIndex = chat.clients.indexOf(clientID);
+				int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
 
 				if (clientIndex == -1) {
 					ClientInfo addedClient = Server.connections.get(clientConnectionID);
