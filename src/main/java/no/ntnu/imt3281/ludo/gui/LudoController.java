@@ -14,6 +14,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
@@ -36,6 +37,9 @@ public class LudoController implements Initializable {
 	private Tab mainTab;
 	private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
 
+	@FXML // fx:id="spinner"
+	private ProgressIndicator spinner;
+	
 	@FXML // fx:id="loginButton"
 	private MenuItem loginButton;
 
@@ -116,19 +120,19 @@ public class LudoController implements Initializable {
 	}
 
 	/**
-	 * Handles the servers response to a logout request
-	 * 
-	 * @param ackMessage
-	 *            The message returned by server
-	 */
-	public void handleServerLogoutResponse(String ackMessage) {
-		if (Integer.parseInt(ackMessage) == 1) {
-			logoutButton.setDisable(true);
-			loginButton.setDisable(false);
-			loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
-			tabbedPane.getTabs().remove(mainTab);
-		}
-	}
+     * Handles the servers response to a logout request
+     * 
+     * @param ackMessage
+     *            The message returned by server
+     */
+    public void handleServerLogoutResponse(String ackMessage) {
+        if (Integer.parseInt(ackMessage) == 1) {
+            logoutButton.setDisable(true);
+            loginButton.setDisable(false);
+            loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
+            tabbedPane.getTabs().remove(mainTab);
+        }
+    }
 
 	/**
 	 * Handles received ackMessage when trying to join a game
@@ -137,7 +141,8 @@ public class LudoController implements Initializable {
 	 *            Message indicating if connection was a success
 	 */
 	public void handleServerJoinRandomGame(String ackMessage) {
-		// TODO deactivate giffy
+        spinner.setVisible(false);
+        random.setDisable(false);
 		int gameID = handleServerJoinGame(ackMessage);
 		Client.sendMessage("Ludo.Init:" + gameID);
 	}
@@ -260,9 +265,10 @@ public class LudoController implements Initializable {
 	}
 
 	/**
-	 * Display acknowledgment that client is in queue for random game
-	 */
-	public void JoinRandomSuccess() {
-		// TODO activate giffy
-	}
+     * Display acknowledgment that client is in queue for random game
+     */
+    public void JoinRandomSuccess() {
+        spinner.setVisible(true);
+        random.setDisable(true);
+    }
 }

@@ -3,6 +3,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
@@ -22,7 +23,10 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="%ludo.menubar.game">
                   <items>
-                    <MenuItem fx:id="random" mnemonicParsing="false" onAction="#joinRandomGame" text="%ludo.menubar.game.random" />
+                    <MenuItem fx:id="random" mnemonicParsing="false" onAction="#joinRandomGame" text="%ludo.menubar.game.random">
+                           <graphic>
+                              <ProgressIndicator fx:id="spinner" prefHeight="18.0" prefWidth="18.0" visible="false" />
+                           </graphic></MenuItem>
                         <MenuItem mnemonicParsing="false" text="%ludo.menubar.game.challenge" />
                   </items>
                 </Menu>
