@@ -1,5 +1,6 @@
 package no.ntnu.imt3281.ludo.server;
 
+import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,10 +19,14 @@ public class LudoTask implements Runnable {
 
     private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
     private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
-    String currentTask;
+
+    private ArrayList<ClientInfo> randomQueue;
+    private String currentTask;
 
     @Override
     public void run() {
+        randomQueue = new ArrayList<>();
+
         while (!Server.serverSocket.isClosed()) {
             try {
                 currentTask = ludoTasks.take();
@@ -84,41 +89,50 @@ public class LudoTask implements Runnable {
         int gameIndex = Server.games.indexOf(new GameInfo(gameID));
         if (gameIndex >= 0) {
             GameInfo game = Server.games.get(gameIndex);
-            for (ClientInfo clientInGame : game.clients) {
-                for (int i = 0; i < game.ludo.nrOfPlayers(); i++) {
-                    SendToClientTask.send(clientInGame.clientID + ".Ludo.Name:" + message + "," + i
-                            + "," + game.ludo.getPlayerName(i));
-                    if (game.ludo.activePlayers() > 1) {
-                        SendToClientTask.send(clientInGame.clientID + ".Ludo.Player:" + gameID + ","
-                                + Ludo.RED + "," + PlayerEvent.PLAYING);
-                    }
+            initGameForAllClients(game);
+        }
+    }
+
+    private void initGameForAllClients(GameInfo game) {
+        for (ClientInfo clientInGame : game.clients) {
+            for (int playerIndex = 0; playerIndex < game.ludo.nrOfPlayers(); playerIndex++) {
+                SendToClientTask.send(clientInGame.clientID + ".Ludo.Name:" + game.gameID + ","
+                        + playerIndex + "," + game.ludo.getPlayerName(playerIndex));
+                if (game.ludo.activePlayers() > 1) {
+                    SendToClientTask.send(clientInGame.clientID + ".Ludo.Player:" + game.gameID + ","
+                            + Ludo.RED + "," + PlayerEvent.PLAYING);
                 }
             }
         }
     }
 
     private void handleLudoJoinRandomPacket(int clientID, String message) {
-        StringBuilder ackMessage = new StringBuilder("Ludo.Join:");
-
         int index = Server.connections.indexOf(new ClientInfo(clientID));
-        ClientInfo client = Server.connections.get(index);
+        ClientInfo newClient = Server.connections.get(index);
 
-        boolean foundGame = false;
-        for (GameInfo game : Server.games) {
-            if (game.addPlayer(client)) {
-                foundGame = true;
-                ackMessage.append(Integer.toString(game.gameID) + ","
-                        + game.ludo.getIndexOfPlayer(client.username));
-                break;
+        randomQueue.add(newClient);
+        SendToClientTask.send(newClient.clientID + ".Ludo.RandomSuccess:");
+
+        if (randomQueue.size() == 4) {
+
+            Server.games.add(new GameInfo(Server.nextGameID++, randomQueue.get(0)));
+
+            GameInfo newGame = Server.games.get(Server.games.size() - 1);
+            newGame.addPlayer(randomQueue.get(1));
+            newGame.addPlayer(randomQueue.get(2));
+            newGame.addPlayer(randomQueue.get(3));
+
+            Platform.runLater(() -> Server.serverGUIController.updateGameList());
+
+            for (int clientIndex = 0; clientIndex < randomQueue.size(); clientIndex++) {
+                SendToClientTask.send(randomQueue.get(clientIndex).clientID + ".Ludo.JoinRandom:"
+                        + newGame.gameID + "," + clientIndex);
             }
-        }
-        if (!foundGame) {
-            ackMessage.append(Integer.toString(Server.nextGameID) + "," + 0);
-            Server.games.add(new GameInfo(Server.nextGameID++, client));
-        }
+            
+            initGameForAllClients(newGame);
 
-        Platform.runLater(() -> Server.serverGUIController.updateGameList());
-        SendToClientTask.send(clientID + "." + ackMessage);
+            randomQueue.clear();
+        }
     }
 
     private void handleLudoThrowPacket(int clientID, String message) {

@@ -25,6 +25,13 @@ public class UserCleanupTask implements Runnable {
                 Server.lock.writeLock().lock();
                 Server.connections.remove(new ClientInfo(clientID));
                 Server.lock.writeLock().unlock();
+                for (int game = 0; game < Server.games.size(); ++game) {
+                	Server.games.get(game).removePlayer(clientID);
+                	if(Server.games.get(game).ludo.activePlayers() <= 0) {
+                		Server.games.remove(game);
+                		game--;
+                	}
+                }
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
