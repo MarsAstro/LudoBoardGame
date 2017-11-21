@@ -32,7 +32,10 @@ public class UserCleanupTask implements Runnable {
                 		game--;
                 	}
                 }
-                Platform.runLater(() -> Server.serverGUIController.updateUserList());
+                Platform.runLater(() -> {
+                	Server.serverGUIController.updateUserList();
+                	Server.serverGUIController.updateGameList();
+                });
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
