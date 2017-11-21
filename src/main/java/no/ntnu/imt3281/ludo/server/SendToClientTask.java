@@ -25,14 +25,14 @@ public class SendToClientTask implements Runnable {
                 Integer clientID = Integer.parseInt(currentTask.substring(0, idEndIndex));
                 currentTask = currentTask.substring(idEndIndex + 1) + ";";
 
-                Server.lock.readLock().lock();
+                Server.clientLock.readLock().lock();
                 int connectionIndex = Server.connections.indexOf(new ClientInfo(clientID));
                 if (connectionIndex >= 0) {
                     Server.connections.get(connectionIndex).connection.getOutputStream()
                             .write(currentTask.getBytes("UTF-8"));
                     Server.connections.get(connectionIndex).connection.getOutputStream().flush();
                 }
-                Server.lock.readLock().unlock();
+                Server.clientLock.readLock().unlock();
                 if (currentTask.contains("Logout:")) {
                     UserCleanupTask.removeUser(clientID);
                 }

@@ -85,10 +85,10 @@ public class ClientConnectionTask implements Runnable {
                 ResultSet newUser = newUserQuery.executeQuery();
 
                 newUser.next();
-                Server.lock.writeLock().lock();
+                Server.clientLock.writeLock().lock();
                 Server.connections
                         .add(new ClientInfo(newClientSocket, newUser.getInt("UserID"), username));
-                Server.lock.writeLock().unlock();
+                Server.clientLock.writeLock().unlock();
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
 
                 newUserInsert.close();
@@ -133,10 +133,10 @@ public class ClientConnectionTask implements Runnable {
             if (alreadyLoggedIn) {
                 ackMessage += "-2";
             } else if (resultSet.next()) {
-                Server.lock.writeLock().lock();
+                Server.clientLock.writeLock().lock();
                 Server.connections
                         .add(new ClientInfo(newClientSocket, resultSet.getInt("UserID"), username));
-                Server.lock.writeLock().unlock();
+                Server.clientLock.writeLock().unlock();
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
                 ackMessage += "1";
             } else {

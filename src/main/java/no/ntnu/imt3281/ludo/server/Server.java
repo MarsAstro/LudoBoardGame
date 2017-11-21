@@ -36,7 +36,10 @@ public class Server extends Application {
     static ArrayList<GameInfo> games;
     static ArrayList<ChatInfo> chats;
     static int nextGameID;
-    static ReadWriteLock lock;
+    static int nextChatID = 0;
+    static ReadWriteLock clientLock;
+    static ReadWriteLock gameLock;
+
 
     private static String url = "jdbc:mysql://mysql.stud.ntnu.no/mksandbe_Ludo";
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
@@ -51,11 +54,14 @@ public class Server extends Application {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
         
+        chats = new ArrayList<>();
+        chats.add(new ChatInfo(nextChatID++));
         connections = new ArrayList<>();
         games = new ArrayList<>();
         nextGameID = 0;
         ResourceBundle messages = ResourceBundle
                 .getBundle("no.ntnu.imt3281.ludo.server.credentials");
+        
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
@@ -97,7 +103,8 @@ public class Server extends Application {
     public static void main(String[] args) {
         initServer();
         
-        lock = new ReentrantReadWriteLock();
+        clientLock = new ReentrantReadWriteLock();
+        gameLock = new ReentrantReadWriteLock();
 
         ExecutorService executorService = Executors.newCachedThreadPool();
         

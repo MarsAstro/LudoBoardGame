@@ -27,14 +27,14 @@ public class ServerGUIController {
      */
     public void updateUserList() {
         VBox vBox = new VBox();
-        Server.lock.readLock().lock();
+        Server.clientLock.readLock().lock();
         for (ClientInfo clientInfo : Server.connections) {
             vBox.getChildren()
                     .add(new Label("ID: " + clientInfo.clientID + " Address: "
                             + clientInfo.connection.getInetAddress().toString() + " Port: "
                             + clientInfo.connection.getPort()));
         }
-        Server.lock.readLock().unlock();
+        Server.clientLock.readLock().unlock();
         userIDList.setContent(vBox);
     }
     
@@ -43,6 +43,7 @@ public class ServerGUIController {
      */
     public void updateGameList() {
         VBox vBox = new VBox();
+        Server.gameLock.readLock().lock();
         for (GameInfo gameInfo : Server.games) {
             StringBuilder gameData = new StringBuilder("ID: " + gameInfo.gameID);
             
@@ -53,6 +54,7 @@ public class ServerGUIController {
             Label label = new Label(gameData.toString());
             vBox.getChildren().add(label);
         }
+        Server.gameLock.readLock().unlock();
         gameList.setContent(vBox);
     }
 

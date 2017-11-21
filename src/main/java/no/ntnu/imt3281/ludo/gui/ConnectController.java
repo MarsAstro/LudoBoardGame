@@ -103,7 +103,7 @@ public class ConnectController implements Initializable {
         switch (Integer.parseInt(ackMessage)) {
             case 1 :
                 Platform.runLater(
-                        () -> Client.getLudoController().setLoggedInUser(username.getText()));
+                        () -> Client.getLudoController().userLoggedIn(username.getText()));
                 closeWindow();
                 break;
             case -1 :
@@ -133,7 +133,7 @@ public class ConnectController implements Initializable {
         switch (Integer.parseInt(ackMessage)) {
             case 1 :
                 Platform.runLater(
-                        () -> Client.getLudoController().setLoggedInUser(username.getText()));
+                        () -> Client.getLudoController().userLoggedIn(username.getText()));
                 closeWindow();
                 break;
             case -1 :

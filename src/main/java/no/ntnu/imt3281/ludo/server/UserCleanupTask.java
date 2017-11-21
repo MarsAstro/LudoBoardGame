@@ -22,9 +22,10 @@ public class UserCleanupTask implements Runnable {
             try {
                 Integer clientID = removeIDs.take();
                 
-                Server.lock.writeLock().lock();
+                Server.clientLock.writeLock().lock();
                 Server.connections.remove(new ClientInfo(clientID));
-                Server.lock.writeLock().unlock();
+                Server.clientLock.writeLock().unlock();
+                Server.gameLock.writeLock().lock();
                 for (int game = 0; game < Server.games.size(); ++game) {
                 	Server.games.get(game).removePlayer(clientID);
                 	if(Server.games.get(game).ludo.activePlayers() <= 0) {
@@ -32,6 +33,7 @@ public class UserCleanupTask implements Runnable {
                 		game--;
                 	}
                 }
+                Server.gameLock.writeLock().unlock();
                 Platform.runLater(() -> {
                 	Server.serverGUIController.updateUserList();
                 	Server.serverGUIController.updateGameList();

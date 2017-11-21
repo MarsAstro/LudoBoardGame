@@ -24,7 +24,7 @@ public class ServerInputTask implements Runnable {
     @Override
     public void run() {
         while (!Server.serverSocket.isClosed()) {
-            Server.lock.readLock().lock();
+            Server.clientLock.readLock().lock();
             for (ClientInfo client : Server.connections) {
                 try {
                     if (client.connection.getInputStream().available() > 0) {
@@ -42,7 +42,7 @@ public class ServerInputTask implements Runnable {
                     LOGGER.log(Level.WARNING, e.getMessage(), e);
                 }
             }
-            Server.lock.readLock().unlock();
+            Server.clientLock.readLock().unlock();
         }
     }
 
