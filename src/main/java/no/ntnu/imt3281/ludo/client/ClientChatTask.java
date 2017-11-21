@@ -1,10 +1,16 @@
 package no.ntnu.imt3281.ludo.client;
 
-import java.util.ResourceBundle;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
+/**
+ * Handles tasks releated to chat rooms and messages
+ * 
+ * @author oyste
+ *
+ */
 public class ClientChatTask implements Runnable {
 	private static ArrayBlockingQueue<String> chatTasks = new ArrayBlockingQueue<>(256);
 	private static final Logger LOGGER = Logger.getLogger(ClientLudoTask.class.getName());

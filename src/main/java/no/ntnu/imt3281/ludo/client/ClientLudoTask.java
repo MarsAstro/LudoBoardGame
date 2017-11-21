@@ -8,6 +8,12 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 import no.ntnu.imt3281.ludo.gui.GameBoardController;
 
+/**
+ * Handles all tasks related to ludo games ongoing and starting
+ * 
+ * @author oyste
+ *
+ */
 public class ClientLudoTask implements Runnable {
 	private static final ResourceBundle messages = ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n");
 	private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);

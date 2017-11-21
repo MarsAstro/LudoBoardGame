@@ -1,13 +1,18 @@
 package no.ntnu.imt3281.ludo.client;
 
 import java.io.IOException;
-import java.util.ResourceBundle;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
 
+/**
+ * Handles tasks releated to a user account
+ * 
+ * @author oyste
+ *
+ */
 public class ClientUserTask implements Runnable {
 	private static ArrayBlockingQueue<String> userTasks = new ArrayBlockingQueue<>(256);
 	private static final Logger LOGGER = Logger.getLogger(ClientLudoTask.class.getName());
