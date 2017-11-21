@@ -8,8 +8,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.mysql.jdbc.Messages;
-
 import javafx.application.Platform;
 import no.ntnu.imt3281.ludo.gui.GameBoardController;
 
