@@ -5,6 +5,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
 
+import javafx.animation.PathTransition;
+import javafx.animation.PathTransition.OrientationType;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -21,7 +23,12 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
+import javafx.scene.shape.CubicCurveTo;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+import javafx.scene.shape.Path;
 import javafx.scene.shape.Rectangle;
+import javafx.util.Duration;
 import no.ntnu.imt3281.ludo.client.Client;
 import no.ntnu.imt3281.ludo.logic.PlayerEvent;
 
@@ -32,7 +39,7 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
  */
 public class GameBoardController implements Initializable {
     ResourceBundle messages;
-    
+
     int gameID;
     int playerID;
     static final int TILESIZE = 48;
@@ -91,7 +98,7 @@ public class GameBoardController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         messages = resources;
-        
+
         playerNames = new ArrayList<>();
         activeTokens = new ArrayList<>();
         diceImages = new ArrayList<>();
@@ -338,16 +345,14 @@ public class GameBoardController implements Initializable {
                 if (playerIndex == playerID) {
                     throwTheDice.setText(messages.getString("ludogameboard.throwdice"));
                     throwTheDice.setDisable(false);
-                }
-                else
-                {
+                } else {
                     throwTheDice.setText(messages.getString("ludogameboard.wait"));
                 }
                 break;
             case PlayerEvent.WAITING :
                 activeTokens.get(playerIndex).setVisible(false);
                 if (playerIndex == playerID) {
-                	throwTheDice.setDisable(true);
+                    throwTheDice.setDisable(true);
                 }
                 break;
             default :
@@ -362,7 +367,7 @@ public class GameBoardController implements Initializable {
      *            Index of the throwing player
      * @param dice
      *            The dice thrown
-     * @param canMove 
+     * @param canMove
      */
     public void updateDice(int playerIndex, int dice, boolean canMove) {
         diceThrown.setImage(diceImages.get(dice));
@@ -385,12 +390,24 @@ public class GameBoardController implements Initializable {
      * @param to
      *            The tile piece moved to
      */
-    public void updatePiece(int playerID, int piece, int from, int to) {        
+    public void updatePiece(int playerID, int piece, int from, int to) {
+        Rectangle token = playerTokens[playerID][piece];
+
+        Path path = new Path();
+        path.getElements()
+                .add(new MoveTo(token.getX() + TILESIZE / 2, token.getY() + TILESIZE / 2));
+        path.getElements().add(new LineTo(points.get(to).getX() + (TILESIZE / 2) + (4 * piece),
+                points.get(to).getY() + (TILESIZE / 2) + (4 * piece)));
+
+        PathTransition pathTransition = new PathTransition(Duration.millis(200), path);
+        pathTransition.setNode(token);
+
         playerTokens[playerID][piece].setX(points.get(to).getX() + 4 * piece);
         playerTokens[playerID][piece].setY(points.get(to).getY() + 4 * piece);
         
-        if (playerID == this.playerID)
-        {
+        pathTransition.play();
+
+        if (playerID == this.playerID) {
             throwTheDice.setDisable(false);
             throwTheDice.setText(messages.getString("ludogameboard.throwdice"));
         }
