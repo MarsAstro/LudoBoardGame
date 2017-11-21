@@ -22,15 +22,15 @@ public class ClientLudoTask implements Runnable {
 
 	@Override
 	public void run() {
-		while(!Client.socket.isClosed()) {
+		while (!Client.socket.isClosed()) {
 			try {
 				currentTask = ludoTasks.take();
-				
+
 				handleReceivedLudoPacket(currentTask);
 			} catch (InterruptedException e) {
 				LOGGER.log(Level.WARNING, e.getMessage(), e);
 			}
-			
+
 		}
 	}
 
@@ -41,7 +41,7 @@ public class ClientLudoTask implements Runnable {
 	 *            Message to be put in queue
 	 */
 	public static void addNewTask(String message) {
-		
+
 		try {
 			ludoTasks.put(message);
 		} catch (InterruptedException e) {
@@ -106,7 +106,9 @@ public class ClientLudoTask implements Runnable {
 		int playerState = Integer.parseInt(messageInfos[2]);
 
 		GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
-		Platform.runLater(() -> gbc.updateActivePlayer(playerIndex, playerState));
+		if (gbc != null) {
+			Platform.runLater(() -> gbc.updateActivePlayer(playerIndex, playerState));
+		}
 	}
 
 	private void handleReceivedLudoNamePacket(String message) {
@@ -127,7 +129,9 @@ public class ClientLudoTask implements Runnable {
 		String newName = name;
 
 		GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
-		Platform.runLater(() -> gbc.updateName(newName, playerIndex));
+		if (gbc != null) {
+			Platform.runLater(() -> gbc.updateName(newName, playerIndex));
+		}
 	}
 
 	private void handleReceivedLudoPiece(String ackMessage) {
