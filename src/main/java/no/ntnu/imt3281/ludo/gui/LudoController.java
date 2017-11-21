@@ -14,6 +14,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
@@ -43,6 +44,10 @@ public class LudoController implements Initializable {
 
     @FXML // fx:id="logoutButton"
     private MenuItem logoutButton;
+    
+
+    @FXML // fx:id="spinner"
+    private ProgressIndicator spinner;
 
     @FXML // fx:id="random"
     private MenuItem random;
@@ -138,6 +143,7 @@ public class LudoController implements Initializable {
      *            Message indicating if connection was a success
      */
     public void handleServerJoinRandomGame(String ackMessage) {
+        spinner.setVisible(false);
         random.setDisable(false);
         int gameID = handleServerJoinGame(ackMessage);
         Client.sendMessage("Ludo.Init:" + gameID);
@@ -218,6 +224,7 @@ public class LudoController implements Initializable {
      * Display acknowledgment that client is in queue for random game
      */
     public void JoinRandomSuccess() {
+        spinner.setVisible(true);
         random.setDisable(true);
     }
 }
