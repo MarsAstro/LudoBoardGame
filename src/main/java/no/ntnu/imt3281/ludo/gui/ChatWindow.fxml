@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TitledPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<TitledPane fx:id="roomTitle" animated="false" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" text="%chat.global" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.141" fx:controller="no.ntnu.imt3281.ludo.gui.chatWindowController">
+   <content>
+      <GridPane prefHeight="457.0" prefWidth="779.0">
+        <columnConstraints>
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="429.0" minWidth="10.0" prefWidth="410.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="282.0" minWidth="10.0" prefWidth="164.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints maxHeight="167.0" minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
+          <RowConstraints maxHeight="318.0" minHeight="10.0" prefHeight="299.0" vgrow="SOMETIMES" />
+            <RowConstraints maxHeight="318.0" minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <Label text="%chat.chat" />
+            <Label text="%chat.users" GridPane.columnIndex="1" />
+            <ScrollPane fx:id="chatBox" prefHeight="200.0" prefWidth="200.0" GridPane.rowIndex="1">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="276.0" prefWidth="385.0" />
+              </content>
+            </ScrollPane>
+            <ScrollPane fx:id="userBox" prefHeight="309.0" prefWidth="111.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="165.0" prefWidth="145.0" />
+              </content>
+            </ScrollPane>
+            <TextField onAction="#sendChatMessage" GridPane.rowIndex="2" />
+            <Button mnemonicParsing="false" onAction="#sendChatMessage" text="%chat.say" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="2">
+               <GridPane.margin>
+                  <Insets left="30.0" />
+               </GridPane.margin>
+            </Button>
+         </children>
+      </GridPane>
+   </content>
+</TitledPane>
