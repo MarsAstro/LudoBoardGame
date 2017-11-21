@@ -331,7 +331,6 @@ public class GameBoardController implements Initializable {
      *            Which state the player is at
      */
     public void updateActivePlayer(int playerIndex, int state) {
-        throwTheDice.setDisable(true);
         diceThrown.setVisible(false);
         switch (state) {
             case PlayerEvent.PLAYING :
@@ -347,6 +346,9 @@ public class GameBoardController implements Initializable {
                 break;
             case PlayerEvent.WAITING :
                 activeTokens.get(playerIndex).setVisible(false);
+                if (playerIndex == playerID) {
+                	throwTheDice.setDisable(true);
+                }
                 break;
             default :
                 break;

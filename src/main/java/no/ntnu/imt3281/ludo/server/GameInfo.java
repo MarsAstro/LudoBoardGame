@@ -135,7 +135,7 @@ public class GameInfo {
                 } else if ("Started".equals(status)) {
                     clients.remove(index);
                     ludo.removePlayer(ludoPlayerName);
-                    returnName = ludoPlayerName;
+                    returnName = ludo.getPlayerName(playerIndex);
                 }
             }
         }
