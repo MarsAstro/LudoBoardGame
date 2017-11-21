@@ -58,22 +58,36 @@ public class ClientChatTask implements Runnable {
             	handleSayChatPacket(ackMessage);
                 break;
             case "Join:" :
-            	//Platform.runLater(() -> Client.ludoController.handleServerJoinChat(ackMessage));
+            	Platform.runLater(() -> Client.ludoController.handleServerJoinChat(ackMessage));
                 break;
+            case "Name:" :
+            	handleNameChatPacket(ackMessage);
+            	break;
             default :
                 break;
         }
     }
+
+	private void handleNameChatPacket(String ackMessage) {
+		String[] messages = ackMessage.split(",");
+		int chatID = Integer.parseInt(messages[0]);
+		String name = messages[1];
+		
+		ChatWindowController cwc = Client.ludoController.getChatWindowController(chatID);
+		if (cwc != null) {
+			Platform.runLater(() -> cwc.updateChatNames(name));
+		}
+	}
 
 	private void handleSayChatPacket(String message) {
 		String[] messages = message.split(",");
 		int chatID = Integer.parseInt(messages[0]);
 		String sayMessage = messages[1];
 		
-		/*ChatWindowController cwc = Client.ludoController.getChatWindowController(chatID);
+		ChatWindowController cwc = Client.ludoController.getChatWindowController(chatID);
 		if (cwc != null) {
 			Platform.runLater(() -> cwc.updateChat(sayMessage));
-		}*/
+		}
 	}
 	
 	
