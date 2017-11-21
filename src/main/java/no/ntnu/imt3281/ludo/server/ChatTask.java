@@ -55,7 +55,6 @@ public class ChatTask implements Runnable {
 		default:
 			break;
 		}
-
 	}
 
 	private void handleSayChatPacket(String message) {

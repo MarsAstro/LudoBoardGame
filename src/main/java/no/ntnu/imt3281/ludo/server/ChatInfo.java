@@ -14,6 +14,7 @@ public class ChatInfo {
 	 */
 	ChatInfo(int chatID) {
 		this.chatID = chatID;
+		clients = new ArrayList<>();
 	}
 
 	/**
