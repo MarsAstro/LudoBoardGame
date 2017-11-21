@@ -4,6 +4,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
+import no.ntnu.imt3281.ludo.gui.ChatWindowController;
+
 
 /**
  * Handles tasks releated to chat rooms and messages
@@ -46,18 +49,46 @@ public class ClientChatTask implements Runnable {
 	}
 	
 	private void handleReceivedChatPacket(String message) {
-
         int tagEndIndex = message.indexOf(":") + 1;
         String tag = message.substring(0, tagEndIndex);
         String ackMessage = message.substring(tagEndIndex);
 
         switch (tag) {
-            case "Update:" :
+            case "Say:" :
+            	handleSayChatPacket(ackMessage);
                 break;
             case "Join:" :
+            	Platform.runLater(() -> Client.ludoController.handleServerJoinChat(ackMessage));
                 break;
+            case "Name:" :
+            	handleNameChatPacket(ackMessage);
+            	break;
             default :
                 break;
         }
     }
+
+	private void handleNameChatPacket(String ackMessage) {
+		String[] messages = ackMessage.split(",");
+		int chatID = Integer.parseInt(messages[0]);
+		String name = messages[1];
+		
+		ChatWindowController cwc = Client.ludoController.getChatWindowController(chatID);
+		if (cwc != null) {
+			Platform.runLater(() -> cwc.updateChatNames(name));
+		}
+	}
+
+	private void handleSayChatPacket(String message) {
+		String[] messages = message.split(",");
+		int chatID = Integer.parseInt(messages[0]);
+		String sayMessage = messages[1];
+		
+		ChatWindowController cwc = Client.ludoController.getChatWindowController(chatID);
+		if (cwc != null) {
+			Platform.runLater(() -> cwc.updateChat(sayMessage));
+		}
+	}
+	
+	
 }

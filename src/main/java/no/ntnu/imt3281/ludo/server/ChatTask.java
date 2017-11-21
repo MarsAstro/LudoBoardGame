@@ -21,10 +21,9 @@ public class ChatTask implements Runnable {
 			try {
 				currentTask = chatTasks.take();
 
-				int endIndex = currentTask.indexOf(":");
-				String tag = currentTask.substring(0, endIndex);
-
-				handleMessage(tag, currentTask.substring(endIndex));
+				int endIDIndex = currentTask.indexOf(".");
+				int clientID = Integer.parseInt(currentTask.substring(0, endIDIndex));
+				handleMessage(clientID, currentTask.substring(endIDIndex + 1));
 
 			} catch (InterruptedException e) {
 				LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -33,53 +32,66 @@ public class ChatTask implements Runnable {
 		}
 	}
 
-	/*
-	 * Messages: Chat.Join:ChatID,ClientID
-	 * 
-	 * Chat.List:
-	 * 
-	 * Chat.Say:ChatID,ClientID,Message
-	 */
+	private void handleMessage(int clientID, String message) {
+		int endIndex = currentTask.indexOf(":");
+		String tag = currentTask.substring(0, endIndex);
 
-	private void handleMessage(String tag, String message) {
 		switch (tag) {
-		case "Join":
-			handleJoinChatPacket(message);
+		case "Join:":
+			handleJoinChatPacket(clientID, message);
 			break;
-		case "List":
+		case "List:":
 			handleListChatPacket(message);
 			break;
-		case "Say":
-			handleSayChatPacket(message);
+		case "Say:":
+			handleSayChatPacket(clientID, message);
+			break;
+		case "Init:":
+			handleInitChatPacket(clientID, message);
 			break;
 		default:
 			break;
 		}
 	}
 
-	private void handleSayChatPacket(String message) {
-		String[] messages = message.split(",");
-		int chatID = Integer.parseInt(messages[0]);
-		int clientID = Integer.parseInt(messages[1]);
-		String sayMessage = messages[2];
+	private void handleInitChatPacket(int clientID, String message) {
+		int chatID = Integer.parseInt(message);
+		int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
 
-		int clientConnectionID = Server.connections.indexOf(new ClientInfo(clientID));
+		if (chatIndex >= 0) {
+			ChatInfo chat = Server.chats.get(chatIndex);
 
-		if (clientConnectionID >= 0) {
-			int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
-
-			if (chatIndex >= 0) {
-				ChatInfo chat = Server.chats.get(chatIndex);
-				int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
-
-				if (clientIndex == -1) {
-					chat.say(sayMessage);
-					for (ClientInfo client : chat.clients) {
-						SendToClientTask.send(client.clientID + ".Chat.Say:" + chatID + "," + sayMessage);
+			int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
+			if (clientIndex >= 0) {
+				ClientInfo clientToInit = chat.clients.get(clientIndex);
+				for (ClientInfo client : chat.clients) {
+					if (!clientToInit.equals(client)) {
+						SendToClientTask.send("Chat.Name:" + chatID + "," + client.username);
 					}
 				}
 			}
+		}
+	}
 
+	private void handleSayChatPacket(int clientID, String message) {
+		String[] messages = message.split(",");
+		int chatID = Integer.parseInt(messages[0]);
+		String sayMessage = messages[1];
+
+		int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
+
+		if (chatIndex >= 0) {
+			ChatInfo chat = Server.chats.get(chatIndex);
+			int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
+
+			if (clientIndex >= 0) {
+				String talkingClientName = Server.connections.get(clientID).username;
+				chat.say(sayMessage);
+				for (ClientInfo client : chat.clients) {
+					SendToClientTask
+							.send(client.clientID + ".Chat.Say:" + chatID + "," + talkingClientName + ": " + sayMessage);
+				}
+			}
 		}
 	}
 
@@ -88,31 +100,24 @@ public class ChatTask implements Runnable {
 		// Open Tab with active chats
 	}
 
-	private void handleJoinChatPacket(String message) {
-		String[] messages = message.split(",");
-		int chatID = Integer.parseInt(messages[0]);
-		int clientID = Integer.parseInt(messages[1]);
+	private void handleJoinChatPacket(int clientID, String message) {
+		int chatID = Integer.parseInt(message);
+		int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
 
-		int clientConnectionID = Server.connections.indexOf(new ClientInfo(clientID));
+		if (chatIndex >= 0) {
+			ChatInfo chat = Server.chats.get(chatIndex);
+			int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
 
-		if (clientConnectionID >= 0) {
-			int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
-
-			if (chatIndex >= 0) {
-				ChatInfo chat = Server.chats.get(chatIndex);
-				int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
-
-				if (clientIndex == -1) {
-					ClientInfo addedClient = Server.connections.get(clientConnectionID);
-					chat.addClient(addedClient);
-					for (ClientInfo client : chat.clients) {
-						SendToClientTask.send(client.clientID + ".Chat.Say:" + chatID + "," + addedClient.username
-								+ " has joined the lobby!");
-					}
+			if (clientIndex == -1) {
+				ClientInfo addedClient = Server.connections.get(clientID);
+				chat.addClient(addedClient);
+				SendToClientTask.send(addedClient.clientID + ".Chat.Join:" + chatID);
+				for (ClientInfo client : chat.clients) {
+					SendToClientTask.send(client.clientID + ".Chat.Name:" + chatID + "," + addedClient.username);
 				}
 			}
-
 		}
+
 	}
 
 	/**
