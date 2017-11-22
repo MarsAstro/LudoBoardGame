@@ -4,6 +4,7 @@ import java.awt.Point;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.ResourceBundle;
 
 import javafx.animation.PathTransition;
@@ -396,11 +397,32 @@ public class GameBoardController implements Initializable {
     public void updatePiece(int playerID, int piece, int from, int to) {
         Rectangle token = playerTokens[playerID][piece];
 
+        // Start coordinates for movement animation
+        double startX = token.getX() + TILESIZE / 2;
+        double startY = token.getY() + TILESIZE / 2;
+        double goalX = points.get(to).getX() + (TILESIZE / 2) + (4 * piece);
+        double goalY = points.get(to).getY() + (TILESIZE / 2) + (4 * piece);
+
+        // Setup initial placement for animation
         Path path = new Path();
-        path.getElements()
-                .add(new MoveTo(token.getX() + TILESIZE / 2, token.getY() + TILESIZE / 2));
-        path.getElements().add(new LineTo(points.get(to).getX() + (TILESIZE / 2) + (4 * piece),
-                points.get(to).getY() + (TILESIZE / 2) + (4 * piece)));
+        path.getElements().add(new MoveTo(startX, startY));
+
+        // Setup how to move to final placement of animation
+        // Wonky bezier curve between two of maps corners when moving to goal,
+        // straight line otherwise
+        if (to == 73 || to == 79 || to == 85 || to == 91) {
+            int mapEdge = 15 * TILESIZE;
+
+            Random rand = new Random();
+            Point firstPoint = rand.nextInt(2) == 0 ? new Point(0, 0) : new Point(mapEdge, 0);
+            Point secondPoint = rand.nextInt(2) == 0
+                    ? new Point(0, mapEdge)
+                    : new Point(mapEdge, mapEdge);
+            path.getElements().add(new CubicCurveTo(firstPoint.getX(), firstPoint.getY(),
+                    secondPoint.getX(), secondPoint.getY(), goalX, goalY));
+        } else {
+            path.getElements().add(new LineTo(goalX, goalY));
+        }
 
         PathTransition pathTransition = new PathTransition(Duration.millis(200), path);
         pathTransition.setNode(token);
