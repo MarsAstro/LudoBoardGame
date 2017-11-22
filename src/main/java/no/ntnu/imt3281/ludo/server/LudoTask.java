@@ -77,9 +77,32 @@ public class LudoTask implements Runnable {
 		case "Leave:":
 			handleLudoLeavePacket(clientID, message.substring(tagEndIndex));
 			break;
+		case "Chat:":
+			handleLudoChatPacket(clientID, message.substring(tagEndIndex));
+			break;
 		default:
 			break;
 		}
+	}
+
+	private void handleLudoChatPacket(int clientID, String message) {
+		int endGameIDIndex = message.indexOf(",");
+		int gameID = Integer.parseInt(message.substring(0, endGameIDIndex));
+
+		Server.gameLock.readLock().lock();
+		int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+		Server.chatLock.readLock().lock();
+		int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+		if (gameIndex >= 0 && clientIndex >= 0) {
+			String talkingClientName = Server.clients.get(clientIndex).username;
+			GameInfo gameInfo = Server.games.get(gameIndex);
+			for (ClientInfo client : gameInfo.clients) {
+				SendToClientTask.send(client.clientID + ".Ludo.Chat:" + gameInfo.gameID + "," + talkingClientName + ": "
+						+ message.substring(endGameIDIndex + 1));
+			}
+		}
+		Server.chatLock.readLock().unlock();
+		Server.gameLock.readLock().unlock();
 	}
 
 	private void handleLudoInitPacket(String message) {

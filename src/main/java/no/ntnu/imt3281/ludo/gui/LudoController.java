@@ -35,6 +35,7 @@ public class LudoController implements Initializable {
 	private ArrayList<GameBoardController> gameBoards;
 	private ArrayList<ChatWindowController> chatWindows;
 	private ChatListController chatList;
+	private ChallengeListController challengeList;
 	private Tab mainTab;
 	private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
 	private String username;
@@ -115,6 +116,26 @@ public class LudoController implements Initializable {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
 	}
+	
+	@FXML
+    void openChallengeList(ActionEvent event) {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("ChallengeList.fxml"));
+		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+
+		try {
+			GridPane root = (GridPane) loader.load();
+			Scene scene = new Scene(root);
+			Stage loginStage = new Stage();
+
+			loginStage.setScene(scene);
+			loginStage.show();
+			loginStage.setOnCloseRequest(e -> challengeList = null);
+			challengeList = loader.getController();
+			Client.sendMessage("User.List:");
+		} catch (IOException e) {
+			LOGGER.log(Level.WARNING, e.getMessage(), e);
+		}
+    }
 
 	@FXML
 	void logout(ActionEvent event) {
@@ -312,5 +333,12 @@ public class LudoController implements Initializable {
 	 */
 	public ChatListController getChatListContoller() {
 		return chatList;
+	}
+	
+	/**
+	 * @return The challenge list controller
+	 */
+	public ChallengeListController getChallengeListContoller() {
+		return challengeList;
 	}
 }
