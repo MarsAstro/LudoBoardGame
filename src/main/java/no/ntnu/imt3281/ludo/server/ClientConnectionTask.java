@@ -86,7 +86,7 @@ public class ClientConnectionTask implements Runnable {
 
                 newUser.next();
                 Server.clientLock.writeLock().lock();
-                Server.connections
+                Server.clients
                         .add(new ClientInfo(newClientSocket, newUser.getInt("UserID"), username));
                 Server.clientLock.writeLock().unlock();
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
@@ -123,7 +123,7 @@ public class ClientConnectionTask implements Runnable {
 
             String ackMessage = "User.Login:";
             boolean alreadyLoggedIn = false;
-            for (ClientInfo client : Server.connections) {
+            for (ClientInfo client : Server.clients) {
                 if (client.userEquals(username)) {
                     alreadyLoggedIn = true;
                     break;
@@ -134,7 +134,7 @@ public class ClientConnectionTask implements Runnable {
                 ackMessage += "-2";
             } else if (resultSet.next()) {
                 Server.clientLock.writeLock().lock();
-                Server.connections
+                Server.clients
                         .add(new ClientInfo(newClientSocket, resultSet.getInt("UserID"), username));
                 Server.clientLock.writeLock().unlock();
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());

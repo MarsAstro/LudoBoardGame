@@ -63,10 +63,24 @@ public class ClientChatTask implements Runnable {
             case "Name:" :
             	handleNameChatPacket(ackMessage);
             	break;
+            case "RemoveName:" :
+            	handleLeaveChatPacket(ackMessage);
+            	break;
             default :
                 break;
         }
     }
+
+	private void handleLeaveChatPacket(String ackMessage) {
+		String[] messages = ackMessage.split(",");
+		int chatID = Integer.parseInt(messages[0]);
+		String name = messages[1];	
+		
+		ChatWindowController cwc = Client.ludoController.getChatWindowController(chatID);
+		if (cwc != null) {
+			Platform.runLater(() -> cwc.removeChatName(name));
+		}
+	}
 
 	private void handleNameChatPacket(String ackMessage) {
 		String[] messages = ackMessage.split(",");
@@ -75,7 +89,7 @@ public class ClientChatTask implements Runnable {
 		
 		ChatWindowController cwc = Client.ludoController.getChatWindowController(chatID);
 		if (cwc != null) {
-			Platform.runLater(() -> cwc.updateChatNames(name));
+			Platform.runLater(() -> cwc.addChatName(name));
 		}
 	}
 
@@ -86,7 +100,7 @@ public class ClientChatTask implements Runnable {
 		
 		ChatWindowController cwc = Client.ludoController.getChatWindowController(chatID);
 		if (cwc != null) {
-			Platform.runLater(() -> cwc.updateChat(sayMessage));
+			Platform.runLater(() -> cwc.addChatMessage(sayMessage));
 		}
 	}
 	

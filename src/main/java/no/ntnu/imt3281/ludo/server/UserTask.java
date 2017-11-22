@@ -55,7 +55,7 @@ public class UserTask implements Runnable {
 
     private void handleUserLogoutPacket(Integer clientID, String message) {
         String ackMessage = "User.Logout:"
-                + (Server.connections.contains(new ClientInfo(clientID)) ? "1" : "-1");
+                + (Server.clients.contains(new ClientInfo(clientID)) ? "1" : "-1");
 
         SendToClientTask.send(clientID + "." + ackMessage);
     }

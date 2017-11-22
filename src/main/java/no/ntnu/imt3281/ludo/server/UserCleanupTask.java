@@ -23,8 +23,9 @@ public class UserCleanupTask implements Runnable {
                 Integer clientID = removeIDs.take();
                 
                 Server.clientLock.writeLock().lock();
-                Server.connections.remove(new ClientInfo(clientID));
+                Server.clients.remove(new ClientInfo(clientID));
                 Server.clientLock.writeLock().unlock();
+                
                 Server.gameLock.writeLock().lock();
                 for (int game = 0; game < Server.games.size(); ++game) {
                 	Server.games.get(game).removePlayer(clientID);
@@ -34,6 +35,27 @@ public class UserCleanupTask implements Runnable {
                 	}
                 }
                 Server.gameLock.writeLock().unlock();
+
+                Server.chatLock.writeLock().lock();
+                for (int chat = 0; chat < Server.chats.size(); ++chat) {
+                	ChatInfo chatInfo = Server.chats.get(chat);
+                	
+                	int clientIndex = chatInfo.clients.indexOf(new ClientInfo(clientID));             	
+                	String clientToRemoveName = chatInfo.clients.get(clientIndex).username;
+                	
+                	chatInfo.removeClient(clientID);
+                	if (chatInfo.clients.size() == 0 && chat != 0) {
+                		Server.chats.remove(chat);
+                		chat--;
+                	}
+                	else {
+                		for (ClientInfo client : chatInfo.clients) {
+                			SendToClientTask.send(client.clientID + ".Chat.RemoveName:" + chatInfo.chatID + "," + clientToRemoveName);
+                		}	
+                	}
+                }
+                Server.chatLock.writeLock().unlock();
+                
                 Platform.runLater(() -> {
                 	Server.serverGUIController.updateUserList();
                 	Server.serverGUIController.updateGameList();

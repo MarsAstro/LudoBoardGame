@@ -28,7 +28,7 @@ public class ServerGUIController {
     public void updateUserList() {
         VBox vBox = new VBox();
         Server.clientLock.readLock().lock();
-        for (ClientInfo clientInfo : Server.connections) {
+        for (ClientInfo clientInfo : Server.clients) {
             vBox.getChildren()
                     .add(new Label("ID: " + clientInfo.clientID + " Address: "
                             + clientInfo.connection.getInetAddress().toString() + " Port: "

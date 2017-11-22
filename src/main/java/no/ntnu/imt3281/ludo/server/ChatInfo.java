@@ -64,8 +64,10 @@ public class ChatInfo {
 	 * @param message
 	 *            The message sent to chat
 	 */
-	public void say(String message) {
-
+	public void say(String sayMessage) {
+		for (ClientInfo client : clients) {
+			SendToClientTask.send(client.clientID + ".Chat.Say:" + chatID + "," + sayMessage);
+		}
 	}
 
 	/**

@@ -107,8 +107,8 @@ public class LudoTask implements Runnable {
 	}
 
 	private void handleLudoJoinRandomPacket(int clientID, String message) {
-		int index = Server.connections.indexOf(new ClientInfo(clientID));
-		ClientInfo newClient = Server.connections.get(index);
+		int index = Server.clients.indexOf(new ClientInfo(clientID));
+		ClientInfo newClient = Server.clients.get(index);
 
 		randomQueue.add(newClient);
 		SendToClientTask.send(newClient.clientID + ".Ludo.RandomSuccess:");
@@ -205,10 +205,10 @@ public class LudoTask implements Runnable {
 		if (gameIndex >= 0) {
 			GameInfo game = Server.games.get(gameIndex);
 			Server.clientLock.readLock().lock();
-			int removeClientIndex = Server.connections.indexOf(new ClientInfo(clientID));
+			int removeClientIndex = Server.clients.indexOf(new ClientInfo(clientID));
 
 			if (removeClientIndex >= 0) {
-				String removeClientName = Server.connections.get(removeClientIndex).username;
+				String removeClientName = Server.clients.get(removeClientIndex).username;
 
 				int playerIndex = game.ludo.getIndexOfPlayer(removeClientName);
 

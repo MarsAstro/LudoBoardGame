@@ -25,7 +25,7 @@ public class ServerInputTask implements Runnable {
     public void run() {
         while (!Server.serverSocket.isClosed()) {
             Server.clientLock.readLock().lock();
-            for (ClientInfo client : Server.connections) {
+            for (ClientInfo client : Server.clients) {
                 try {
                     if (client.connection.getInputStream().available() > 0) {
                         
