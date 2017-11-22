@@ -9,11 +9,14 @@ import java.util.ResourceBundle;
 
 import javafx.animation.PathTransition;
 import javafx.animation.PathTransition.OrientationType;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.effect.Bloom;
@@ -55,6 +58,8 @@ public class GameBoardController implements Initializable {
     ArrayList<Image> diceImages;
     ArrayList<Image> pieceImages;
     Rectangle[][] playerTokens;
+    
+    private ObservableList<Label> messageList = FXCollections.observableArrayList();
 
     @FXML // fx:id="player1Active"
     private AnchorPane anchorPane;
@@ -90,7 +95,7 @@ public class GameBoardController implements Initializable {
     private Button throwTheDice;
 
     @FXML // fx:id="chatArea"
-    private TextArea chatArea;
+    private ListView<Label> chatArea;
 
     @FXML // fx:id="textToSay"
     private TextField textToSay;
@@ -308,7 +313,10 @@ public class GameBoardController implements Initializable {
 
     @FXML
     void say(ActionEvent event) {
-        // TODO sjætt
+    	if (!textToSay.getText().isEmpty()) {
+			Client.sendMessage("Ludo.Chat:" + gameID + "," + textToSay.getText());
+			textToSay.clear();
+		}
     }
 
     @FXML
@@ -438,7 +446,9 @@ public class GameBoardController implements Initializable {
         }
     }
 
-	public void addMessage(String substring) {
-		
+	public void addMessage(String message) {
+		Label messageBox = new Label(message);
+		messageList.add(messageBox);
+		chatArea.setItems(messageList);
 	}
 }
