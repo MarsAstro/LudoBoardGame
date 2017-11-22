@@ -16,7 +16,6 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
  *
  */
 public class LudoTask implements Runnable {
-
 	private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
 	private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
 
@@ -153,6 +152,7 @@ public class LudoTask implements Runnable {
 		int playerID = Integer.parseInt(messages[1]);
 		int from = Integer.parseInt(messages[2]);
 		int to = Integer.parseInt(messages[3]);
+		int piece = Integer.parseInt(messages[4]);
 
 		int gameIndex = Server.games.indexOf(new GameInfo(gameID));
 		if (gameIndex >= 0) {
@@ -161,24 +161,22 @@ public class LudoTask implements Runnable {
 			int[][] globalPiecePositions = game.ludo.getGlobalPiecePositions();
 			int[][] piecePositions = game.ludo.getPiecePositions();
 
-			int newFrom = -1;
-			for (int piece = 0; piece < 4; ++piece) {
-				if (globalPiecePositions[playerID][piece] == from) {
-					newFrom = piecePositions[playerID][piece];
-				}
-				;
+			int newFrom = globalPiecePositions[playerID][piece] == from ? piecePositions[playerID][piece] : -1;
+			int newTo = -1;
+
+			if (from < 16 && newFrom != -1) {
+				newFrom = 0;
+				newTo = 1;
+			} else if (to < from) {
+				newTo = newFrom + to - from + 52;
+			} else if (to < 68) {
+				newTo = newFrom + (to - from);
+			} else {
+				newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
 			}
 
-			if (from < 16) {
-				game.ludo.movePiece(playerID, 0, 1);
-			} else if (to < from && newFrom != -1) {
-				int newTo = newFrom + to - from + 52;
-				game.ludo.movePiece(playerID, newFrom, newTo);
-			} else if (to < 68 && newFrom != -1) {
-				int newTo = newFrom + (to - from);
-				game.ludo.movePiece(playerID, newFrom, newTo);
-			} else if (newFrom != -1) {
-				int newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
+			if (newFrom != -1 && newTo != -1) {
+				game.ludo.setSelectedPiece(piece);
 				game.ludo.movePiece(playerID, newFrom, newTo);
 			}
 
