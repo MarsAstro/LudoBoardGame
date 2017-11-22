@@ -58,6 +58,12 @@ public class Ludo {
         playerListeners = new ArrayList<>();
         piecePositions = new int[4][4];
         globalPiecePositions = new int[4][4];
+
+        for (int player = 0; player < 4; player++) {
+            for (int piece = 0; piece < 4; piece++) {
+                globalPiecePositions[player][piece] = piece + player * 4;
+            }
+        }
     }
 
     /**
@@ -87,6 +93,12 @@ public class Ludo {
         playerNames.add(name4);
         if (nrOfPlayers() < 2) {
             throw new NotEnoughPlayersException();
+        }
+        
+        for (int player = 0; player < 4; player++) {
+            for (int piece = 0; piece < 4; piece++) {
+                globalPiecePositions[player][piece] = piece + player * 4;
+            }
         }
     }
 

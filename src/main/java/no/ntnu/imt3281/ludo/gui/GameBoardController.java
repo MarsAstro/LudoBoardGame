@@ -3,6 +3,7 @@ package no.ntnu.imt3281.ludo.gui;
 import java.awt.Point;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.ResourceBundle;
 
 import javafx.animation.PathTransition;
@@ -45,6 +46,7 @@ public class GameBoardController implements Initializable {
     static final int TILESIZE = 48;
     Rectangle selectedToken;
     int selectedTokenTilePos;
+    int selectedTokenPieceIndex;
 
     ArrayList<Point> points;
     ArrayList<Label> playerNames;
@@ -121,7 +123,7 @@ public class GameBoardController implements Initializable {
             int tileIndex = CheckForTile(x, y);
             if (tileIndex != -1 && tileIndex != selectedTokenTilePos) {
                 Client.sendMessage("Ludo.Move:" + gameID + "," + playerID + ","
-                        + selectedTokenTilePos + "," + tileIndex);
+                        + selectedTokenTilePos + "," + tileIndex + "," + selectedTokenPieceIndex);
                 selectedToken.setEffect(null);
                 selectedToken = null;
             }
@@ -164,6 +166,7 @@ public class GameBoardController implements Initializable {
                     // Using event instead of hitrect position, because of
                     // rectangle gives floating point errors
                     selectedTokenTilePos = CheckForTile(event.getX(), event.getY());
+                    selectedTokenPieceIndex = piece;
 
                     DropShadow ds = new DropShadow();
                     ds.setOffsetY(5);
@@ -404,7 +407,7 @@ public class GameBoardController implements Initializable {
 
         playerTokens[playerID][piece].setX(points.get(to).getX() + 4 * piece);
         playerTokens[playerID][piece].setY(points.get(to).getY() + 4 * piece);
-        
+
         pathTransition.play();
 
         if (playerID == this.playerID) {
