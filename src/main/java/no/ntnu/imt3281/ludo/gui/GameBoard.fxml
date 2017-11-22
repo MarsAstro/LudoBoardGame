@@ -150,7 +150,7 @@
                         </ScrollPane>
                         <HBox>
                            <children>
-                              <TextField fx:id="textToSay" prefHeight="27.0" prefWidth="228.0" />
+                              <TextField fx:id="textToSay" onAction="#say" prefHeight="27.0" prefWidth="228.0" />
                               <Button fx:id="sendTextButton" mnemonicParsing="false" onAction="#say" prefHeight="27.0" prefWidth="67.0" text="%ludogameboard.saybutton" />
                            </children>
                         </HBox>
