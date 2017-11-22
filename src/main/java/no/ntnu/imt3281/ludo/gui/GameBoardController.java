@@ -437,4 +437,8 @@ public class GameBoardController implements Initializable {
             throwTheDice.setText(messages.getString("ludogameboard.throwdice"));
         }
     }
+
+	public void addMessage(String substring) {
+		
+	}
 }
