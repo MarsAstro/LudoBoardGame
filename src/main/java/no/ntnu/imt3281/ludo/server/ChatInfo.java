@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class ChatInfo {
 	int chatID;
+	String name;
 	ArrayList<ClientInfo> clients;
 
 	/**
@@ -18,15 +19,30 @@ public class ChatInfo {
 	}
 
 	/**
-	 * Initializes all fields and adds the client to the new chat
+	 * Initializes global chat
 	 * 
 	 * @param chatID
 	 *            The ID of the new chat
-	 * @param client
-	 *            The Client initiating the new game
+	 * @param name
+	 *            The name of the chat
 	 */
-	ChatInfo(int chatID, ClientInfo client) {
+	ChatInfo(int chatID, String name) {
 		this.chatID = chatID;
+		this.name = name;
+		clients = new ArrayList<>();
+	}
+
+	/**
+	 * Initializes not global chats and adds the client to the new chat
+	 * 
+	 * @param chatID
+	 *            The ID of the new chat
+	 * @param name
+	 *            The name of the chat
+	 */
+	ChatInfo(int chatID, String name, ClientInfo client) {
+		this.chatID = chatID;
+		this.name = name;
 		clients = new ArrayList<>();
 		clients.add(client);
 	}

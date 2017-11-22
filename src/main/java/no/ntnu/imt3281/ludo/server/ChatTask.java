@@ -40,6 +40,9 @@ public class ChatTask implements Runnable {
 		case "Join:":
 			handleJoinChatPacket(clientID, message.substring(endIndex + 1));
 			break;
+		case "Create:":
+			handleCreateChatPacket(clientID, message.substring(endIndex + 1));
+			break;
 		case "List:":
 			handleListChatPacket(clientID);
 			break;
@@ -60,20 +63,77 @@ public class ChatTask implements Runnable {
 		}
 	}
 
+	private void handleInitChatPacket(int clientID, String message) {
+		int chatID = Integer.parseInt(message);
+
+		Server.chatLock.readLock().lock();
+		int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
+		if (chatIndex >= 0) {
+			Server.clientLock.readLock().lock();
+			int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+
+			if (clientIndex >= 0) {
+				ChatInfo chat = Server.chats.get(chatIndex);
+				ClientInfo newClient = Server.clients.get(clientIndex);
+
+				for (ClientInfo client : chat.clients) {
+					SendToClientTask.send(newClient.clientID + ".Chat.Name:" + chatID + "," + client.username);
+				}
+
+				chat.addClient(newClient);
+
+				for (ClientInfo client : chat.clients) {
+					SendToClientTask.send(client.clientID + ".Chat.Name:" + chatID + "," + newClient.username);
+				}
+			}
+			Server.clientLock.readLock().unlock();
+		}
+		Server.chatLock.readLock().unlock();
+	}
+
+	private void handleCreateChatPacket(int clientID, String name) {
+		boolean nameExists = false;
+		Server.chatLock.readLock().lock();
+		for (ChatInfo chat : Server.chats) {
+			if (name.equals(chat.name)) {
+				nameExists = true;
+				break;
+			}
+		}
+		Server.chatLock.readLock().unlock();
+
+		if (!nameExists) {
+			Server.chatLock.writeLock().lock();
+			Server.clientLock.readLock().lock();
+			int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+
+			if (clientIndex >= 0) {
+				ClientInfo client = Server.clients.get(clientIndex);
+				Server.chats.add(new ChatInfo(Server.nextChatID++, name, client));
+				SendToClientTask.send(clientID + ".Chat.Create:" + nameExists + ","
+						+ Server.chats.get(Server.chats.size() - 1).chatID + "," + name);
+			}
+			Server.clientLock.readLock().unlock();
+			Server.chatLock.writeLock().unlock();
+		} else {
+			SendToClientTask.send(clientID + ".Chat.Create:" + nameExists + ",");
+		}
+	}
+
 	private void handleLeaveChatPacket(int clientID, String message) {
 		int chatID = Integer.parseInt(message);
-		
+
 		Server.chatLock.writeLock().lock();
 		int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
-		
+
 		if (chatIndex >= 0) {
 			ChatInfo chat = Server.chats.get(chatIndex);
 			int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
 			if (clientIndex >= 0) {
 				String clientToRemoveName = chat.clients.get(clientIndex).username;
-				
+
 				chat.removeClient(clientIndex);
-				
+
 				for (ClientInfo client : chat.clients) {
 					SendToClientTask.send(client.clientID + ".Chat.RemoveName:" + chatID + "," + clientToRemoveName);
 				}
@@ -84,25 +144,25 @@ public class ChatTask implements Runnable {
 
 	private void handleInitGlobalChatPacket(int clientID, String message) {
 		int chatID = Integer.parseInt(message);
-		
+
 		Server.chatLock.writeLock().lock();
 		int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
 
 		if (chatIndex >= 0) {
 			ChatInfo chat = Server.chats.get(chatIndex);
-			
+
 			Server.clientLock.readLock().lock();
 			int clientConnection = Server.clients.indexOf(new ClientInfo(clientID));
 
 			if (clientConnection >= 0) {
 				ClientInfo newClient = Server.clients.get(clientConnection);
-				
+
 				for (ClientInfo client : chat.clients) {
 					SendToClientTask.send(newClient.clientID + ".Chat.Name:" + chatID + "," + client.username);
 				}
-				
+
 				chat.addClient(newClient);
-				
+
 				for (ClientInfo client : chat.clients) {
 					SendToClientTask.send(client.clientID + ".Chat.Name:" + chatID + "," + newClient.username);
 				}
@@ -110,28 +170,6 @@ public class ChatTask implements Runnable {
 			Server.clientLock.readLock().unlock();
 		}
 		Server.chatLock.writeLock().unlock();
-	}
-
-	private void handleInitChatPacket(int clientID, String message) {
-		int chatID = Integer.parseInt(message);
-		
-		Server.chatLock.readLock().lock();
-		int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
-
-		if (chatIndex >= 0) {
-			ChatInfo chat = Server.chats.get(chatIndex);
-
-			int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
-			if (clientIndex >= 0) {
-				ClientInfo clientToInit = chat.clients.get(clientIndex);
-				for (ClientInfo client : chat.clients) {
-					if (!clientToInit.equals(client)) {
-						SendToClientTask.send(clientToInit.clientID + ".Chat.Name:" + chatID + "," + client.username);
-					}
-				}
-			}
-		}
-		Server.chatLock.readLock().unlock();
 	}
 
 	private void handleSayChatPacket(int clientID, String message) {
@@ -168,7 +206,7 @@ public class ChatTask implements Runnable {
 
 	private void handleJoinChatPacket(int clientID, String message) {
 		int chatID = Integer.parseInt(message);
-		
+
 		Server.chatLock.writeLock().lock();
 		int chatIndex = Server.chats.indexOf(new ChatInfo(chatID));
 
@@ -176,19 +214,27 @@ public class ChatTask implements Runnable {
 			ChatInfo chat = Server.chats.get(chatIndex);
 			int clientIndex = chat.clients.indexOf(new ClientInfo(clientID));
 
-			if (clientIndex == -1) {
+			if (clientIndex < 0) {
 				Server.clientLock.readLock().lock();
 				int clientConnection = Server.clients.indexOf(new ClientInfo(clientID));
 
 				if (clientConnection >= 0) {
 					ClientInfo addedClient = Server.clients.get(clientConnection);
-					
-					chat.addClient(addedClient);
-					
-					SendToClientTask.send(addedClient.clientID + ".Chat.Join:" + chatID);
+
 					for (ClientInfo client : chat.clients) {
-						SendToClientTask.send(client.clientID + ".Chat.Name:" + chatID + "," + addedClient.username);
+						SendToClientTask.send(addedClient.clientID + ".Chat.Name:" + chatID + "," + client.username);
 					}
+
+					chat.addClient(addedClient);
+
+					for (ClientInfo client : chat.clients) {
+						if (!client.username.equals(addedClient.username)) {
+							SendToClientTask
+									.send(client.clientID + ".Chat.Name:" + chatID + "," + addedClient.username);
+						}
+					}
+
+					SendToClientTask.send(addedClient.clientID + ".Chat.Join:" + chatID + "," + chat.name);
 				}
 				Server.clientLock.readLock().unlock();
 			}

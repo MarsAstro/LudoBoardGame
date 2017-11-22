@@ -109,30 +109,30 @@ public class LudoTask implements Runnable {
 		int index = Server.clients.indexOf(new ClientInfo(clientID));
 		ClientInfo newClient = Server.clients.get(index);
 
-		randomQueue.add(newClient);
-		SendToClientTask.send(newClient.clientID + ".Ludo.RandomSuccess:");
+		if (!randomQueue.contains(newClient)) {
+			randomQueue.add(newClient);
+			SendToClientTask.send(newClient.clientID + ".Ludo.RandomSuccess:");
 
-		if (randomQueue.size() == 4) {
+			if (randomQueue.size() == 4) {
+				Server.gameLock.writeLock().lock();
+				Server.games.add(new GameInfo(Server.nextGameID++, randomQueue.get(0)));
+				Server.gameLock.writeLock().unlock();
 
-			Server.gameLock.writeLock().lock();
-			Server.games.add(new GameInfo(Server.nextGameID++, randomQueue.get(0)));
-			Server.gameLock.writeLock().unlock();
+				GameInfo newGame = Server.games.get(Server.games.size() - 1);
+				newGame.addPlayer(randomQueue.get(1));
+				newGame.addPlayer(randomQueue.get(2));
+				newGame.addPlayer(randomQueue.get(3));
 
-			GameInfo newGame = Server.games.get(Server.games.size() - 1);
-			newGame.addPlayer(randomQueue.get(1));
-			newGame.addPlayer(randomQueue.get(2));
-			newGame.addPlayer(randomQueue.get(3));
+				Platform.runLater(() -> Server.serverGUIController.updateGameList());
 
-			Platform.runLater(() -> Server.serverGUIController.updateGameList());
+				for (int clientIndex = 0; clientIndex < randomQueue.size(); clientIndex++) {
+					SendToClientTask.send(randomQueue.get(clientIndex).clientID + ".Ludo.JoinRandom:" + newGame.gameID
+							+ "," + clientIndex);
+				}
 
-			for (int clientIndex = 0; clientIndex < randomQueue.size(); clientIndex++) {
-				SendToClientTask.send(randomQueue.get(clientIndex).clientID + ".Ludo.JoinRandom:" + newGame.gameID + ","
-						+ clientIndex);
+				initGameForAllClients(newGame);
+				randomQueue.clear();
 			}
-
-			initGameForAllClients(newGame);
-
-			randomQueue.clear();
 		}
 	}
 

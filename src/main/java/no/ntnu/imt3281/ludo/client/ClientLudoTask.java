@@ -68,8 +68,6 @@ public class ClientLudoTask implements Runnable {
 		case "Name:":
 			handleReceivedLudoNamePacket(ackMessage);
 			break;
-		case "Finish:":
-			break;
 		case "Challenge:":
 			break;
 		case "JoinRandom:":

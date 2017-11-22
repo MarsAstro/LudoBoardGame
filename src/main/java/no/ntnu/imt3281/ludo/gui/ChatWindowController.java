@@ -18,8 +18,8 @@ import no.ntnu.imt3281.ludo.client.Client;
  */
 public class ChatWindowController {
 	int chatID;
-	ObservableList<Label> usernames = FXCollections.observableArrayList();
-	ObservableList<Label> messages = FXCollections.observableArrayList();
+	private ObservableList<Label> usernames = FXCollections.observableArrayList();
+	private ObservableList<Label> messages = FXCollections.observableArrayList();
 
 	@FXML // fx:id="chatBox"
 	private ScrollPane chatBox;

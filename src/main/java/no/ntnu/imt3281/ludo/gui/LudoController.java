@@ -37,6 +37,7 @@ public class LudoController implements Initializable {
 	private ChatListController chatList;
 	private Tab mainTab;
 	private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
+	private String username;
 
 	@FXML // fx:id="spinner"
 	private ProgressIndicator spinner;
@@ -107,7 +108,7 @@ public class LudoController implements Initializable {
 
 			loginStage.setScene(scene);
 			loginStage.show();
-
+			loginStage.setOnCloseRequest(e -> chatList = null);
 			chatList = loader.getController();
 			Client.sendMessage("Chat.List:");
 		} catch (IOException e) {
@@ -121,6 +122,7 @@ public class LudoController implements Initializable {
 	}
 
 	void userLoggedIn(String username) {
+		this.username = username;
 		logoutButton.setDisable(false);
 		loginButton.setDisable(true);
 		loggedInUser.setText(messages.getString("ludo.menubar.user.logintext") + " " + username);
@@ -155,6 +157,8 @@ public class LudoController implements Initializable {
 			loginButton.setDisable(false);
 			loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
 			tabbedPane.getTabs().remove(mainTab);
+			chatWindows.clear();
+			gameBoards.clear();
 		}
 	}
 
@@ -207,17 +211,28 @@ public class LudoController implements Initializable {
 		return gameID;
 	}
 
-	public void handleServerJoinChat(String ackMessage) {
-		int chatID = Integer.parseInt(ackMessage);
+	public void handleServerJoinChat(int chatID, String ackMessage) {
+		handleServerInitChat(ackMessage);
+		Client.sendMessage("Chat.Init:" + chatID);
+	}
+	
+	public void handleServerInitChat(String ackMessage) {
+		String[] messages = ackMessage.split(",");
+		int chatID = Integer.parseInt(messages[0]);
+		String chatName = messages[1];
+
+		if (chatList != null) {
+			chatList.closeWindow();
+		}
 
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatWindow.fxml"));
 		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
 		try {
-			GridPane gameBoard = loader.load();
+			GridPane chatWindow = loader.load();
 			ChatWindowController newController = ((ChatWindowController) loader.getController());
-			Tab tab = new Tab("Chat" + chatID);
-			tab.setContent(gameBoard);
+			Tab tab = new Tab(chatName);
+			tab.setContent(chatWindow);
 			tab.setOnCloseRequest(e -> {
 				newController.leaveChat();
 				chatWindows.remove(newController);
@@ -225,12 +240,11 @@ public class LudoController implements Initializable {
 			tabbedPane.getTabs().add(tab);
 
 			newController.chatID = chatID;
+			newController.addChatName(username);
 			chatWindows.add(loader.getController());
 		} catch (IOException e) {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
-
-		Client.sendMessage("Chat.Init:" + chatID);
 	}
 
 	/**
