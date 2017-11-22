@@ -43,6 +43,7 @@ public class Ludo {
     private int activePlayer = 0;
     private int numThrows = 0;
     private int dice = -1;
+    private int selectedPiece = -1;
 
     /**
      * Initialize a game without players
@@ -372,23 +373,30 @@ public class Ludo {
         boolean success = false;
 
         if (((from == 0 && dice == 6) || from + dice == to) && player == activePlayer) {
-            for (int i = 0; i < 4; i++) {
-                if (piecePositions[player][i] == from && !isBlocked(i)) {
-                    piecePositions[player][i] = to;
-                    for (PieceListener listener : pieceListeners) {
-                        listener.pieceMoved(new PieceEvent(this, player, i, from, to));
+            if (selectedPiece == -1) {
+                for (int piece = 0; piece < 4; piece++) {
+                    if (piecePositions[player][piece] == from) {
+                        selectedPiece = piece;
+                        break;
                     }
-                    success = true;
-                    checkWinner();
-
-                    if (numThrows >= 3 || dice != 6 || from == 0) {
-                        nextPlayer();
-                    }
-                    checkForOpponents(player, to);
-                    updateGlobalPositions();
-                    dice = 0;
-                    break;
                 }
+            }
+
+            if (!isBlocked(selectedPiece)) {
+                piecePositions[player][selectedPiece] = to;
+                for (PieceListener listener : pieceListeners) {
+                    listener.pieceMoved(new PieceEvent(this, player, selectedPiece, from, to));
+                }
+                success = true;
+                checkWinner();
+
+                if (numThrows >= 3 || dice != 6 || from == 0) {
+                    nextPlayer();
+                }
+                checkForOpponents(player, to);
+                updateGlobalPositions();
+                dice = 0;
+                selectedPiece = -1;
             }
         }
         return success;
@@ -601,7 +609,8 @@ public class Ludo {
             if (playerName != null) {
                 // Strip tags off name to ensure we're comparing the bare
                 // usernames against eachother
-                String strippedName = playerName.replaceFirst("((Winner: )|(Done: )|(Inactive: )){1}", "");
+                String strippedName = playerName
+                        .replaceFirst("((Winner: )|(Done: )|(Inactive: )){1}", "");
                 if (strippedName.equals(name)) {
                     index = player;
                     break;
@@ -612,16 +621,24 @@ public class Ludo {
     }
 
     /**
-     * @return the piecePositions
+     * @return The piece positions
      */
     public int[][] getPiecePositions() {
         return piecePositions;
     }
 
     /**
-     * @return the globalPiecePositions
+     * @return The global piece positions
      */
     public int[][] getGlobalPiecePositions() {
         return globalPiecePositions;
+    }
+
+    /**
+     * @param selectedPiece
+     *            The piece to attempt moving in MovePiece
+     */
+    public void setSelectedPiece(int selectedPiece) {
+        this.selectedPiece = selectedPiece;
     }
 }
