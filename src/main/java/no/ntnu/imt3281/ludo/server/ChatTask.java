@@ -41,7 +41,7 @@ public class ChatTask implements Runnable {
 			handleJoinChatPacket(clientID, message.substring(endIndex + 1));
 			break;
 		case "List:":
-			handleListChatPacket(message.substring(endIndex + 1));
+			handleListChatPacket(clientID);
 			break;
 		case "Say:":
 			handleSayChatPacket(clientID, message.substring(endIndex + 1));
@@ -160,9 +160,10 @@ public class ChatTask implements Runnable {
 		Server.chatLock.readLock().unlock();
 	}
 
-	private void handleListChatPacket(String message) {
-		// TODO
-		// Open Tab with active chats
+	private void handleListChatPacket(int clientID) {
+		for (int chat = 1; chat < Server.chats.size(); chat++) {
+			SendToClientTask.send(clientID + ".Chat.ListName:" + Server.chats.get(chat).chatID);
+		}
 	}
 
 	private void handleJoinChatPacket(int clientID, String message) {

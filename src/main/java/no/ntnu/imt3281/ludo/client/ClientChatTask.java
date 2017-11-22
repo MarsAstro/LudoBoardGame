@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
+import no.ntnu.imt3281.ludo.gui.ChatListController;
 import no.ntnu.imt3281.ludo.gui.ChatWindowController;
 
 
@@ -66,10 +67,20 @@ public class ClientChatTask implements Runnable {
             case "RemoveName:" :
             	handleLeaveChatPacket(ackMessage);
             	break;
+            case "ListName:" :
+            	handleChatListNamePacket(ackMessage);
+            	break;
             default :
                 break;
         }
     }
+
+	private void handleChatListNamePacket(String ackMessage) {
+		ChatListController clc = Client.ludoController.getChatListContoller();
+		if (clc != null) {
+			Platform.runLater(() -> clc.addChatName(ackMessage));
+		}
+	}
 
 	private void handleLeaveChatPacket(String ackMessage) {
 		String[] messages = ackMessage.split(",");

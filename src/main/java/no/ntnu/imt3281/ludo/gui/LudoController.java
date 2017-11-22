@@ -34,12 +34,13 @@ public class LudoController implements Initializable {
 	private ResourceBundle messages;
 	private ArrayList<GameBoardController> gameBoards;
 	private ArrayList<ChatWindowController> chatWindows;
+	private ChatListController chatList;
 	private Tab mainTab;
 	private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
 
 	@FXML // fx:id="spinner"
 	private ProgressIndicator spinner;
-	
+
 	@FXML // fx:id="loginButton"
 	private MenuItem loginButton;
 
@@ -92,7 +93,26 @@ public class LudoController implements Initializable {
 		} catch (IOException e) {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
+	}
 
+	@FXML
+	void openChatList(ActionEvent event) {
+		FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatList.fxml"));
+		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+
+		try {
+			GridPane root = (GridPane) loader.load();
+			Scene scene = new Scene(root);
+			Stage loginStage = new Stage();
+
+			loginStage.setScene(scene);
+			loginStage.show();
+
+			chatList = loader.getController();
+			Client.sendMessage("Chat.List:");
+		} catch (IOException e) {
+			LOGGER.log(Level.WARNING, e.getMessage(), e);
+		}
 	}
 
 	@FXML
@@ -124,19 +144,19 @@ public class LudoController implements Initializable {
 	}
 
 	/**
-     * Handles the servers response to a logout request
-     * 
-     * @param ackMessage
-     *            The message returned by server
-     */
-    public void handleServerLogoutResponse(String ackMessage) {
-        if (Integer.parseInt(ackMessage) == 1) {
-            logoutButton.setDisable(true);
-            loginButton.setDisable(false);
-            loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
-            tabbedPane.getTabs().remove(mainTab);
-        }
-    }
+	 * Handles the servers response to a logout request
+	 * 
+	 * @param ackMessage
+	 *            The message returned by server
+	 */
+	public void handleServerLogoutResponse(String ackMessage) {
+		if (Integer.parseInt(ackMessage) == 1) {
+			logoutButton.setDisable(true);
+			loginButton.setDisable(false);
+			loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
+			tabbedPane.getTabs().remove(mainTab);
+		}
+	}
 
 	/**
 	 * Handles received ackMessage when trying to join a game
@@ -145,8 +165,8 @@ public class LudoController implements Initializable {
 	 *            Message indicating if connection was a success
 	 */
 	public void handleServerJoinRandomGame(String ackMessage) {
-        spinner.setVisible(false);
-        random.setDisable(false);
+		spinner.setVisible(false);
+		random.setDisable(false);
 		int gameID = handleServerJoinGame(ackMessage);
 		Client.sendMessage("Ludo.Init:" + gameID);
 	}
@@ -186,7 +206,7 @@ public class LudoController implements Initializable {
 		}
 		return gameID;
 	}
-	
+
 	public void handleServerJoinChat(String ackMessage) {
 		int chatID = Integer.parseInt(ackMessage);
 
@@ -209,7 +229,7 @@ public class LudoController implements Initializable {
 		} catch (IOException e) {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
-		
+
 		Client.sendMessage("Chat.Init:" + chatID);
 	}
 
@@ -266,10 +286,17 @@ public class LudoController implements Initializable {
 	}
 
 	/**
-     * Display acknowledgment that client is in queue for random game
-     */
-    public void JoinRandomSuccess() {
-        spinner.setVisible(true);
-        random.setDisable(true);
-    }
+	 * Display acknowledgment that client is in queue for random game
+	 */
+	public void JoinRandomSuccess() {
+		spinner.setVisible(true);
+		random.setDisable(true);
+	}
+
+	/**
+	 * @return The chat list controller
+	 */
+	public ChatListController getChatListContoller() {
+		return chatList;
+	}
 }
