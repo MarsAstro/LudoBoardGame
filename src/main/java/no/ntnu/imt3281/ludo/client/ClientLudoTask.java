@@ -79,10 +79,20 @@ public class ClientLudoTask implements Runnable {
 		case "RandomSuccess:":
 			Platform.runLater(() -> Client.ludoController.JoinRandomSuccess());
 			break;
-		case "Leave:":
+		case "Chat:":
+			HandleRecivedLudoChatPackage(ackMessage);
 			break;
 		default:
 			break;
+		}
+	}
+
+	private void HandleRecivedLudoChatPackage(String ackMessage) {
+		int endGameIDIndex = ackMessage.indexOf(",");
+		int gameID = Integer.parseInt(ackMessage.substring(0, endGameIDIndex));
+		GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);
+		if (gbc != null) {
+			Platform.runLater(() -> gbc.addMessage(ackMessage.substring(endGameIDIndex + 1)));
 		}
 	}
 
