@@ -1,6 +1,5 @@
 package no.ntnu.imt3281.ludo.gui;
 
-
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -23,19 +22,19 @@ public class ChatWindowController {
 	ObservableList<Label> messages = FXCollections.observableArrayList();
 
 	@FXML // fx:id="chatBox"
-    private ScrollPane chatBox;
+	private ScrollPane chatBox;
 
-    @FXML // fx:id="chatList"
-    private ListView<Label> chatList;
+	@FXML // fx:id="chatList"
+	private ListView<Label> chatList;
 
-    @FXML // fx:id="userBox"
-    private ScrollPane userBox;
+	@FXML // fx:id="userBox"
+	private ScrollPane userBox;
 
-    @FXML // fx:id="userList"
-    private ListView<Label> userList;
+	@FXML // fx:id="userList"
+	private ListView<Label> userList;
 
-    @FXML // fx:id="messageArea"
-    private TextField messageArea;
+	@FXML // fx:id="messageArea"
+	private TextField messageArea;
 
 	@FXML
 	void sendChatMessage(ActionEvent event) {
@@ -57,6 +56,12 @@ public class ChatWindowController {
 		chatList.setItems(messages);
 	}
 
+	/**
+	 * Updates chat names with new name
+	 * 
+	 * @param name
+	 *            The name to be added
+	 */
 	public void updateChatNames(String name) {
 		Label newUser = new Label(name);
 		usernames.add(newUser);
