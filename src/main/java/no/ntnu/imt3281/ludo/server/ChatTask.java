@@ -77,13 +77,15 @@ public class ChatTask implements Runnable {
 				ClientInfo newClient = Server.clients.get(clientIndex);
 
 				for (ClientInfo client : chat.clients) {
-					SendToClientTask.send(newClient.clientID + ".Chat.Name:" + chatID + "," + client.username);
+					if (client != newClient) {
+						SendToClientTask.send(newClient.clientID + ".Chat.Name:" + chatID + "," + client.username);
+					}
 				}
 
-				chat.addClient(newClient);
-
 				for (ClientInfo client : chat.clients) {
-					SendToClientTask.send(client.clientID + ".Chat.Name:" + chatID + "," + newClient.username);
+					if (client != newClient) {
+						SendToClientTask.send(client.clientID + ".Chat.Name:" + chatID + "," + newClient.username);
+					}
 				}
 			}
 			Server.clientLock.readLock().unlock();
@@ -132,7 +134,7 @@ public class ChatTask implements Runnable {
 			if (clientIndex >= 0) {
 				String clientToRemoveName = chat.clients.get(clientIndex).username;
 
-				chat.removeClient(clientIndex);
+				chat.clients.remove(clientIndex);
 
 				for (ClientInfo client : chat.clients) {
 					SendToClientTask.send(client.clientID + ".Chat.RemoveName:" + chatID + "," + clientToRemoveName);
@@ -200,7 +202,9 @@ public class ChatTask implements Runnable {
 
 	private void handleListChatPacket(int clientID) {
 		for (int chat = 1; chat < Server.chats.size(); chat++) {
-			SendToClientTask.send(clientID + ".Chat.ListName:" + Server.chats.get(chat).chatID);
+			ChatInfo chatInfo = Server.chats.get(chat);
+			SendToClientTask.send(clientID + ".Chat.ListName:" + chatInfo.chatID + "," + chatInfo.name + ","
+					+ chatInfo.clients.size());
 		}
 	}
 
@@ -221,20 +225,9 @@ public class ChatTask implements Runnable {
 				if (clientConnection >= 0) {
 					ClientInfo addedClient = Server.clients.get(clientConnection);
 
-					for (ClientInfo client : chat.clients) {
-						SendToClientTask.send(addedClient.clientID + ".Chat.Name:" + chatID + "," + client.username);
-					}
-
 					chat.addClient(addedClient);
-
-					for (ClientInfo client : chat.clients) {
-						if (!client.username.equals(addedClient.username)) {
-							SendToClientTask
-									.send(client.clientID + ".Chat.Name:" + chatID + "," + addedClient.username);
-						}
-					}
-
 					SendToClientTask.send(addedClient.clientID + ".Chat.Join:" + chatID + "," + chat.name);
+
 				}
 				Server.clientLock.readLock().unlock();
 			}

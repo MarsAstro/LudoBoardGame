@@ -59,16 +59,16 @@ public class ChatListController implements Initializable {
 		dialog.setContentText(messages.getString("chatlist.promptcontent"));
 
 		Optional<String> result = dialog.showAndWait();
-		if (result.isPresent()){
-			 Client.sendMessage("Chat.Create:" + result.get());
+		if (result.isPresent()) {
+			Client.sendMessage("Chat.Create:" + result.get());
 		}
 	}
 
 	@FXML
 	void joinChat(ActionEvent event) {
 		Label selectedChat = chatList.getSelectionModel().getSelectedItem();
-		String chatID = selectedChat.getText();
-		
+		String chatID = selectedChat.getText().substring(0, selectedChat.getText().indexOf(":"));
+
 		Client.sendMessage("Chat.Join:" + chatID);
 	}
 
@@ -78,17 +78,18 @@ public class ChatListController implements Initializable {
 	 * @param ackMessage
 	 *            The name of the chat to be added
 	 */
-	public void addChatName(String name) {
-		Label newChat = new Label(name);
+	public void addChatName(String message) {
+		String[] info = message.split(",");
+		Label newChat = new Label(info[0] + ": " + info[1] + "\t" + messages.getString("chatlist.chatsize") + info[2]);
 		chatNames.add(newChat);
 		chatList.setItems(chatNames);
 	}
-	
+
 	/**
 	 * Closes window
 	 */
 	public void closeWindow() {
 		Stage stage = (Stage) closeButton.getScene().getWindow();
-        stage.close();
+		stage.close();
 	}
 }
