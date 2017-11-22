@@ -26,11 +26,11 @@ public class SendToClientTask implements Runnable {
                 currentTask = currentTask.substring(idEndIndex + 1) + ";";
 
                 Server.clientLock.readLock().lock();
-                int connectionIndex = Server.connections.indexOf(new ClientInfo(clientID));
+                int connectionIndex = Server.clients.indexOf(new ClientInfo(clientID));
                 if (connectionIndex >= 0) {
-                    Server.connections.get(connectionIndex).connection.getOutputStream()
+                    Server.clients.get(connectionIndex).connection.getOutputStream()
                             .write(currentTask.getBytes("UTF-8"));
-                    Server.connections.get(connectionIndex).connection.getOutputStream().flush();
+                    Server.clients.get(connectionIndex).connection.getOutputStream().flush();
                 }
                 Server.clientLock.readLock().unlock();
                 if (currentTask.contains("Logout:")) {

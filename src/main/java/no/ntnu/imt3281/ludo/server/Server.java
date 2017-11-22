@@ -30,16 +30,16 @@ import javafx.stage.Stage;
  */
 public class Server extends Application {
     static ServerSocket serverSocket;
-    static ArrayList<ClientInfo> connections;
     static Connection database;
     static ServerGUIController serverGUIController;
+    static ArrayList<ClientInfo> clients;
     static ArrayList<GameInfo> games;
     static ArrayList<ChatInfo> chats;
     static int nextGameID;
     static int nextChatID = 0;
     static ReadWriteLock clientLock;
     static ReadWriteLock gameLock;
-
+    static ReadWriteLock chatLock;
 
     private static String url = "jdbc:mysql://mysql.stud.ntnu.no/mksandbe_Ludo";
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
@@ -56,7 +56,7 @@ public class Server extends Application {
         
         chats = new ArrayList<>();
         chats.add(new ChatInfo(nextChatID++));
-        connections = new ArrayList<>();
+        clients = new ArrayList<>();
         games = new ArrayList<>();
         nextGameID = 0;
         ResourceBundle messages = ResourceBundle
@@ -105,6 +105,7 @@ public class Server extends Application {
         
         clientLock = new ReentrantReadWriteLock();
         gameLock = new ReentrantReadWriteLock();
+        chatLock = new ReentrantReadWriteLock();
 
         ExecutorService executorService = Executors.newCachedThreadPool();
         

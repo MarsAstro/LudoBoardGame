@@ -199,11 +199,8 @@ public class LudoController implements Initializable {
 			Tab tab = new Tab("Chat" + chatID);
 			tab.setContent(gameBoard);
 			tab.setOnCloseRequest(e -> {
-				// TODO
-				/*
-				newController.leaveGame();
-				gameBoards.remove(newController);
-				*/
+				newController.leaveChat();
+				chatWindows.remove(newController);
 			});
 			tabbedPane.getTabs().add(tab);
 
