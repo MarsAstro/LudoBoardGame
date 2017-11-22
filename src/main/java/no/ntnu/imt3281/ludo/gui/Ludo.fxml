@@ -27,7 +27,7 @@
                            <graphic>
                               <ProgressIndicator fx:id="spinner" prefHeight="18.0" prefWidth="18.0" visible="false" />
                            </graphic></MenuItem>
-                        <MenuItem mnemonicParsing="false" text="%ludo.menubar.game.challenge" />
+                        <MenuItem mnemonicParsing="false" onAction="#openChallengeList" text="%ludo.menubar.game.challenge" />
                   </items>
                 </Menu>
                   <Menu mnemonicParsing="false" text="%ludo.menubar.chat">
