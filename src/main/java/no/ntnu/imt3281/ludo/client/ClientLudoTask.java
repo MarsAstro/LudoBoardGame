@@ -92,7 +92,11 @@ public class ClientLudoTask implements Runnable {
 	}
 
 	private void handleReceivedLudoChallengeConfirmPacket(String ackMessage) {
+        String[] messages = ackMessage.split(",");
+        String clientName = messages[0];
+        boolean confirm = Boolean.parseBoolean(messages[1]);
         
+        Platform.runLater(() -> Client.ludoController.getChallengeContoller().setConfirmation(clientName, confirm));
     }
 
     private void handleReceivedLudoChallengePacket(String ackMessage) {
