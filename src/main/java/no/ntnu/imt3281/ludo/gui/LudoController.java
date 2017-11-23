@@ -225,6 +225,17 @@ public class LudoController implements Initializable {
         int gameID = handleServerJoinGame(ackMessage);
         Client.sendMessage("Ludo.Init:" + gameID);
     }
+    
+    /**
+     * Handles received ackMessage when trying to join a game
+     * 
+     * @param ackMessage
+     *            Message indicating if connection was a success
+     */
+    public void handleServerJoinChallengeGame(String ackMessage) {
+        int gameID = handleServerJoinGame(ackMessage);
+        Client.sendMessage("Ludo.Init:" + gameID);
+    }
 
     /**
      * Handles received ackMessage when trying to join a game
@@ -329,10 +340,10 @@ public class LudoController implements Initializable {
         alert.setContentText(messages.getString("challenge.content"));
 
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
-            Client.sendMessage("Ludo.ChallengeConfirm:" + 1);
+        if (result.get() == acceptButton) {
+            Client.sendMessage("Ludo.ChallengeConfirm:" + true);
         } else {
-            Client.sendMessage("Ludo.ChallengeConfirm:" + -1);
+            Client.sendMessage("Ludo.ChallengeConfirm:" + false);
         }
     }
     

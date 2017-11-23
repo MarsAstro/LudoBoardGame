@@ -78,7 +78,7 @@ public class ClientLudoTask implements Runnable {
 			Platform.runLater(() -> Client.ludoController.handleServerJoinRandomGame(ackMessage));
 			break;
 		case "Join:":
-			Platform.runLater(() -> Client.ludoController.handleServerJoinGame(ackMessage));
+			Platform.runLater(() -> Client.ludoController.handleServerJoinChallengeGame(ackMessage));
 			break;
 		case "RandomSuccess:":
 			Platform.runLater(() -> Client.ludoController.JoinRandomSuccess());
