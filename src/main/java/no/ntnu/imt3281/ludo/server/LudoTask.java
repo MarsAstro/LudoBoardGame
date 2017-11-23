@@ -1,7 +1,6 @@
 package no.ntnu.imt3281.ludo.server;
 
 import java.util.ArrayList;
-import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
