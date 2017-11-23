@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
@@ -16,7 +17,8 @@
       <GridPane hgap="10.0" maxHeight="-Infinity" prefHeight="214.0" prefWidth="600.0" BorderPane.alignment="CENTER">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" maxWidth="295.0" minWidth="10.0" prefWidth="133.0" />
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="490.0" minWidth="10.0" prefWidth="467.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="490.0" minWidth="10.0" prefWidth="299.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="490.0" minWidth="10.0" prefWidth="162.0" />
         </columnConstraints>
         <rowConstraints>
             <RowConstraints maxHeight="58.0" minHeight="10.0" prefHeight="12.0" vgrow="SOMETIMES" />
@@ -28,22 +30,27 @@
             <Label alignment="CENTER_RIGHT" contentDisplay="RIGHT" layoutX="64.0" layoutY="95.0" text="IP" GridPane.halignment="RIGHT" GridPane.rowIndex="1" />
             <Label text="%login.username" GridPane.halignment="RIGHT" GridPane.rowIndex="2" />
             <Label text="%login.password" GridPane.halignment="RIGHT" GridPane.rowIndex="3" />
-            <TextField fx:id="ipAddress" onAction="#login" text="172.18.80.91" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <TextField fx:id="ipAddress" onAction="#login" GridPane.columnIndex="1" GridPane.rowIndex="1">
                <GridPane.margin>
-                  <Insets right="30.0" />
+                  <Insets />
                </GridPane.margin>
             </TextField>
             <TextField fx:id="username" onAction="#login" GridPane.columnIndex="1" GridPane.rowIndex="2">
                <GridPane.margin>
-                  <Insets right="30.0" />
+                  <Insets />
                </GridPane.margin>
             </TextField>
             <PasswordField fx:id="password" onAction="#login" GridPane.columnIndex="1" GridPane.rowIndex="3">
                <GridPane.margin>
-                  <Insets right="30.0" />
+                  <Insets />
                </GridPane.margin>
             </PasswordField>
             <Label fx:id="errorMessage" alignment="CENTER" textFill="RED" GridPane.columnIndex="1" />
+            <CheckBox fx:id="rememberMe" mnemonicParsing="false" text="%login.remember" GridPane.columnIndex="2" GridPane.rowIndex="3">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </CheckBox>
          </children>
       </GridPane>
    </center>
