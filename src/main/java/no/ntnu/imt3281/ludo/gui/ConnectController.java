@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -60,38 +61,33 @@ public class ConnectController implements Initializable {
     @FXML // fx:id="rememberMe"
     private CheckBox rememberMe;
 
-    private String ipFileName = "ipdetails.txt";
-    private String userFileName = "userdetails.txt";
-    private String passFileName = "passdetails.txt";
+    private String[] detailsFileNames = {"ipdetails.txt", "userdetails.txt", "passdetails.txt"};
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         messages = resources;
 
-        File ipFile = new File(ipFileName);
-        File userFile = new File(userFileName);
-        File passFile = new File(passFileName);
+        File[] files = {new File(detailsFileNames[0]), new File(detailsFileNames[1]),
+                new File(detailsFileNames[2])};
 
-        if ((ipFile.exists() && !ipFile.isDirectory())
-                && (userFile.exists() && !userFile.isDirectory())
-                && (passFile.exists() && !passFile.isDirectory())) {
+        if ((files[0].exists() && !files[0].isDirectory())
+                && (files[1].exists() && !files[1].isDirectory())
+                && (files[2].exists() && !files[2].isDirectory())) {
             rememberMe.setSelected(true);
             try {
-                FileInputStream ipReadFile = new FileInputStream(ipFile);
-                FileInputStream userReadFile = new FileInputStream(userFile);
-                FileInputStream passReadFile = new FileInputStream(passFile);
+                byte[][] bytes = {new byte[16], new byte[16], new byte[16]};
 
-                byte[] ipBytes = new byte[100];
-                byte[] userBytes = new byte[100];
-                byte[] passBytes = new byte[100];
-                ipReadFile.read(ipBytes);
-                userReadFile.read(userBytes);
-                passReadFile.read(passBytes);
-                String ip = new String(ipBytes);
+                for (int fileIndex = 0; fileIndex < 3; fileIndex++) {
+                    FileInputStream readFile = new FileInputStream(files[fileIndex]);
+                    readFile.read(bytes[fileIndex]);
+                    readFile.close();
+                }
+
+                String ip = new String(bytes[0]);
 
                 ipAddress.setText(ip);
-                username.setText(decrypt(userBytes));
-                password.setText(decrypt(passBytes));
+                username.setText(decrypt(bytes[1]));
+                password.setText(decrypt(bytes[2]));
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
@@ -169,23 +165,25 @@ public class ConnectController implements Initializable {
     }
 
     private void closeWindow() {
-        try (FileOutputStream ipFile = new FileOutputStream(ipFileName, false);
-                FileOutputStream userFile = new FileOutputStream(userFileName, false);
-                FileOutputStream passFile = new FileOutputStream(passFileName, false)) {
-            if (rememberMe.isSelected()) {
-                ipFile.write(ipAddress.getText().getBytes());
-                userFile.write(encrypt(username.getText()));
-                passFile.write(encrypt(username.getText()));
-            } else {
-                ipFile.close();
-                userFile.close();
-                passFile.close();
-                new File(ipFileName).delete();
-                new File(userFileName).delete();
-                new File(passFileName).delete();
+        if (allFieldsValid()) {
+            try (FileOutputStream ipFile = new FileOutputStream(detailsFileNames[0], false);
+                    FileOutputStream userFile = new FileOutputStream(detailsFileNames[1], false);
+                    FileOutputStream passFile = new FileOutputStream(detailsFileNames[2], false)) {
+                if (rememberMe.isSelected()) {
+                    ipFile.write(ipAddress.getText().getBytes("UTF-8"));
+                    userFile.write(encrypt(username.getText()));
+                    passFile.write(encrypt(password.getText()));
+                } else {
+                    ipFile.close();
+                    userFile.close();
+                    passFile.close();
+                    new File(detailsFileNames[0]).delete();
+                    new File(detailsFileNames[1]).delete();
+                    new File(detailsFileNames[2]).delete();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
-        } catch (IOException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
         Stage stage = (Stage) username.getScene().getWindow();
@@ -225,15 +223,16 @@ public class ConnectController implements Initializable {
         byte[] result = null;
 
         String key = "Bar12345Bar12345";
-        Key aesKey = new SecretKeySpec(key.getBytes(), "AES");
 
         Cipher cipher;
         try {
+            Key aesKey = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, aesKey);
-            result = cipher.doFinal(message.getBytes());
+            result = cipher.doFinal(message.getBytes("UTF-8"));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException
-                | IllegalBlockSizeException | BadPaddingException e) {
+                | IllegalBlockSizeException | BadPaddingException
+                | UnsupportedEncodingException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
@@ -244,15 +243,16 @@ public class ConnectController implements Initializable {
         String result = null;
 
         String key = "Bar12345Bar12345";
-        Key aesKey = new SecretKeySpec(key.getBytes(), "AES");
 
         Cipher cipher;
         try {
+            Key aesKey = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, aesKey);
             result = new String(cipher.doFinal(message));
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
-                | IllegalBlockSizeException | BadPaddingException e) {
+                | IllegalBlockSizeException | BadPaddingException
+                | UnsupportedEncodingException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
 
