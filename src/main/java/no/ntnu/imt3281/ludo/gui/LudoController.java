@@ -69,6 +69,8 @@ public class LudoController implements Initializable {
         gameBoards = new ArrayList<>();
         chatWindows = new ArrayList<>();
         tabbedPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
+        
+        openLoginRegisterGUI(new ActionEvent());
     }
 
     /**
@@ -92,6 +94,7 @@ public class LudoController implements Initializable {
             Scene scene = new Scene(root);
             Stage loginStage = new Stage();
 
+            loginStage.setAlwaysOnTop(true);
             loginStage.setScene(scene);
             loginStage.show();
 
