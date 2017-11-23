@@ -2,6 +2,8 @@ package no.ntnu.imt3281.ludo.server;
 
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,12 +21,14 @@ public class LudoTask implements Runnable {
 	private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
 	private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
 
-	private ArrayList<ClientInfo> randomQueue;
+	private static ArrayList<ClientInfo> randomQueue;
+	private static ReadWriteLock randomQueueLock;
 	private String currentTask;
 
 	@Override
 	public void run() {
 		randomQueue = new ArrayList<>();
+		randomQueueLock = new ReentrantReadWriteLock();
 
 		while (!Server.serverSocket.isClosed()) {
 			try {
@@ -69,7 +73,7 @@ public class LudoTask implements Runnable {
 			handleLudoJoinRandomPacket(clientID, message.substring(tagEndIndex));
 			break;
 		case "Challenge:":
-			// TODO
+			handleLudoChallengePacket(clientID, message.substring(tagEndIndex));
 			break;
 		case "Init:":
 			handleLudoInitPacket(message.substring(tagEndIndex));
@@ -83,6 +87,20 @@ public class LudoTask implements Runnable {
 		default:
 			break;
 		}
+	}
+
+	private void handleLudoChallengePacket(int clientID, String message) {
+		Server.clientLock.readLock().lock();
+		int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+
+		if (clientIndex >= 0) {
+			for (ClientInfo client : Server.clients) {
+				if (message.equals(client.username)) {
+					SendToClientTask.send(client.clientID + ".Ludo.Challenge:" + Server.clients.get(clientIndex));
+				}
+			}
+		}
+		Server.clientLock.readLock().unlock();
 	}
 
 	private void handleLudoChatPacket(int clientID, String message) {
@@ -128,10 +146,23 @@ public class LudoTask implements Runnable {
 		}
 	}
 
+	/**
+	 * Removes a client from queues he is in
+	 * 
+	 * @param client
+	 *            client to be removed
+	 */
+	public static void removeFromQueue(ClientInfo client) {
+		randomQueueLock.writeLock().lock();
+		randomQueue.remove(client);
+		randomQueueLock.writeLock().unlock();
+	}
+
 	private void handleLudoJoinRandomPacket(int clientID, String message) {
 		int index = Server.clients.indexOf(new ClientInfo(clientID));
 		ClientInfo newClient = Server.clients.get(index);
 
+		randomQueueLock.writeLock().lock();
 		if (!randomQueue.contains(newClient)) {
 			randomQueue.add(newClient);
 			SendToClientTask.send(newClient.clientID + ".Ludo.RandomSuccess:");
@@ -157,6 +188,7 @@ public class LudoTask implements Runnable {
 				randomQueue.clear();
 			}
 		}
+		randomQueueLock.writeLock().unlock();
 	}
 
 	private void handleLudoThrowPacket(int clientID, String message) {

@@ -9,17 +9,19 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import no.ntnu.imt3281.ludo.client.Client;
 
 /**
  * Controller for the challenge list
+ * 
  * @author Charles The Gentle
  *
  */
 public class ChallengeListController {
 
-	private ObservableList<Label> players = FXCollections.observableArrayList();
-	private ObservableList<Label> challengers = FXCollections.observableArrayList();
-	
+    private ObservableList<Label> players = FXCollections.observableArrayList();
+    private ObservableList<Label> challengers = FXCollections.observableArrayList();
+
     @FXML // fx:id="challengeButton"
     private Button challengeButton;
 
@@ -34,65 +36,68 @@ public class ChallengeListController {
 
     @FXML
     void challenge(ActionEvent event) {
-    	if (!challengers.isEmpty()) {
-    		// TODO 
-    	}
+        if (!challengers.isEmpty()) {
+            for (Label label : challengers) {
+                Client.sendMessage("Ludo.Challenge:" + label.getText());                
+            }
+            closeWindow();
+        }
     }
 
     @FXML
     void closeChallengeList(ActionEvent event) {
-    	closeWindow();
+        closeWindow();
     }
-    
+
     @FXML
     void challengeListClicked(MouseEvent event) {
-    	Label selected = challengerList.getSelectionModel().getSelectedItem();
-    	if (selected != null) {
-    		challengers.remove(selected);
-    		players.add(selected);    		
-    		playerList.setItems(players);
-    	}
+        Label selected = challengerList.getSelectionModel().getSelectedItem();
+        if (selected != null) {
+            challengers.remove(selected);
+            players.add(selected);
+            playerList.setItems(players);
+        }
     }
 
     @FXML
     void playerListClicked(MouseEvent event) {
-    	Label selected = playerList.getSelectionModel().getSelectedItem();
-    	if (selected != null) {
-    		players.remove(selected);
-    		challengers.add(selected);  
-    		challengerList.setItems(challengers);
-    	}
+        Label selected = playerList.getSelectionModel().getSelectedItem();
+        if (selected != null && challengers.size() < 3) {
+            players.remove(selected);
+            challengers.add(selected);
+            challengerList.setItems(challengers);
+        }
     }
-    
-    /**
-	 * Adds challenger name to challenger list
-	 * 
-	 * @param name
-	 *            The name of the challenger to be added
-	 */
-	public void addChallengerName(String name) {
-		Label newChat = new Label(name);
-		challengers.add(newChat);
-		challengerList.setItems(challengers);
-	}
-	
-	/**
-	 * Adds player name to player list
-	 * 
-	 * @param name
-	 *            The name of the player to be added
-	 */
-	public void addPlayersName(String name) {
-		Label newChat = new Label(name);
-		players.add(newChat);
-		playerList.setItems(players);
-	}
 
-	/**
-	 * Closes window
-	 */
-	public void closeWindow() {
-		Stage stage = (Stage) closeButton.getScene().getWindow();
-		stage.close();
-	}
+    /**
+     * Adds challenger name to challenger list
+     * 
+     * @param name
+     *            The name of the challenger to be added
+     */
+    public void addChallengerName(String name) {
+        Label newChat = new Label(name);
+        challengers.add(newChat);
+        challengerList.setItems(challengers);
+    }
+
+    /**
+     * Adds player name to player list
+     * 
+     * @param name
+     *            The name of the player to be added
+     */
+    public void addPlayersName(String name) {
+        Label newChat = new Label(name);
+        players.add(newChat);
+        playerList.setItems(players);
+    }
+
+    /**
+     * Closes window
+     */
+    public void closeWindow() {
+        Stage stage = (Stage) closeButton.getScene().getWindow();
+        stage.close();
+    }
 }

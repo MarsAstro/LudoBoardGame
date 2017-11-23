@@ -15,7 +15,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import no.ntnu.imt3281.ludo.client.Client;
@@ -26,70 +25,71 @@ import no.ntnu.imt3281.ludo.client.Client;
  */
 public class ChatListController implements Initializable {
 
-	private ObservableList<Label> chatNames = FXCollections.observableArrayList();
-	private ResourceBundle messages;
+    private ObservableList<Label> chatNames = FXCollections.observableArrayList();
+    private ResourceBundle messages;
 
-	@FXML // fx:id="chatList"
-	private ListView<Label> chatList;
+    @FXML // fx:id="chatList"
+    private ListView<Label> chatList;
 
-	@FXML // fx:id="joinButton"
-	private Button joinButton;
+    @FXML // fx:id="joinButton"
+    private Button joinButton;
 
-	@FXML // fx:id="createButton"
-	private Button createButton;
+    @FXML // fx:id="createButton"
+    private Button createButton;
 
-	@FXML // fx:id="closeButton"
-	private Button closeButton;
+    @FXML // fx:id="closeButton"
+    private Button closeButton;
 
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		messages = resources;
-	}
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        messages = resources;
+    }
 
-	@FXML
-	void closeChatList(ActionEvent event) {
-		closeWindow();
-	}
+    @FXML
+    void closeChatList(ActionEvent event) {
+        closeWindow();
+    }
 
-	@FXML
-	void createChat(ActionEvent event) {
-		TextInputDialog dialog = new TextInputDialog();
-		dialog.setTitle(messages.getString("chatlist.prompttitle"));
-		dialog.setHeaderText(messages.getString("chatlist.promptheader"));
-		dialog.setContentText(messages.getString("chatlist.promptcontent"));
+    @FXML
+    void createChat(ActionEvent event) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle(messages.getString("chatlist.prompttitle"));
+        dialog.setHeaderText(messages.getString("chatlist.promptheader"));
+        dialog.setContentText(messages.getString("chatlist.promptcontent"));
 
-		Optional<String> result = dialog.showAndWait();
-		if (result.isPresent()) {
-			Client.sendMessage("Chat.Create:" + result.get());
-		}
-	}
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            Client.sendMessage("Chat.Create:" + result.get());
+        }
+    }
 
-	@FXML
-	void joinChat(ActionEvent event) {
-		Label selectedChat = chatList.getSelectionModel().getSelectedItem();
-		String chatID = selectedChat.getText().substring(0, selectedChat.getText().indexOf(":"));
+    @FXML
+    void joinChat(ActionEvent event) {
+        Label selectedChat = chatList.getSelectionModel().getSelectedItem();
+        String chatID = selectedChat.getText().substring(0, selectedChat.getText().indexOf(":"));
 
-		Client.sendMessage("Chat.Join:" + chatID);
-	}
+        Client.sendMessage("Chat.Join:" + chatID);
+    }
 
-	/**
-	 * Adds chat name to chat list
-	 * 
-	 * @param ackMessage
-	 *            The name of the chat to be added
-	 */
-	public void addChatName(String message) {
-		String[] info = message.split(",");
-		Label newChat = new Label(info[0] + ": " + info[1] + "\t" + messages.getString("chatlist.chatsize") + info[2]);
-		chatNames.add(newChat);
-		chatList.setItems(chatNames);
-	}
+    /**
+     * Adds chat name, id and size of chat to list
+     * 
+     * @param ackMessage
+     *            The acknowledge message
+     */
+    public void addChatName(String ackMessage) {
+        String[] info = ackMessage.split(",");
+        Label newChat = new Label(info[0] + ": " + info[1] + "\t"
+                + messages.getString("chatlist.chatsize") + info[2]);
+        chatNames.add(newChat);
+        chatList.setItems(chatNames);
+    }
 
-	/**
-	 * Closes window
-	 */
-	public void closeWindow() {
-		Stage stage = (Stage) closeButton.getScene().getWindow();
-		stage.close();
-	}
+    /**
+     * Closes window
+     */
+    public void closeWindow() {
+        Stage stage = (Stage) closeButton.getScene().getWindow();
+        stage.close();
+    }
 }
