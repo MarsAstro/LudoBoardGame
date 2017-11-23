@@ -23,11 +23,12 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
 public class LudoTask implements Runnable {
     private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
     private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
-    private static ArrayList<ArrayList<Integer>> challengeMap = new ArrayList<>();
+    private static ArrayList<Challenge> challenges = new ArrayList<>();
 
     private static ArrayList<ClientInfo> randomQueue;
     private static ReadWriteLock randomQueueLock;
     private String currentTask;
+    private int nextChallengeID = 0;
 
     @Override
     public void run() {
@@ -100,12 +101,13 @@ public class LudoTask implements Runnable {
     }
 
     private void handleLudoChallengeValidationPacket(int clientID, String message) {
-        ArrayList<Integer> curChallenge = null;
-        boolean playableGame = Boolean.parseBoolean(message);
 
-        for (int challenge = 0; challenge < challengeMap.size(); challenge++) {
-            if (challengeMap.get(challenge).get(0) == clientID) {
-                curChallenge = challengeMap.get(challenge);
+        Challenge curChallenge = null;
+        boolean playableGame = Boolean.parseBoolean(message);
+        
+        for (int challenge = 0; challenge < challenges.size(); challenge++) {
+            if (challenges.get(challenge).clientIDs.get(0) == clientID) {
+                curChallenge = challenges.get(challenge);
             }
             break;
         }
@@ -120,35 +122,36 @@ public class LudoTask implements Runnable {
 
             GameInfo newGame = Server.games.get(Server.games.size() - 1);
 
-            for (int i = 0; i < curChallenge.size(); i++) {
-                int cliID = curChallenge.get(i);
-                newGame.addPlayer(Server.clients.get(cliID));
+            for (int i = 0; i < curChallenge.clientIDs.size(); i++) {
+                int cliID = curChallenge.clientIDs.get(i);
+                int newPlayerIndex = Server.clients.indexOf(new ClientInfo(cliID));
+                newGame.addPlayer(Server.clients.get(newPlayerIndex));
                 SendToClientTask.send(cliID + ".Ludo.Join:" + newGame.gameID + "," + i);
             }
-            challengeMap.remove(curChallenge);
+            challenges.remove(curChallenge);
             Platform.runLater(() -> Server.serverGUIController.updateGameList());
             initGameForAllClients(newGame);
         } else if (curChallenge != null) {
-            challengeMap.remove(curChallenge);
+            challenges.remove(curChallenge);
         }
     }
 
     private void handleLudoChallengeConfirmPacket(int clientID, String message) {
-        int confirm = Integer.parseInt(message);
+        boolean confirm = Boolean.parseBoolean(message);
 
-        for (int challenge = 0; challenge < challengeMap.size(); challenge++) {
-            for (int challengedClientID = 1; challengedClientID < challengeMap.get(challenge)
-                    .size(); challengedClientID++) {
-                int cliID = challengeMap.get(challenge).get(challengedClientID);
+        for (int challenge = 0; challenge < challenges.size(); challenge++) {
+            for (int challengedClientID = 1; challengedClientID < challenges
+                    .get(challenge).clientIDs.size(); challengedClientID++) {
+                int cliID = challenges.get(challenge).clientIDs.get(challengedClientID);
                 if (clientID == cliID) {
                     Server.clientLock.readLock().lock();
                     int clientIndex = Server.clients.indexOf(new ClientInfo(cliID));
 
                     if (clientIndex >= 0) {
                         SendToClientTask
-                                .send(challengeMap.get(challenge).get(0) + ".Ludo.ChallengeConfirm:"
+                                .send(challenges.get(challenge).clientIDs.get(0) + ".Ludo.ChallengeConfirm:"
                                         + Server.clients.get(clientIndex).username + ","
-                                        + Integer.toString(confirm));
+                                        + Boolean.toString(confirm));
                     }
                     Server.clientLock.readLock().unlock();
                 }
@@ -159,13 +162,13 @@ public class LudoTask implements Runnable {
     private void handleLudoChallengePacket(int clientID, String packetMessage) {
         String[] usernames = packetMessage.split(",");
 
-        challengeMap.add(new ArrayList<Integer>(clientID));
+        challenges.add(new Challenge(nextChallengeID++, clientID));
 
         Server.clientLock.readLock().lock();
         for (String user : usernames) {
             for (ClientInfo client : Server.clients) {
                 if (user.equals(client.username)) {
-                    challengeMap.get(challengeMap.size() - 1).add(client.clientID);
+                    challenges.get(nextChallengeID - 1).clientIDs.add(client.clientID);
                     SendToClientTask.send(client.clientID + ".Ludo.Challenge:" + client.username);
                 }
             }
@@ -316,19 +319,27 @@ public class LudoTask implements Runnable {
 
         if (winner != -1) {
             String winnerName = game.ludo.getPlayerName(winner);
+            String strippedName = winnerName.substring(winnerName.indexOf(":") + 2);
+            int clientID = -1;
 
             for (ClientInfo client : game.clients) {
                 SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID + "," + winner
                         + "," + winnerName);
+                
+                if (client.username.equals(strippedName))
+                {
+                    clientID = client.clientID;
+                }
             }
 
             try {
-                winnerName = winnerName.substring(winnerName.indexOf(":") + 2);
                 PreparedStatement userQuery;
                 userQuery = Server.database
                         .prepareStatement("UPDATE Accounts SET Wins = Wins + 1 WHERE Username = ?");
-                userQuery.setString(1, winnerName);
+                userQuery.setString(1, strippedName);
                 userQuery.executeQuery();
+                
+                SendToClientTask.send(clientID + ".User.Wins:1");
             } catch (SQLException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }

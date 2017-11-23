@@ -10,6 +10,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.stage.Stage;
 import no.ntnu.imt3281.ludo.client.Client;
 
 /**
@@ -25,7 +26,7 @@ public class ChallengeController implements Initializable {
     private boolean playableGame = false;
 
     @FXML // fx:id="ChallengedPlayers"
-    private ListView<Label> challengedPlayers; // Value injected by FXMLLoader
+    private ListView<Label> challengedPlayers; 
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -33,7 +34,7 @@ public class ChallengeController implements Initializable {
     }
 
     /**
-     * Adde challenger name to the list
+     * Adds challenger name to the list
      * 
      * @param name
      */
@@ -70,6 +71,7 @@ public class ChallengeController implements Initializable {
         
         if (allConfirmed() == true) {
             Client.sendMessage("Ludo.ChallengeValidation:" + playableGame);
+            closeWindow();
         }
     }
 
@@ -82,5 +84,13 @@ public class ChallengeController implements Initializable {
             }
         }
         return allConfirmed;
+    }
+    
+    /**
+     * Closes window
+     */
+    public void closeWindow() {
+        Stage stage = (Stage) challengedPlayers.getScene().getWindow();
+        stage.close();
     }
 }
