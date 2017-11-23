@@ -17,7 +17,7 @@ import no.ntnu.imt3281.ludo.client.Client;
 public class ServerInputTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(Client.class.getName());
     private byte[] inputData = new byte[256];
-    
+
     /**
      * Run
      */
@@ -28,7 +28,7 @@ public class ServerInputTask implements Runnable {
             for (ClientInfo client : Server.clients) {
                 try {
                     if (client.connection.getInputStream().available() > 0) {
-                        
+
                         int length = client.connection.getInputStream().read(inputData);
 
                         String packet = new String(inputData, 0, length, "UTF-8");

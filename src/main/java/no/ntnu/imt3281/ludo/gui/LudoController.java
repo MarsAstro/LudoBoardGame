@@ -116,9 +116,9 @@ public class LudoController implements Initializable {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
 	}
-	
+
 	@FXML
-    void openChallengeList(ActionEvent event) {
+	void openChallengeList(ActionEvent event) {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("ChallengeList.fxml"));
 		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
@@ -135,7 +135,7 @@ public class LudoController implements Initializable {
 		} catch (IOException e) {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
 		}
-    }
+	}
 
 	@FXML
 	void logout(ActionEvent event) {
@@ -232,11 +232,25 @@ public class LudoController implements Initializable {
 		return gameID;
 	}
 
+	/**
+	 * Handles received ackMessage when trying to join chat
+	 * 
+	 * @param chatID
+	 *            The chat id of the chat to join
+	 * @param ackMessage
+	 *            The received acknowledge message from server
+	 */
 	public void handleServerJoinChat(int chatID, String ackMessage) {
 		handleServerInitChat(ackMessage);
 		Client.sendMessage("Chat.Init:" + chatID);
 	}
-	
+
+	/**
+	 * Initializes the local chat window after acknowledge message from server
+	 * 
+	 * @param ackMessage
+	 *            The received acknowledge message from server
+	 */
 	public void handleServerInitChat(String ackMessage) {
 		String[] messages = ackMessage.split(",");
 		int chatID = Integer.parseInt(messages[0]);
@@ -334,7 +348,7 @@ public class LudoController implements Initializable {
 	public ChatListController getChatListContoller() {
 		return chatList;
 	}
-	
+
 	/**
 	 * @return The challenge list controller
 	 */
