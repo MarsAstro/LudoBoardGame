@@ -30,13 +30,14 @@ public class ChatTask implements Runnable {
 
 			} catch (InterruptedException e) {
 				LOGGER.log(Level.WARNING, e.getMessage(), e);
+				Thread.currentThread().interrupt();
 			}
 
 		}
 	}
 
 	private void handleMessage(int clientID, String message) {
-		int endIndex = message.indexOf(":");
+		int endIndex = message.indexOf(':');
 		String tag = message.substring(0, endIndex + 1);
 
 		switch (tag) {
@@ -260,6 +261,7 @@ public class ChatTask implements Runnable {
 			chatTasks.put(message);
 		} catch (InterruptedException e) {
 			LOGGER.log(Level.WARNING, e.getMessage(), e);
+			Thread.currentThread().interrupt();
 		}
 	}
 }
