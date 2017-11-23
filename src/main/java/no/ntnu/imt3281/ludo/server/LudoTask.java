@@ -1,6 +1,7 @@
 package no.ntnu.imt3281.ludo.server;
 
 import java.util.ArrayList;
+import java.util.TimerTask;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -20,6 +21,7 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
 public class LudoTask implements Runnable {
 	private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
 	private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
+	private static ArrayList<ArrayList<Integer>> challengeMap = new ArrayList<>();
 
 	private static ArrayList<ClientInfo> randomQueue;
 	private static ReadWriteLock randomQueueLock;
@@ -75,6 +77,9 @@ public class LudoTask implements Runnable {
 		case "Challenge:":
 			handleLudoChallengePacket(clientID, message.substring(tagEndIndex));
 			break;
+		case "ChallengeConfirm:":
+		    handleLudoChallengeConfirmPacket(clientID, message.substring(tagEndIndex));
+		    break;
 		case "Init:":
 			handleLudoInitPacket(message.substring(tagEndIndex));
 			break;
@@ -89,18 +94,34 @@ public class LudoTask implements Runnable {
 		}
 	}
 
-	private void handleLudoChallengePacket(int clientID, String message) {
-		Server.clientLock.readLock().lock();
-		int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+	private void handleLudoChallengeConfirmPacket(int clientID, String message) {
+	    int confirm = Integer.parseInt(message);
+	    
+	    for (int challenge = 0; challenge < challengeMap.size(); challenge++) {
+	        for (int challengedClientID = 1; challengedClientID < challengeMap.get(challenge).size(); challengedClientID++) {
+	            if (clientID == challengeMap.get(challenge).get(challengedClientID)) {
+	                SendToClientTask.send(Integer.toString(confirm));
+	            }
+	        }
+	    }
+	    
+    }
 
-		if (clientIndex >= 0) {
-			for (ClientInfo client : Server.clients) {
-				if (message.equals(client.username)) {
-					SendToClientTask.send(client.clientID + ".Ludo.Challenge:" + Server.clients.get(clientIndex));
-				}
-			}
-		}
-		Server.clientLock.readLock().unlock();
+    private void handleLudoChallengePacket(int clientID, String packetMessage) {
+	    String[] usernames = packetMessage.split(",");
+	    
+	    challengeMap.add(new ArrayList<Integer>(clientID));
+	    
+	    Server.clientLock.readLock().lock();
+	    for (String user : usernames) {
+	        for (ClientInfo client : Server.clients) {
+                if (user.equals(client.username)) {
+                    challengeMap.get(challengeMap.size() - 1).add(client.clientID);
+                    SendToClientTask.send(client.clientID + ".Ludo.Challenge:" + client.username);
+                }
+            }
+	    }
+	    Server.clientLock.readLock().unlock();
 	}
 
 	private void handleLudoChatPacket(int clientID, String message) {
