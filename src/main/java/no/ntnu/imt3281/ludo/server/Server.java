@@ -1,5 +1,6 @@
 package no.ntnu.imt3281.ludo.server;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.sql.Connection;
@@ -125,6 +126,14 @@ public class Server extends Application {
         executorService.execute(clientConTask);
         executorService.shutdown();
 
+        File chatLogs = new File("chatLogs");
+        if(!chatLogs.exists()) {
+        	chatLogs.mkdir();
+        	File gameLogs = new File("chatLogs\\gameChat");
+        	gameLogs.mkdir();
+        }
+        
+        
         launch(args);
     }
 }

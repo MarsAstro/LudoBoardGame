@@ -23,16 +23,16 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="%ludo.menubar.game">
                   <items>
-                    <MenuItem fx:id="random" mnemonicParsing="false" onAction="#joinRandomGame" text="%ludo.menubar.game.random">
+                    <MenuItem fx:id="random" disable="true" mnemonicParsing="false" onAction="#joinRandomGame" text="%ludo.menubar.game.random">
                            <graphic>
                               <ProgressIndicator fx:id="spinner" prefHeight="18.0" prefWidth="18.0" visible="false" />
                            </graphic></MenuItem>
-                        <MenuItem mnemonicParsing="false" onAction="#openChallengeList" text="%ludo.menubar.game.challenge" />
+                        <MenuItem fx:id="challenge" disable="true" mnemonicParsing="false" onAction="#openChallengeList" text="%ludo.menubar.game.challenge" />
                   </items>
                 </Menu>
                   <Menu mnemonicParsing="false" text="%ludo.menubar.chat">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#openChatList" text="%ludo.menubar.chat.list" />
+                        <MenuItem fx:id="chat" disable="true" mnemonicParsing="false" onAction="#openChatList" text="%ludo.menubar.chat.list" />
                     </items>
                   </Menu>
                 <Menu mnemonicParsing="false" text="%ludo.menubar.help">

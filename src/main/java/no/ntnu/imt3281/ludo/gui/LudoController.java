@@ -41,7 +41,7 @@ public class LudoController implements Initializable {
     private ArrayList<ChatWindowController> chatWindows;
     private ChatListController chatList;
     private ChallengeListController challengeList;
-    private ChallengeController challenge;
+    private ChallengeController challengeController;
     private Tab mainTab;
     private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
     private String username;
@@ -57,6 +57,12 @@ public class LudoController implements Initializable {
 
     @FXML // fx:id="random"
     private MenuItem random;
+    
+    @FXML // fx:id="challenge"
+    private MenuItem challenge;
+    
+    @FXML // fx:id="chat"
+    private MenuItem chat;
 
     @FXML // fx:id="loggedInUser"
     private Menu loggedInUser;
@@ -160,8 +166,8 @@ public class LudoController implements Initializable {
             
             loginStage.setScene(scene);
             loginStage.show();
-            loginStage.setOnCloseRequest(e -> challenge = null);
-            challenge = loader.getController();
+            loginStage.setOnCloseRequest(e -> challengeController = null);
+            challengeController = loader.getController();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
@@ -174,6 +180,9 @@ public class LudoController implements Initializable {
 
     void userLoggedIn(String username) {
         this.username = username;
+        random.setDisable(false);
+        chat.setDisable(false);
+        challenge.setDisable(false);
         logoutButton.setDisable(false);
         loginButton.setDisable(true);
         loggedInUser.setText(messages.getString("ludo.menubar.user.logintext") + " " + username);
@@ -204,6 +213,9 @@ public class LudoController implements Initializable {
      */
     public void handleServerLogoutResponse(String ackMessage) {
         if (Integer.parseInt(ackMessage) == 1) {
+            random.setDisable(true);
+            chat.setDisable(true);
+            challenge.setDisable(true);
             logoutButton.setDisable(true);
             loginButton.setDisable(false);
             loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
@@ -404,7 +416,7 @@ public class LudoController implements Initializable {
     /**
      * Display acknowledgment that client is in queue for random game
      */
-    public void JoinRandomSuccess() {
+    public void joinRandomSuccess() {
         spinner.setVisible(true);
         random.setDisable(true);
     }
@@ -427,6 +439,6 @@ public class LudoController implements Initializable {
      * @return The challenge controller
      */
     public ChallengeController getChallengeContoller() {
-        return challenge;
+        return challengeController;
     }
 }
