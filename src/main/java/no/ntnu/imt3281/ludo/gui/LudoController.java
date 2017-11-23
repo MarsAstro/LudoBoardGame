@@ -3,6 +3,7 @@ package no.ntnu.imt3281.ludo.gui;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,6 +13,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
@@ -31,328 +36,350 @@ import no.ntnu.imt3281.ludo.client.Client;
  *
  */
 public class LudoController implements Initializable {
-	private ResourceBundle messages;
-	private ArrayList<GameBoardController> gameBoards;
-	private ArrayList<ChatWindowController> chatWindows;
-	private ChatListController chatList;
-	private ChallengeListController challengeList;
-	private Tab mainTab;
-	private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
-	private String username;
+    private ResourceBundle messages;
+    private ArrayList<GameBoardController> gameBoards;
+    private ArrayList<ChatWindowController> chatWindows;
+    private ChatListController chatList;
+    private ChallengeListController challengeList;
+    private Tab mainTab;
+    private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
+    private String username;
 
-	@FXML // fx:id="spinner"
-	private ProgressIndicator spinner;
+    @FXML // fx:id="spinner"
+    private ProgressIndicator spinner;
 
-	@FXML // fx:id="loginButton"
-	private MenuItem loginButton;
+    @FXML // fx:id="loginButton"
+    private MenuItem loginButton;
 
-	@FXML // fx:id="logoutButton"
-	private MenuItem logoutButton;
+    @FXML // fx:id="logoutButton"
+    private MenuItem logoutButton;
 
-	@FXML // fx:id="random"
-	private MenuItem random;
+    @FXML // fx:id="random"
+    private MenuItem random;
 
-	@FXML // fx:id="loggedInUser"
-	private Menu loggedInUser;
+    @FXML // fx:id="loggedInUser"
+    private Menu loggedInUser;
 
-	@FXML // fx:id="tabbedPane"
-	private TabPane tabbedPane;
+    @FXML // fx:id="tabbedPane"
+    private TabPane tabbedPane;
 
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		messages = resources;
-		gameBoards = new ArrayList<>();
-		chatWindows = new ArrayList<>();
-		tabbedPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
-	}
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        messages = resources;
+        gameBoards = new ArrayList<>();
+        chatWindows = new ArrayList<>();
+        tabbedPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
+    }
 
-	/**
-	 * Connects the user to a random game
-	 * 
-	 * @param event
-	 *            The event caused by the buttonpress
-	 */
-	@FXML
-	public void joinRandomGame(ActionEvent event) {
-		Client.sendMessage("Ludo.JoinRandom:");
-	}
+    /**
+     * Connects the user to a random game
+     * 
+     * @param event
+     *            The event caused by the buttonpress
+     */
+    @FXML
+    public void joinRandomGame(ActionEvent event) {
+        Client.sendMessage("Ludo.JoinRandom:");
+    }
 
-	@FXML
-	void openLoginRegisterGUI(ActionEvent event) {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("Connect.fxml"));
-		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+    @FXML
+    void openLoginRegisterGUI(ActionEvent event) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("Connect.fxml"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
-		try {
-			BorderPane root = (BorderPane) loader.load();
-			Scene scene = new Scene(root);
-			Stage loginStage = new Stage();
+        try {
+            BorderPane root = (BorderPane) loader.load();
+            Scene scene = new Scene(root);
+            Stage loginStage = new Stage();
 
-			loginStage.setScene(scene);
-			loginStage.show();
+            loginStage.setScene(scene);
+            loginStage.show();
 
-			ConnectController controller = loader.getController();
-			Client.setConnectController(controller);
-		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, e.getMessage(), e);
-		}
-	}
+            ConnectController controller = loader.getController();
+            Client.setConnectController(controller);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
 
-	@FXML
-	void openChatList(ActionEvent event) {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatList.fxml"));
-		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+    @FXML
+    void openChatList(ActionEvent event) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatList.fxml"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
-		try {
-			GridPane root = (GridPane) loader.load();
-			Scene scene = new Scene(root);
-			Stage loginStage = new Stage();
+        try {
+            GridPane root = (GridPane) loader.load();
+            Scene scene = new Scene(root);
+            Stage loginStage = new Stage();
 
-			loginStage.setScene(scene);
-			loginStage.show();
-			loginStage.setOnCloseRequest(e -> chatList = null);
-			chatList = loader.getController();
-			Client.sendMessage("Chat.List:");
-		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, e.getMessage(), e);
-		}
-	}
+            loginStage.setScene(scene);
+            loginStage.show();
+            loginStage.setOnCloseRequest(e -> chatList = null);
+            chatList = loader.getController();
+            Client.sendMessage("Chat.List:");
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
 
-	@FXML
-	void openChallengeList(ActionEvent event) {
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("ChallengeList.fxml"));
-		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+    @FXML
+    void openChallengeList(ActionEvent event) {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ChallengeList.fxml"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
-		try {
-			GridPane root = (GridPane) loader.load();
-			Scene scene = new Scene(root);
-			Stage loginStage = new Stage();
+        try {
+            GridPane root = (GridPane) loader.load();
+            Scene scene = new Scene(root);
+            Stage loginStage = new Stage();
 
-			loginStage.setScene(scene);
-			loginStage.show();
-			loginStage.setOnCloseRequest(e -> challengeList = null);
-			challengeList = loader.getController();
-			Client.sendMessage("User.List:");
-		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, e.getMessage(), e);
-		}
-	}
+            loginStage.setScene(scene);
+            loginStage.show();
+            loginStage.setOnCloseRequest(e -> challengeList = null);
+            challengeList = loader.getController();
+            Client.sendMessage("User.List:");
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
 
-	@FXML
-	void logout(ActionEvent event) {
-		Client.sendMessage("User.Logout:");
-	}
+    @FXML
+    void logout(ActionEvent event) {
+        Client.sendMessage("User.Logout:");
+    }
 
-	void userLoggedIn(String username) {
-		this.username = username;
-		logoutButton.setDisable(false);
-		loginButton.setDisable(true);
-		loggedInUser.setText(messages.getString("ludo.menubar.user.logintext") + " " + username);
+    void userLoggedIn(String username) {
+        this.username = username;
+        logoutButton.setDisable(false);
+        loginButton.setDisable(true);
+        loggedInUser.setText(messages.getString("ludo.menubar.user.logintext") + " " + username);
 
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatWindow.fxml"));
-		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatWindow.fxml"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
-		try {
-			GridPane mainChat = loader.load();
-			mainTab = new Tab(messages.getString("chat.global"));
-			mainTab.setContent(mainChat);
-			mainTab.setClosable(false);
-			tabbedPane.getTabs().add(mainTab);
+        try {
+            GridPane mainChat = loader.load();
+            mainTab = new Tab(messages.getString("chat.global"));
+            mainTab.setContent(mainChat);
+            mainTab.setClosable(false);
+            tabbedPane.getTabs().add(mainTab);
 
-			ChatWindowController newController = (ChatWindowController) loader.getController();
-			chatWindows.add(newController);
-			Client.sendMessage("Chat.InitGlobal:" + 0);
-		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, e.getMessage(), e);
-		}
-	}
+            ChatWindowController newController = (ChatWindowController) loader.getController();
+            chatWindows.add(newController);
+            Client.sendMessage("Chat.InitGlobal:" + 0);
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
 
-	/**
-	 * Handles the servers response to a logout request
-	 * 
-	 * @param ackMessage
-	 *            The message returned by server
-	 */
-	public void handleServerLogoutResponse(String ackMessage) {
-		if (Integer.parseInt(ackMessage) == 1) {
-			logoutButton.setDisable(true);
-			loginButton.setDisable(false);
-			loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
-			tabbedPane.getTabs().remove(mainTab);
-			chatWindows.clear();
-			gameBoards.clear();
-		}
-	}
+    /**
+     * Handles the servers response to a logout request
+     * 
+     * @param ackMessage
+     *            The message returned by server
+     */
+    public void handleServerLogoutResponse(String ackMessage) {
+        if (Integer.parseInt(ackMessage) == 1) {
+            logoutButton.setDisable(true);
+            loginButton.setDisable(false);
+            loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
+            tabbedPane.getTabs().remove(mainTab);
+            chatWindows.clear();
+            gameBoards.clear();
+        }
+    }
 
-	/**
-	 * Handles received ackMessage when trying to join a game
-	 * 
-	 * @param ackMessage
-	 *            Message indicating if connection was a success
-	 */
-	public void handleServerJoinRandomGame(String ackMessage) {
-		spinner.setVisible(false);
-		random.setDisable(false);
-		int gameID = handleServerJoinGame(ackMessage);
-		Client.sendMessage("Ludo.Init:" + gameID);
-	}
+    /**
+     * Handles received ackMessage when trying to join a game
+     * 
+     * @param ackMessage
+     *            Message indicating if connection was a success
+     */
+    public void handleServerJoinRandomGame(String ackMessage) {
+        spinner.setVisible(false);
+        random.setDisable(false);
+        int gameID = handleServerJoinGame(ackMessage);
+        Client.sendMessage("Ludo.Init:" + gameID);
+    }
 
-	/**
-	 * Handles received ackMessage when trying to join a game
-	 * 
-	 * @param ackMessage
-	 *            Message indicating if connection was a success
-	 * @return id of the game joined
-	 */
-	public int handleServerJoinGame(String ackMessage) {
-		int endIndex = ackMessage.indexOf(",");
+    /**
+     * Handles received ackMessage when trying to join a game
+     * 
+     * @param ackMessage
+     *            Message indicating if connection was a success
+     * @return id of the game joined
+     */
+    public int handleServerJoinGame(String ackMessage) {
+        int endIndex = ackMessage.indexOf(",");
 
-		int gameID = Integer.parseInt(ackMessage.substring(0, endIndex));
-		int playerID = Integer.parseInt(ackMessage.substring(endIndex + 1));
+        int gameID = Integer.parseInt(ackMessage.substring(0, endIndex));
+        int playerID = Integer.parseInt(ackMessage.substring(endIndex + 1));
 
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("GameBoard.fxml"));
-		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("GameBoard.fxml"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
-		try {
-			AnchorPane gameBoard = loader.load();
-			GameBoardController newController = ((GameBoardController) loader.getController());
-			Tab tab = new Tab("Game");
-			tab.setContent(gameBoard);
-			tab.setOnCloseRequest(e -> {
-				newController.leaveGame();
-				gameBoards.remove(newController);
-			});
-			tabbedPane.getTabs().add(tab);
+        try {
+            AnchorPane gameBoard = loader.load();
+            GameBoardController newController = ((GameBoardController) loader.getController());
+            Tab tab = new Tab("Game");
+            tab.setContent(gameBoard);
+            tab.setOnCloseRequest(e -> {
+                newController.leaveGame();
+                gameBoards.remove(newController);
+            });
+            tabbedPane.getTabs().add(tab);
 
-			newController.gameID = gameID;
-			newController.playerID = playerID;
-			gameBoards.add(loader.getController());
-		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, e.getMessage(), e);
-		}
-		return gameID;
-	}
+            newController.gameID = gameID;
+            newController.playerID = playerID;
+            gameBoards.add(loader.getController());
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+        return gameID;
+    }
 
-	/**
-	 * Handles received ackMessage when trying to join chat
-	 * 
-	 * @param chatID
-	 *            The chat id of the chat to join
-	 * @param ackMessage
-	 *            The received acknowledge message from server
-	 */
-	public void handleServerJoinChat(int chatID, String ackMessage) {
-		handleServerInitChat(ackMessage);
-		Client.sendMessage("Chat.Init:" + chatID);
-	}
+    /**
+     * Handles received ackMessage when trying to join chat
+     * 
+     * @param chatID
+     *            The chat id of the chat to join
+     * @param ackMessage
+     *            The received acknowledge message from server
+     */
+    public void handleServerJoinChat(int chatID, String ackMessage) {
+        handleServerInitChat(ackMessage);
+        Client.sendMessage("Chat.Init:" + chatID);
+    }
 
-	/**
-	 * Initializes the local chat window after acknowledge message from server
-	 * 
-	 * @param ackMessage
-	 *            The received acknowledge message from server
-	 */
-	public void handleServerInitChat(String ackMessage) {
-		String[] messages = ackMessage.split(",");
-		int chatID = Integer.parseInt(messages[0]);
-		String chatName = messages[1];
+    /**
+     * Initializes the local chat window after acknowledge message from server
+     * 
+     * @param ackMessage
+     *            The received acknowledge message from server
+     */
+    public void handleServerInitChat(String ackMessage) {
+        String[] messages = ackMessage.split(",");
+        int chatID = Integer.parseInt(messages[0]);
+        String chatName = messages[1];
 
-		if (chatList != null) {
-			chatList.closeWindow();
-		}
+        if (chatList != null) {
+            chatList.closeWindow();
+        }
 
-		FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatWindow.fxml"));
-		loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatWindow.fxml"));
+        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
-		try {
-			GridPane chatWindow = loader.load();
-			ChatWindowController newController = ((ChatWindowController) loader.getController());
-			Tab tab = new Tab(chatName);
-			tab.setContent(chatWindow);
-			tab.setOnCloseRequest(e -> {
-				newController.leaveChat();
-				chatWindows.remove(newController);
-			});
-			tabbedPane.getTabs().add(tab);
+        try {
+            GridPane chatWindow = loader.load();
+            ChatWindowController newController = ((ChatWindowController) loader.getController());
+            Tab tab = new Tab(chatName);
+            tab.setContent(chatWindow);
+            tab.setOnCloseRequest(e -> {
+                newController.leaveChat();
+                chatWindows.remove(newController);
+            });
+            tabbedPane.getTabs().add(tab);
 
-			newController.chatID = chatID;
-			newController.addChatName(username);
-			chatWindows.add(loader.getController());
-		} catch (IOException e) {
-			LOGGER.log(Level.WARNING, e.getMessage(), e);
-		}
-	}
+            newController.chatID = chatID;
+            newController.addChatName(username);
+            chatWindows.add(loader.getController());
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, e.getMessage(), e);
+        }
+    }
 
-	/**
-	 * Disconnects from server and closes window
-	 * 
-	 * @param event
-	 *            Event triggering method
-	 */
-	@FXML
-	public void closeWindow(ActionEvent event) {
-		if (Client.isConnected()) {
-			logout(event);
-		}
-		Stage stage = (Stage) tabbedPane.getScene().getWindow();
-		stage.close();
-		System.exit(0);
-	}
+    /**
+     * 
+     * @param ackMessage
+     */
+    public void handleServerChallengeGame(String ackMessage) {
+        ButtonType acceptButton = new ButtonType("Accept", ButtonBar.ButtonData.OK_DONE);
+        ButtonType declineButton = new ButtonType("Decline", ButtonBar.ButtonData.CANCEL_CLOSE);
+        
+        Alert alert = new Alert(AlertType.CONFIRMATION, "Hei", acceptButton, declineButton);
+        alert.setTitle("Challenge");
+        alert.setHeaderText(ackMessage + " have challenged you to a game");
+        alert.setContentText("Do you accept the challenge?");
 
-	/**
-	 * Gets game board controller from gameID
-	 * 
-	 * @param gameID
-	 *            The gameID referencing a possible game board controller
-	 * @return True if gameID reference a game board controller
-	 */
-	public GameBoardController getGameBoardController(int gameID) {
-		GameBoardController controller = null;
-		for (GameBoardController gbc : gameBoards) {
-			if (gameID == gbc.gameID) {
-				controller = gbc;
-				break;
-			}
-		}
-		return controller;
-	}
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK){
+            // ... user chose OK
+        } else {
+            // ... user chose CANCEL or closed the dialog
+        }
+    }
 
-	/**
-	 * Gets chat window controller from chatID
-	 * 
-	 * @param chatID
-	 *            The chatID referencing a possible chat window controller
-	 * @return A chat window controller if chatID reference a chat window controller
-	 */
-	public ChatWindowController getChatWindowController(int chatID) {
-		ChatWindowController controller = null;
-		for (ChatWindowController cwc : chatWindows) {
-			if (chatID == cwc.chatID) {
-				controller = cwc;
-				break;
-			}
-		}
-		return controller;
-	}
+    /**
+     * Disconnects from server and closes window
+     * 
+     * @param event
+     *            Event triggering method
+     */
+    @FXML
+    public void closeWindow(ActionEvent event) {
+        if (Client.isConnected()) {
+            logout(event);
+        }
+        Stage stage = (Stage) tabbedPane.getScene().getWindow();
+        stage.close();
+        System.exit(0);
+    }
 
-	/**
-	 * Display acknowledgment that client is in queue for random game
-	 */
-	public void JoinRandomSuccess() {
-		spinner.setVisible(true);
-		random.setDisable(true);
-	}
+    /**
+     * Gets game board controller from gameID
+     * 
+     * @param gameID
+     *            The gameID referencing a possible game board controller
+     * @return True if gameID reference a game board controller
+     */
+    public GameBoardController getGameBoardController(int gameID) {
+        GameBoardController controller = null;
+        for (GameBoardController gbc : gameBoards) {
+            if (gameID == gbc.gameID) {
+                controller = gbc;
+                break;
+            }
+        }
+        return controller;
+    }
 
-	/**
-	 * @return The chat list controller
-	 */
-	public ChatListController getChatListContoller() {
-		return chatList;
-	}
+    /**
+     * Gets chat window controller from chatID
+     * 
+     * @param chatID
+     *            The chatID referencing a possible chat window controller
+     * @return A chat window controller if chatID reference a chat window
+     *         controller
+     */
+    public ChatWindowController getChatWindowController(int chatID) {
+        ChatWindowController controller = null;
+        for (ChatWindowController cwc : chatWindows) {
+            if (chatID == cwc.chatID) {
+                controller = cwc;
+                break;
+            }
+        }
+        return controller;
+    }
 
-	/**
-	 * @return The challenge list controller
-	 */
-	public ChallengeListController getChallengeListContoller() {
-		return challengeList;
-	}
+    /**
+     * Display acknowledgment that client is in queue for random game
+     */
+    public void JoinRandomSuccess() {
+        spinner.setVisible(true);
+        random.setDisable(true);
+    }
+
+    /**
+     * @return The chat list controller
+     */
+    public ChatListController getChatListContoller() {
+        return chatList;
+    }
+
+    /**
+     * @return The challenge list controller
+     */
+    public ChallengeListController getChallengeListContoller() {
+        return challengeList;
+    }
 }

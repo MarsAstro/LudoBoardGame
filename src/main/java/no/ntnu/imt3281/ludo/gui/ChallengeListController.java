@@ -40,6 +40,7 @@ public class ChallengeListController {
             for (Label label : challengers) {
                 Client.sendMessage("Ludo.Challenge:" + label.getText());                
             }
+            closeWindow();
         }
     }
 
