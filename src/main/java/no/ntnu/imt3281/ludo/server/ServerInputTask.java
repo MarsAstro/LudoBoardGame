@@ -36,9 +36,10 @@ public class ServerInputTask implements Runnable {
                         for (String message : messages) {
                             handleMessage(client.clientID, message);
                         }
+                    } else if(client.connection.isClosed()) {
+                    	UserCleanupTask.removeUser(client.clientID);
                     }
                 } catch (IOException e) {
-                    // TODO handle closed connection
                     LOGGER.log(Level.WARNING, e.getMessage(), e);
                 }
             }
