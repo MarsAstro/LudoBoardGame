@@ -55,6 +55,8 @@ public class UserCleanupTask implements Runnable {
                     }
                 }
                 Server.chatLock.writeLock().unlock();
+                
+                LudoTask.removeFromQueue(new ClientInfo(clientID));
 
                 Platform.runLater(() -> {
                     Server.serverGUIController.updateUserList();
