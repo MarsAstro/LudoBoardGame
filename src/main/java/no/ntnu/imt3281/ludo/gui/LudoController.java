@@ -57,15 +57,21 @@ public class LudoController implements Initializable {
 
     @FXML // fx:id="random"
     private MenuItem random;
-    
+
     @FXML // fx:id="challenge"
     private MenuItem challenge;
-    
+
     @FXML // fx:id="chat"
     private MenuItem chat;
 
     @FXML // fx:id="loggedInUser"
     private Menu loggedInUser;
+
+    @FXML // fx:id="loggedInUser"
+    private Menu winsNum;
+
+    @FXML // fx:id="loggedInUser"
+    private Menu winsText;
 
     @FXML // fx:id="tabbedPane"
     private TabPane tabbedPane;
@@ -76,7 +82,7 @@ public class LudoController implements Initializable {
         gameBoards = new ArrayList<>();
         chatWindows = new ArrayList<>();
         tabbedPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
-        
+
         openLoginRegisterGUI(new ActionEvent());
     }
 
@@ -158,12 +164,12 @@ public class LudoController implements Initializable {
     public void openChallenge() {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Challenge.fxml"));
         loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
-        
+
         try {
             GridPane root = (GridPane) loader.load();
             Scene scene = new Scene(root);
             Stage loginStage = new Stage();
-            
+
             loginStage.setScene(scene);
             loginStage.show();
             loginStage.setOnCloseRequest(e -> challengeController = null);
@@ -172,7 +178,7 @@ public class LudoController implements Initializable {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
-    
+
     @FXML
     void logout(ActionEvent event) {
         Client.sendMessage("User.Logout:");
@@ -180,6 +186,8 @@ public class LudoController implements Initializable {
 
     void userLoggedIn(String username) {
         this.username = username;
+        winsText.setVisible(true);
+        winsNum.setVisible(true);
         random.setDisable(false);
         chat.setDisable(false);
         challenge.setDisable(false);
@@ -213,6 +221,9 @@ public class LudoController implements Initializable {
      */
     public void handleServerLogoutResponse(String ackMessage) {
         if (Integer.parseInt(ackMessage) == 1) {
+            winsText.setVisible(false);
+            winsNum.setText("0");
+            winsNum.setVisible(false);
             random.setDisable(true);
             chat.setDisable(true);
             challenge.setDisable(true);
@@ -333,7 +344,8 @@ public class LudoController implements Initializable {
     public void handleServerChallengeGame(String ackMessage) {
         ButtonType acceptButton = new ButtonType(messages.getString("challenge.accept"),
                 ButtonBar.ButtonData.OK_DONE);
-        ButtonType declineButton = new ButtonType(messages.getString("challenge.decline"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType declineButton = new ButtonType(messages.getString("challenge.decline"),
+                ButtonBar.ButtonData.CANCEL_CLOSE);
 
         Alert alert = new Alert(AlertType.CONFIRMATION, "", acceptButton, declineButton);
         alert.setTitle(messages.getString("challenge.title"));
@@ -347,7 +359,6 @@ public class LudoController implements Initializable {
             Client.sendMessage("Ludo.ChallengeConfirm:" + -1);
         }
     }
-    
 
     /**
      * Disconnects from server and closes window
@@ -423,11 +434,21 @@ public class LudoController implements Initializable {
     public ChallengeListController getChallengeListContoller() {
         return challengeList;
     }
-    
+
     /**
      * @return The challenge controller
      */
     public ChallengeController getChallengeContoller() {
         return challengeController;
+    }
+
+    /**
+     * Adds a number of wins to the clients wins display
+     * 
+     * @param numToAdd
+     *            The number of wins to add
+     */
+    public void addWins(int numToAdd) {
+        winsNum.setText(Integer.toString((Integer.parseInt(winsNum.getText()) + numToAdd)));
     }
 }

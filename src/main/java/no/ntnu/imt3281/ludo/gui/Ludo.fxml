@@ -7,46 +7,58 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="no.ntnu.imt3281.ludo.gui.LudoController">
    <children>
       <BorderPane prefHeight="800.0" prefWidth="1400.0">
-         <top>
-            <MenuBar BorderPane.alignment="CENTER">
-              <menus>
-                <Menu mnemonicParsing="false" text="%ludo.menubar.file">
-                  <items>
-                        <MenuItem fx:id="loginButton" mnemonicParsing="false" onAction="#openLoginRegisterGUI" text="%ludo.menubar.file.login" />
-                        <MenuItem fx:id="logoutButton" disable="true" mnemonicParsing="false" onAction="#logout" text="%ludo.menubar.file.logout" />
-                    <MenuItem mnemonicParsing="false" onAction="#closeWindow" text="%ludo.menubar.file.close" />
-                  </items>
-                </Menu>
-                <Menu mnemonicParsing="false" text="%ludo.menubar.game">
-                  <items>
-                    <MenuItem fx:id="random" disable="true" mnemonicParsing="false" onAction="#joinRandomGame" text="%ludo.menubar.game.random">
-                           <graphic>
-                              <ProgressIndicator fx:id="spinner" prefHeight="18.0" prefWidth="18.0" visible="false" />
-                           </graphic></MenuItem>
-                        <MenuItem fx:id="challenge" disable="true" mnemonicParsing="false" onAction="#openChallengeList" text="%ludo.menubar.game.challenge" />
-                  </items>
-                </Menu>
-                  <Menu mnemonicParsing="false" text="%ludo.menubar.chat">
-                    <items>
-                        <MenuItem fx:id="chat" disable="true" mnemonicParsing="false" onAction="#openChatList" text="%ludo.menubar.chat.list" />
-                    </items>
-                  </Menu>
-                <Menu mnemonicParsing="false" text="%ludo.menubar.help">
-                  <items>
-                    <MenuItem mnemonicParsing="false" text="%ludo.menubar.help.about" />
-                  </items>
-                </Menu>
-                  <Menu fx:id="loggedInUser" disable="true" mnemonicParsing="false" text="%ludo.menubar.user.nouser" />
-              </menus>
-            </MenuBar>
-         </top>
          <center>
             <TabPane fx:id="tabbedPane" prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER" />
          </center>
+         <top>
+            <HBox prefHeight="33.0" prefWidth="1400.0" BorderPane.alignment="CENTER">
+               <children>
+                  <MenuBar prefHeight="32.0" prefWidth="1134.0">
+                    <menus>
+                      <Menu mnemonicParsing="false" text="%ludo.menubar.file">
+                        <items>
+                              <MenuItem fx:id="loginButton" mnemonicParsing="false" onAction="#openLoginRegisterGUI" text="%ludo.menubar.file.login" />
+                              <MenuItem fx:id="logoutButton" disable="true" mnemonicParsing="false" onAction="#logout" text="%ludo.menubar.file.logout" />
+                          <MenuItem mnemonicParsing="false" onAction="#closeWindow" text="%ludo.menubar.file.close" />
+                        </items>
+                      </Menu>
+                      <Menu mnemonicParsing="false" text="%ludo.menubar.game">
+                        <items>
+                          <MenuItem fx:id="random" disable="true" mnemonicParsing="false" onAction="#joinRandomGame" text="%ludo.menubar.game.random">
+                                 <graphic>
+                                    <ProgressIndicator fx:id="spinner" prefHeight="18.0" prefWidth="18.0" visible="false" />
+                                 </graphic>
+                              </MenuItem>
+                              <MenuItem fx:id="challenge" disable="true" mnemonicParsing="false" onAction="#openChallengeList" text="%ludo.menubar.game.challenge" />
+                        </items>
+                      </Menu>
+                        <Menu mnemonicParsing="false" text="%ludo.menubar.chat">
+                          <items>
+                              <MenuItem fx:id="chat" disable="true" mnemonicParsing="false" onAction="#openChatList" text="%ludo.menubar.chat.list" />
+                          </items>
+                        </Menu>
+                      <Menu mnemonicParsing="false" text="%ludo.menubar.help">
+                        <items>
+                          <MenuItem mnemonicParsing="false" text="%ludo.menubar.help.about" />
+                        </items>
+                      </Menu>
+                    </menus>
+                  </MenuBar>
+                  <MenuBar prefHeight="32.0" prefWidth="392.0">
+                    <menus>
+                        <Menu fx:id="loggedInUser" disable="true" mnemonicParsing="false" text="%ludo.menubar.user.nouser" />
+                        <Menu fx:id="winsText" disable="true" mnemonicParsing="false" text="%ludo.menubar.user.winstext" visible="false" />
+                        <Menu fx:id="winsNum" disable="true" mnemonicParsing="false" text="0" visible="false" />
+                    </menus>
+                  </MenuBar>
+               </children>
+            </HBox>
+         </top>
       </BorderPane>
    </children>
 </AnchorPane>

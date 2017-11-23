@@ -1,5 +1,8 @@
 package no.ntnu.imt3281.ludo.server;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -97,7 +100,7 @@ public class LudoTask implements Runnable {
     }
 
     private void handleLudoChallengeValidationPacket(int clientID, String message) {
-        ArrayList<Integer> curChallenge = null; 
+        ArrayList<Integer> curChallenge = null;
         boolean playableGame = Boolean.parseBoolean(message);
 
         for (int challenge = 0; challenge < challengeMap.size(); challenge++) {
@@ -106,7 +109,7 @@ public class LudoTask implements Runnable {
             }
             break;
         }
-        
+
         if (playableGame == true && curChallenge != null) {
             int index = Server.clients.indexOf(new ClientInfo(clientID));
             ClientInfo newClient = Server.clients.get(index);
@@ -118,15 +121,14 @@ public class LudoTask implements Runnable {
             GameInfo newGame = Server.games.get(Server.games.size() - 1);
 
             for (int i = 0; i < curChallenge.size(); i++) {
-                int cliID = curChallenge.get(i); 
+                int cliID = curChallenge.get(i);
                 newGame.addPlayer(Server.clients.get(cliID));
                 SendToClientTask.send(cliID + ".Ludo.Join:" + newGame.gameID + "," + i);
             }
             challengeMap.remove(curChallenge);
             Platform.runLater(() -> Server.serverGUIController.updateGameList());
             initGameForAllClients(newGame);
-        }
-        else if (curChallenge != null) {
+        } else if (curChallenge != null) {
             challengeMap.remove(curChallenge);
         }
     }
@@ -313,9 +315,22 @@ public class LudoTask implements Runnable {
         int winner = game.ludo.getWinner();
 
         if (winner != -1) {
+            String winnerName = game.ludo.getPlayerName(winner);
+
             for (ClientInfo client : game.clients) {
                 SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID + "," + winner
-                        + "," + game.ludo.getPlayerName(winner));
+                        + "," + winnerName);
+            }
+
+            try {
+                winnerName = winnerName.substring(winnerName.indexOf(":") + 2);
+                PreparedStatement userQuery;
+                userQuery = Server.database
+                        .prepareStatement("UPDATE Accounts SET Wins = Wins + 1 WHERE Username = ?");
+                userQuery.setString(1, winnerName);
+                userQuery.executeQuery();
+            } catch (SQLException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
     }
