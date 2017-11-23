@@ -1,5 +1,8 @@
 package no.ntnu.imt3281.ludo.server;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -100,6 +103,7 @@ public class LudoTask implements Runnable {
     }
 
     private void handleLudoChallengeValidationPacket(int clientID, String message) {
+
         Challenge curChallenge = null;
         boolean playableGame = Boolean.parseBoolean(message);
         
@@ -331,9 +335,30 @@ public class LudoTask implements Runnable {
         int winner = game.ludo.getWinner();
 
         if (winner != -1) {
+            String winnerName = game.ludo.getPlayerName(winner);
+            String strippedName = winnerName.substring(winnerName.indexOf(":") + 2);
+            int clientID = -1;
+
             for (ClientInfo client : game.clients) {
                 SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID + "," + winner
-                        + "," + game.ludo.getPlayerName(winner));
+                        + "," + winnerName);
+                
+                if (client.username.equals(strippedName))
+                {
+                    clientID = client.clientID;
+                }
+            }
+
+            try {
+                PreparedStatement userQuery;
+                userQuery = Server.database
+                        .prepareStatement("UPDATE Accounts SET Wins = Wins + 1 WHERE Username = ?");
+                userQuery.setString(1, strippedName);
+                userQuery.executeQuery();
+                
+                SendToClientTask.send(clientID + ".User.Wins:1");
+            } catch (SQLException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
         }
     }

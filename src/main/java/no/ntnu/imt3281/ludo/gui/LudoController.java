@@ -68,6 +68,12 @@ public class LudoController implements Initializable {
     @FXML // fx:id="loggedInUser"
     private Menu loggedInUser;
 
+    @FXML // fx:id="loggedInUser"
+    private Menu winsNum;
+
+    @FXML // fx:id="loggedInUser"
+    private Menu winsText;
+
     @FXML // fx:id="tabbedPane"
     private TabPane tabbedPane;
 
@@ -181,6 +187,8 @@ public class LudoController implements Initializable {
 
     void userLoggedIn(String username) {
         this.username = username;
+        winsText.setVisible(true);
+        winsNum.setVisible(true);
         random.setDisable(false);
         chat.setDisable(false);
         challenge.setDisable(false);
@@ -214,6 +222,9 @@ public class LudoController implements Initializable {
      */
     public void handleServerLogoutResponse(String ackMessage) {
         if (Integer.parseInt(ackMessage) == 1) {
+            winsText.setVisible(false);
+            winsNum.setText("0");
+            winsNum.setVisible(false);
             random.setDisable(true);
             chat.setDisable(true);
             challenge.setDisable(true);
@@ -448,5 +459,15 @@ public class LudoController implements Initializable {
      */
     public Alert getChallengeAlert() {
         return challengeAlert;
+    }
+
+    /**
+     * Adds a number of wins to the clients wins display
+     * 
+     * @param numToAdd
+     *            The number of wins to add
+     */
+    public void addWins(int numToAdd) {
+        winsNum.setText(Integer.toString((Integer.parseInt(winsNum.getText()) + numToAdd)));
     }
 }

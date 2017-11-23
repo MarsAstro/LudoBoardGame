@@ -64,6 +64,7 @@ public class ClientConnectionTask implements Runnable {
             ResultSet resultSet = userQuery.executeQuery();
 
             String regexPattern = "^[a-zA-Z][a-zA-Z0-9]{0,15}$";
+            ClientInfo newClient = null;
 
             if (resultSet.next()) {
                 ackMessage += "-1";
@@ -80,14 +81,15 @@ public class ClientConnectionTask implements Runnable {
                 newUserInsert.executeUpdate();
 
                 PreparedStatement newUserQuery = Server.database
-                        .prepareStatement("SELECT UserID FROM Accounts WHERE Username = ?");
+                        .prepareStatement("SELECT UserID, Wins FROM Accounts WHERE Username = ?");
                 newUserQuery.setString(1, username);
                 ResultSet newUser = newUserQuery.executeQuery();
 
                 newUser.next();
+                newClient = new ClientInfo(newClientSocket, newUser.getInt("UserID"), username);
+
                 Server.clientLock.writeLock().lock();
-                Server.clients
-                        .add(new ClientInfo(newClientSocket, newUser.getInt("UserID"), username));
+                Server.clients.add(newClient);
                 Server.clientLock.writeLock().unlock();
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
 
@@ -100,9 +102,13 @@ public class ClientConnectionTask implements Runnable {
             userQuery.close();
             resultSet.close();
 
-            ackMessage += ";";
-            newClientSocket.getOutputStream().write(ackMessage.getBytes(charset));
-            newClientSocket.getOutputStream().flush();
+            if (newClient != null) {
+                SendToClientTask.send(newClient.clientID + "." + ackMessage);
+            } else {
+                ackMessage += ";";
+                newClientSocket.getOutputStream().write(ackMessage.getBytes(charset));
+                newClientSocket.getOutputStream().flush();
+            }
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
@@ -116,7 +122,7 @@ public class ClientConnectionTask implements Runnable {
         try {
 
             PreparedStatement userQuery = Server.database.prepareStatement(
-                    "SELECT UserID, Username, Password FROM Accounts WHERE Username = ? AND Password = ?");
+                    "SELECT UserID, Username, Password, Wins FROM Accounts WHERE Username = ? AND Password = ?");
             userQuery.setString(1, username);
             userQuery.setString(2, password);
             ResultSet resultSet = userQuery.executeQuery();
@@ -130,12 +136,17 @@ public class ClientConnectionTask implements Runnable {
                 }
             }
 
+            ClientInfo newClient = null;
+            int wins = 0;
+
             if (alreadyLoggedIn) {
                 ackMessage += "-2";
             } else if (resultSet.next()) {
+                newClient = new ClientInfo(newClientSocket, resultSet.getInt("UserID"), username);
+                wins = resultSet.getInt("Wins");
+
                 Server.clientLock.writeLock().lock();
-                Server.clients
-                        .add(new ClientInfo(newClientSocket, resultSet.getInt("UserID"), username));
+                Server.clients.add(newClient);
                 Server.clientLock.writeLock().unlock();
                 Platform.runLater(() -> Server.serverGUIController.updateUserList());
                 ackMessage += "1";
@@ -146,9 +157,14 @@ public class ClientConnectionTask implements Runnable {
             userQuery.close();
             resultSet.close();
 
-            ackMessage += ";";
-            newClientSocket.getOutputStream().write(ackMessage.getBytes(charset));
-            newClientSocket.getOutputStream().flush();
+            if (newClient != null) {
+                SendToClientTask.send(newClient.clientID + "." + ackMessage);
+                SendToClientTask.send(newClient.clientID + ".User.Wins:" + wins);
+            } else {
+                ackMessage += ";";
+                newClientSocket.getOutputStream().write(ackMessage.getBytes(charset));
+                newClientSocket.getOutputStream().flush();
+            }
         } catch (SQLException | IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }

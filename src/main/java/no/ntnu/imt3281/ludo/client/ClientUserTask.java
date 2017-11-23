@@ -68,6 +68,9 @@ public class ClientUserTask implements Runnable {
             case "List:" :
             	Platform.runLater(() -> Client.ludoController.getChallengeListContoller().addPlayersName(ackMessage));
             	break;
+            case "Wins:" :
+                Platform.runLater(() -> Client.ludoController.addWins(Integer.parseInt(ackMessage)));
+                break;
             default :
                 break;
         }

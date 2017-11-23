@@ -66,7 +66,7 @@ public class ChatListController implements Initializable {
     @FXML
     void joinChat(ActionEvent event) {
         Label selectedChat = chatList.getSelectionModel().getSelectedItem();
-        String chatID = selectedChat.getText().substring(0, selectedChat.getText().indexOf(":"));
+        String chatID = selectedChat.getText().substring(0, selectedChat.getText().indexOf(':'));
 
         Client.sendMessage("Chat.Join:" + chatID);
     }
