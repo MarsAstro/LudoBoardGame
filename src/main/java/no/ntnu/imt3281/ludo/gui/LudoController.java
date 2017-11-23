@@ -39,9 +39,9 @@ public class LudoController implements Initializable {
     private ResourceBundle messages;
     private ArrayList<GameBoardController> gameBoards;
     private ArrayList<ChatWindowController> chatWindows;
-    private ChatListController chatList;
-    private ChallengeListController challengeList;
-    private ChallengeController challengeController;
+    private ChatListController chatList = null;
+    private ChallengeListController challengeList = null;
+    private ChallengeController challengeController = null;
     private Alert challengeAlert = null;
     private Tab mainTab;
     private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
@@ -141,6 +141,7 @@ public class LudoController implements Initializable {
 
     @FXML
     void openChallengeList(ActionEvent event) {
+        challenge.setDisable(true);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ChallengeList.fxml"));
         loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
@@ -354,6 +355,7 @@ public class LudoController implements Initializable {
      *            The acknowledgement from server
      */
     public void handleServerChallengeGame(String ackMessage) {
+        challenge.setDisable(true);
         ButtonType acceptButton = new ButtonType(messages.getString("challenge.accept"),
                 ButtonBar.ButtonData.OK_DONE);
         ButtonType declineButton = new ButtonType(messages.getString("challenge.decline"),
@@ -469,5 +471,21 @@ public class LudoController implements Initializable {
      */
     public void addWins(int numToAdd) {
         winsNum.setText(Integer.toString((Integer.parseInt(winsNum.getText()) + numToAdd)));
+    }
+
+    /**
+     * Sets challengeAlert to null
+     */
+    public void resetChallengeAlert() {
+        challengeAlert = null;
+        challenge.setDisable(false);
+    }
+
+    /**
+     * Sets challenge controller to null
+     */
+    public void resetChallengeController() {
+        challengeController = null;
+        challenge.setDisable(false);
     }
 }

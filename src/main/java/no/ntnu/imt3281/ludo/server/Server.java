@@ -129,13 +129,12 @@ public class Server extends Application {
         executorService.shutdown();
 
         File chatLogs = new File("chatLogs");
-        if(!chatLogs.exists()) {
-        	chatLogs.mkdir();
-        	File gameLogs = new File("chatLogs\\gameChat");
-        	gameLogs.mkdir();
+        if (!chatLogs.exists()) {
+            chatLogs.mkdir();
+            File gameLogs = new File("chatLogs\\gameChat");
+            gameLogs.mkdir();
         }
-        
-        
+
         launch(args);
     }
 }

@@ -127,7 +127,7 @@ public class GameInfo {
             if (playerIndex != -1) {
                 String status = ludo.getStatus();
                 String ludoPlayerName = ludo.getPlayerName(playerIndex);
-                
+
                 if ("Initiated".equals(status)) {
                     clients.remove(index);
                     ludo.discardPlayer(ludoPlayerName);

@@ -1,7 +1,6 @@
 package no.ntnu.imt3281.ludo.server;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -25,11 +24,11 @@ public class LudoTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
     static ArrayList<Challenge> challenges = new ArrayList<>();
     static ReadWriteLock challengesLock;
+    static int nextChallengeID = 0;
 
     private static ArrayList<ClientInfo> randomQueue;
     private static ReadWriteLock randomQueueLock;
     private String currentTask;
-    private int nextChallengeID = 0;
 
     @Override
     public void run() {
@@ -103,13 +102,22 @@ public class LudoTask implements Runnable {
     }
 
     private void handleLudoChallengeValidationPacket(int clientID, String message) {
-
+        boolean playableGame = false;
+        String[] playerNames = null;
         Challenge curChallenge = null;
-        boolean playableGame = Boolean.parseBoolean(message);
-        
+        int endIndex = message.indexOf(",");
+
+        if (endIndex >= 0) {
+            playableGame = Boolean.parseBoolean(message.substring(0, endIndex));
+            playerNames = message.substring(endIndex + 1).split(",");
+            System.out.println(message);
+        } else {
+            playableGame = Boolean.parseBoolean(message);
+        }
+
         challengesLock.readLock().lock();
         for (int challenge = 0; challenge < challenges.size(); challenge++) {
-            if (challenges.get(challenge).clientIDs.get(0) == clientID) {
+            if (challenges.get(challenge).clients.get(0).clientID == clientID) {
                 curChallenge = challenges.get(challenge);
             }
             break;
@@ -121,7 +129,7 @@ public class LudoTask implements Runnable {
             int index = Server.clients.indexOf(new ClientInfo(clientID));
             ClientInfo newClient = Server.clients.get(index);
             Server.clientLock.readLock().unlock();
-            
+
             Server.gameLock.writeLock().lock();
             Server.games.add(new GameInfo(Server.nextGameID++, newClient));
 
@@ -129,22 +137,30 @@ public class LudoTask implements Runnable {
             Server.gameLock.writeLock().unlock();
 
             Server.clientLock.readLock().lock();
-            for (int i = 0; i < curChallenge.clientIDs.size(); i++) {
-                int cliID = curChallenge.clientIDs.get(i);
-                int newPlayerIndex = Server.clients.indexOf(new ClientInfo(cliID));
-                newGame.addPlayer(Server.clients.get(newPlayerIndex));
-                SendToClientTask.send(cliID + ".Ludo.Join:" + newGame.gameID + "," + i);
+            SendToClientTask.send(curChallenge.clients.get(0).clientID + ".Ludo.Join:"
+                    + newGame.gameID + "," + 0);
+            for (int i = 1; i < curChallenge.clients.size(); i++) {
+                for (int name = 0; name < playerNames.length; name++) {
+                    if (curChallenge.clients.get(i).username.equals(playerNames[name])) {
+                        int cliID = curChallenge.clients.get(i).clientID;
+                        int newPlayerIndex = Server.clients.indexOf(new ClientInfo(cliID));
+                        newGame.addPlayer(Server.clients.get(newPlayerIndex));
+                        SendToClientTask.send(cliID + ".Ludo.Join:" + newGame.gameID + "," + i);
+                    }
+                }
             }
             Server.clientLock.readLock().unlock();
-            
+
             challengesLock.writeLock().lock();
             challenges.remove(curChallenge);
+            nextChallengeID--;
             challengesLock.writeLock().unlock();
             Platform.runLater(() -> Server.serverGUIController.updateGameList());
             initGameForAllClients(newGame);
         } else if (curChallenge != null) {
             challengesLock.writeLock().lock();
             challenges.remove(curChallenge);
+            nextChallengeID--;
             challengesLock.writeLock().unlock();
         }
     }
@@ -154,18 +170,18 @@ public class LudoTask implements Runnable {
 
         challengesLock.readLock().lock();
         for (int challenge = 0; challenge < challenges.size(); challenge++) {
-            for (int challengedClientID = 1; challengedClientID < challenges
-                    .get(challenge).clientIDs.size(); challengedClientID++) {
-                int cliID = challenges.get(challenge).clientIDs.get(challengedClientID);
+            for (int challengedClient = 1; challengedClient < challenges.get(challenge).clients
+                    .size(); challengedClient++) {
+                int cliID = challenges.get(challenge).clients.get(challengedClient).clientID;
                 if (clientID == cliID) {
                     Server.clientLock.readLock().lock();
                     int clientIndex = Server.clients.indexOf(new ClientInfo(cliID));
 
                     if (clientIndex >= 0) {
-                        SendToClientTask
-                                .send(challenges.get(challenge).clientIDs.get(0) + ".Ludo.ChallengeConfirm:"
-                                        + Server.clients.get(clientIndex).username + ","
-                                        + Boolean.toString(confirm));
+                        SendToClientTask.send(challenges.get(challenge).clients.get(0).clientID
+                                + ".Ludo.ChallengeConfirm:"
+                                + Server.clients.get(clientIndex).username + ","
+                                + Boolean.toString(confirm));
                     }
                     Server.clientLock.readLock().unlock();
                 }
@@ -176,21 +192,26 @@ public class LudoTask implements Runnable {
 
     private void handleLudoChallengePacket(int clientID, String packetMessage) {
         String[] usernames = packetMessage.split(",");
-        
-        challengesLock.writeLock().lock();
-        challenges.add(new Challenge(nextChallengeID++, clientID));
-        challengesLock.writeLock().unlock();
-        
-        Server.clientLock.readLock().lock();
-        for (String user : usernames) {
-            for (ClientInfo client : Server.clients) {
-                if (user.equals(client.username)) {
-                    challenges.get(nextChallengeID - 1).clientIDs.add(client.clientID);
-                    SendToClientTask.send(client.clientID + ".Ludo.Challenge:" + client.username);
+
+        int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+
+        if (clientIndex >= 0) {
+            challengesLock.writeLock().lock();
+            challenges.add(new Challenge(nextChallengeID++, Server.clients.get(clientIndex)));
+
+            for (String user : usernames) {
+                for (ClientInfo client : Server.clients) {
+                    if (user.equals(client.username)) {
+                        challengesLock.writeLock().lock();
+                        challenges.get(challenges.size() - 1).clients.add(client);
+                        challengesLock.writeLock().unlock();
+                        SendToClientTask
+                                .send(client.clientID + ".Ludo.Challenge:" + client.username);
+                    }
                 }
             }
+            challengesLock.writeLock().unlock();
         }
-        Server.clientLock.readLock().unlock();
     }
 
     private void handleLudoChatPacket(int clientID, String message) {
@@ -342,9 +363,8 @@ public class LudoTask implements Runnable {
             for (ClientInfo client : game.clients) {
                 SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID + "," + winner
                         + "," + winnerName);
-                
-                if (client.username.equals(strippedName))
-                {
+
+                if (client.username.equals(strippedName)) {
                     clientID = client.clientID;
                 }
             }
@@ -355,7 +375,7 @@ public class LudoTask implements Runnable {
                         .prepareStatement("UPDATE Accounts SET Wins = Wins + 1 WHERE Username = ?");
                 userQuery.setString(1, strippedName);
                 userQuery.executeQuery();
-                
+
                 SendToClientTask.send(clientID + ".User.Wins:1");
             } catch (SQLException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);

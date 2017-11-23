@@ -81,12 +81,12 @@ public class Client extends Application {
             ClientLudoTask ludoTask = new ClientLudoTask();
             ClientUserTask userTask = new ClientUserTask();
             ClientChatTask chatTask = new ClientChatTask();
-            
+
             executorService.execute(networkTask);
             executorService.execute(ludoTask);
             executorService.execute(userTask);
             executorService.execute(chatTask);
-            
+
             executorService.shutdown();
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
