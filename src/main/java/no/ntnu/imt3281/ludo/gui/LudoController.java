@@ -42,6 +42,7 @@ public class LudoController implements Initializable {
     private ChatListController chatList;
     private ChallengeListController challengeList;
     private ChallengeController challengeController;
+    private Alert challengeAlert = null;
     private Tab mainTab;
     private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
     private String username;
@@ -57,10 +58,10 @@ public class LudoController implements Initializable {
 
     @FXML // fx:id="random"
     private MenuItem random;
-    
+
     @FXML // fx:id="challenge"
     private MenuItem challenge;
-    
+
     @FXML // fx:id="chat"
     private MenuItem chat;
 
@@ -76,7 +77,7 @@ public class LudoController implements Initializable {
         gameBoards = new ArrayList<>();
         chatWindows = new ArrayList<>();
         tabbedPane.setTabClosingPolicy(TabClosingPolicy.ALL_TABS);
-        
+
         openLoginRegisterGUI(new ActionEvent());
     }
 
@@ -158,12 +159,12 @@ public class LudoController implements Initializable {
     public void openChallenge() {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Challenge.fxml"));
         loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
-        
+
         try {
             GridPane root = (GridPane) loader.load();
             Scene scene = new Scene(root);
             Stage loginStage = new Stage();
-            
+
             loginStage.setScene(scene);
             loginStage.show();
             loginStage.setOnCloseRequest(e -> challengeController = null);
@@ -172,7 +173,7 @@ public class LudoController implements Initializable {
             LOGGER.log(Level.WARNING, e.getMessage(), e);
         }
     }
-    
+
     @FXML
     void logout(ActionEvent event) {
         Client.sendMessage("User.Logout:");
@@ -237,7 +238,7 @@ public class LudoController implements Initializable {
         int gameID = handleServerJoinGame(ackMessage);
         Client.sendMessage("Ludo.Init:" + gameID);
     }
-    
+
     /**
      * Handles received ackMessage when trying to join a game
      * 
@@ -344,21 +345,21 @@ public class LudoController implements Initializable {
     public void handleServerChallengeGame(String ackMessage) {
         ButtonType acceptButton = new ButtonType(messages.getString("challenge.accept"),
                 ButtonBar.ButtonData.OK_DONE);
-        ButtonType declineButton = new ButtonType(messages.getString("challenge.decline"), ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType declineButton = new ButtonType(messages.getString("challenge.decline"),
+                ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        Alert alert = new Alert(AlertType.CONFIRMATION, "", acceptButton, declineButton);
-        alert.setTitle(messages.getString("challenge.title"));
-        alert.setHeaderText(ackMessage + messages.getString("challenge.header"));
-        alert.setContentText(messages.getString("challenge.content"));
+        challengeAlert = new Alert(AlertType.CONFIRMATION, "", acceptButton, declineButton);
+        challengeAlert.setTitle(messages.getString("challenge.title"));
+        challengeAlert.setHeaderText(ackMessage + messages.getString("challenge.header"));
+        challengeAlert.setContentText(messages.getString("challenge.content"));
 
-        Optional<ButtonType> result = alert.showAndWait();
+        Optional<ButtonType> result = challengeAlert.showAndWait();
         if (result.get() == acceptButton) {
             Client.sendMessage("Ludo.ChallengeConfirm:" + true);
         } else {
             Client.sendMessage("Ludo.ChallengeConfirm:" + false);
         }
     }
-    
 
     /**
      * Disconnects from server and closes window
@@ -434,11 +435,18 @@ public class LudoController implements Initializable {
     public ChallengeListController getChallengeListContoller() {
         return challengeList;
     }
-    
+
     /**
      * @return The challenge controller
      */
     public ChallengeController getChallengeContoller() {
         return challengeController;
+    }
+
+    /**
+     * @return The challengeAlert dialog box
+     */
+    public Alert getChallengeAlert() {
+        return challengeAlert;
     }
 }

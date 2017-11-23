@@ -20,7 +20,8 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
 public class LudoTask implements Runnable {
     private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
     private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
-    private static ArrayList<Challenge> challenges = new ArrayList<>();
+    static ArrayList<Challenge> challenges = new ArrayList<>();
+    static ReadWriteLock challengesLock;
 
     private static ArrayList<ClientInfo> randomQueue;
     private static ReadWriteLock randomQueueLock;
@@ -31,6 +32,7 @@ public class LudoTask implements Runnable {
     public void run() {
         randomQueue = new ArrayList<>();
         randomQueueLock = new ReentrantReadWriteLock();
+        challengesLock = new ReentrantReadWriteLock();
 
         while (!Server.serverSocket.isClosed()) {
             try {
@@ -101,40 +103,52 @@ public class LudoTask implements Runnable {
         Challenge curChallenge = null;
         boolean playableGame = Boolean.parseBoolean(message);
         
+        challengesLock.readLock().lock();
         for (int challenge = 0; challenge < challenges.size(); challenge++) {
             if (challenges.get(challenge).clientIDs.get(0) == clientID) {
                 curChallenge = challenges.get(challenge);
             }
             break;
         }
+        challengesLock.readLock().unlock();
 
         if (playableGame == true && curChallenge != null) {
+            Server.clientLock.readLock().lock();
             int index = Server.clients.indexOf(new ClientInfo(clientID));
             ClientInfo newClient = Server.clients.get(index);
-
+            Server.clientLock.readLock().unlock();
+            
             Server.gameLock.writeLock().lock();
             Server.games.add(new GameInfo(Server.nextGameID++, newClient));
-            Server.gameLock.writeLock().unlock();
 
             GameInfo newGame = Server.games.get(Server.games.size() - 1);
+            Server.gameLock.writeLock().unlock();
 
+            Server.clientLock.readLock().lock();
             for (int i = 0; i < curChallenge.clientIDs.size(); i++) {
                 int cliID = curChallenge.clientIDs.get(i);
                 int newPlayerIndex = Server.clients.indexOf(new ClientInfo(cliID));
                 newGame.addPlayer(Server.clients.get(newPlayerIndex));
                 SendToClientTask.send(cliID + ".Ludo.Join:" + newGame.gameID + "," + i);
             }
+            Server.clientLock.readLock().unlock();
+            
+            challengesLock.writeLock().lock();
             challenges.remove(curChallenge);
+            challengesLock.writeLock().unlock();
             Platform.runLater(() -> Server.serverGUIController.updateGameList());
             initGameForAllClients(newGame);
         } else if (curChallenge != null) {
+            challengesLock.writeLock().lock();
             challenges.remove(curChallenge);
+            challengesLock.writeLock().unlock();
         }
     }
 
     private void handleLudoChallengeConfirmPacket(int clientID, String message) {
         boolean confirm = Boolean.parseBoolean(message);
 
+        challengesLock.readLock().lock();
         for (int challenge = 0; challenge < challenges.size(); challenge++) {
             for (int challengedClientID = 1; challengedClientID < challenges
                     .get(challenge).clientIDs.size(); challengedClientID++) {
@@ -153,13 +167,16 @@ public class LudoTask implements Runnable {
                 }
             }
         }
+        challengesLock.readLock().unlock();
     }
 
     private void handleLudoChallengePacket(int clientID, String packetMessage) {
         String[] usernames = packetMessage.split(",");
-
+        
+        challengesLock.writeLock().lock();
         challenges.add(new Challenge(nextChallengeID++, clientID));
-
+        challengesLock.writeLock().unlock();
+        
         Server.clientLock.readLock().lock();
         for (String user : usernames) {
             for (ClientInfo client : Server.clients) {

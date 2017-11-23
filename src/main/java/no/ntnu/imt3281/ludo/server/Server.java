@@ -116,6 +116,7 @@ public class Server extends Application {
         SendToClientTask sendTask = new SendToClientTask();
         UserCleanupTask cleanupTask = new UserCleanupTask();
         ClientConnectionTask clientConTask = new ClientConnectionTask();
+        ChallengeTimeoutTask challengeTimeoutTask = new ChallengeTimeoutTask();
 
         executorService.execute(userTask);
         executorService.execute(ludoTask);
@@ -124,6 +125,7 @@ public class Server extends Application {
         executorService.execute(sendTask);
         executorService.execute(cleanupTask);
         executorService.execute(clientConTask);
+        executorService.execute(challengeTimeoutTask);
         executorService.shutdown();
 
         File chatLogs = new File("chatLogs");

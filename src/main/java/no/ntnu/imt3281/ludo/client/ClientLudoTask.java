@@ -6,6 +6,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import no.ntnu.imt3281.ludo.gui.ChallengeController;
 import no.ntnu.imt3281.ludo.gui.GameBoardController;
 
 /**
@@ -74,6 +76,9 @@ public class ClientLudoTask implements Runnable {
 		case "ChallengeConfirm:":
             handleReceivedLudoChallengeConfirmPacket(ackMessage);
             break;
+		case "ChallengeTimedOut:":
+            handleReceivedLudoChallengeTimedOutPacket(ackMessage);
+            break;
 		case "JoinRandom:":
 			Platform.runLater(() -> Client.ludoController.handleServerJoinRandomGame(ackMessage));
 			break;
@@ -91,7 +96,18 @@ public class ClientLudoTask implements Runnable {
 		}
 	}
 
-	private void handleReceivedLudoChallengeConfirmPacket(String ackMessage) {
+	private void handleReceivedLudoChallengeTimedOutPacket(String ackMessage) {
+	    ChallengeController cc = Client.getLudoController().getChallengeContoller();
+	    Alert challengeAlert = Client.getLudoController().getChallengeAlert();
+	    if (cc != null) {
+	        Platform.runLater(() -> cc.closeWindow());
+	    }
+	    else if (challengeAlert != null) {
+	        Platform.runLater(() -> challengeAlert.close());
+	    }
+    }
+
+    private void handleReceivedLudoChallengeConfirmPacket(String ackMessage) {
         String[] messages = ackMessage.split(",");
         String clientName = messages[0];
         boolean confirm = Boolean.parseBoolean(messages[1]);
