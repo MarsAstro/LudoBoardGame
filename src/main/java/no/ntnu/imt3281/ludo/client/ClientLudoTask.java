@@ -71,6 +71,9 @@ public class ClientLudoTask implements Runnable {
 		case "Challenge:":
 		    handleReceivedLudoChallengePacket(ackMessage);
 			break;
+		case "ChallengeConfirm:":
+            handleReceivedLudoChallengeConfirmPacket(ackMessage);
+            break;
 		case "JoinRandom:":
 			Platform.runLater(() -> Client.ludoController.handleServerJoinRandomGame(ackMessage));
 			break;
@@ -88,7 +91,11 @@ public class ClientLudoTask implements Runnable {
 		}
 	}
 
-	private void handleReceivedLudoChallengePacket(String ackMessage) {
+	private void handleReceivedLudoChallengeConfirmPacket(String ackMessage) {
+        
+    }
+
+    private void handleReceivedLudoChallengePacket(String ackMessage) {
         Platform.runLater(() -> Client.ludoController.handleServerChallengeGame(ackMessage));
     }
 

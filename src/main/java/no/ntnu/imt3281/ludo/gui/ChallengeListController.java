@@ -37,9 +37,11 @@ public class ChallengeListController {
     @FXML
     void challenge(ActionEvent event) {
         if (!challengers.isEmpty()) {
+            String challengeMessage = "";
             for (Label label : challengers) {
-                Client.sendMessage("Ludo.Challenge:" + label.getText());                
+                challengeMessage += label.getText() + ",";
             }
+            Client.sendMessage("Ludo.Challenge:" + challengeMessage.substring(0, challengeMessage.lastIndexOf(",")));                
             closeWindow();
         }
     }

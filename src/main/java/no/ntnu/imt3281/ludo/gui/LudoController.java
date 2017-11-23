@@ -288,23 +288,26 @@ public class LudoController implements Initializable {
     }
 
     /**
+     * Handles a challenge game request
      * 
      * @param ackMessage
+     *            The acknowledgement from server
      */
     public void handleServerChallengeGame(String ackMessage) {
-        ButtonType acceptButton = new ButtonType("Accept", ButtonBar.ButtonData.OK_DONE);
-        ButtonType declineButton = new ButtonType("Decline", ButtonBar.ButtonData.CANCEL_CLOSE);
-        
-        Alert alert = new Alert(AlertType.CONFIRMATION, "Hei", acceptButton, declineButton);
-        alert.setTitle("Challenge");
-        alert.setHeaderText(ackMessage + " have challenged you to a game");
-        alert.setContentText("Do you accept the challenge?");
+        ButtonType acceptButton = new ButtonType(messages.getString("challenge.accept"),
+                ButtonBar.ButtonData.OK_DONE);
+        ButtonType declineButton = new ButtonType(messages.getString("challenge.decline"), ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        Alert alert = new Alert(AlertType.CONFIRMATION, "", acceptButton, declineButton);
+        alert.setTitle(messages.getString("challenge.title"));
+        alert.setHeaderText(ackMessage + messages.getString("challenge.header"));
+        alert.setContentText(messages.getString("challenge.content"));
 
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK){
-            // ... user chose OK
+        if (result.get() == ButtonType.OK) {
+            Client.sendMessage("Ludo.ChallengeConfirm:" + 1);
         } else {
-            // ... user chose CANCEL or closed the dialog
+            Client.sendMessage("Ludo.ChallengeConfirm:" + -1);
         }
     }
 
