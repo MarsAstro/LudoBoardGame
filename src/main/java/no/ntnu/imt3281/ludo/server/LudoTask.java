@@ -69,7 +69,7 @@ public class LudoTask implements Runnable {
                 handleLudoJoinRandomPacket(clientID, message.substring(tagEndIndex));
                 break;
             case "Challenge:" :
-                // TODO
+                handleLudoChallengePacket(clientID, message.substring(tagEndIndex));
                 break;
             case "Init:" :
                 handleLudoInitPacket(message.substring(tagEndIndex));
@@ -83,6 +83,20 @@ public class LudoTask implements Runnable {
             default :
                 break;
         }
+    }
+
+    private void handleLudoChallengePacket(int clientID, String message) {
+        Server.clientLock.readLock().lock();
+        int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+
+        if (clientIndex >= 0) {
+            for (ClientInfo client : Server.clients) {
+                if (message.equals(client.username)) {
+                    SendToClientTask.send(client.clientID + ".Ludo.Challenge:" + Server.clients.get(clientIndex));
+                }
+            }
+        }
+        Server.clientLock.readLock().unlock();
     }
 
     private void handleLudoChatPacket(int clientID, String message) {

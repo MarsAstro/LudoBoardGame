@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
+import no.ntnu.imt3281.ludo.client.Client;
 
 /**
  * Controller for the challenge list
@@ -36,7 +37,9 @@ public class ChallengeListController {
     @FXML
     void challenge(ActionEvent event) {
         if (!challengers.isEmpty()) {
-            // TODO
+            for (Label label : challengers) {
+                Client.sendMessage("Ludo.Challenge:" + label.getText());                
+            }
         }
     }
 
@@ -58,7 +61,7 @@ public class ChallengeListController {
     @FXML
     void playerListClicked(MouseEvent event) {
         Label selected = playerList.getSelectionModel().getSelectedItem();
-        if (selected != null) {
+        if (selected != null && challengers.size() < 3) {
             players.remove(selected);
             challengers.add(selected);
             challengerList.setItems(challengers);
