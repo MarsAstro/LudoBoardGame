@@ -116,6 +116,7 @@ public class Server extends Application {
         SendToClientTask sendTask = new SendToClientTask();
         UserCleanupTask cleanupTask = new UserCleanupTask();
         ClientConnectionTask clientConTask = new ClientConnectionTask();
+        ChallengeTimeoutTask challengeTimeoutTask = new ChallengeTimeoutTask();
 
         executorService.execute(userTask);
         executorService.execute(ludoTask);
@@ -124,16 +125,16 @@ public class Server extends Application {
         executorService.execute(sendTask);
         executorService.execute(cleanupTask);
         executorService.execute(clientConTask);
+        executorService.execute(challengeTimeoutTask);
         executorService.shutdown();
 
         File chatLogs = new File("chatLogs");
-        if(!chatLogs.exists()) {
-        	chatLogs.mkdir();
-        	File gameLogs = new File("chatLogs\\gameChat");
-        	gameLogs.mkdir();
+        if (!chatLogs.exists()) {
+            chatLogs.mkdir();
+            File gameLogs = new File("chatLogs\\gameChat");
+            gameLogs.mkdir();
         }
-        
-        
+
         launch(args);
     }
 }

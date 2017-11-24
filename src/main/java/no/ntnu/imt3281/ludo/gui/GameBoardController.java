@@ -404,7 +404,7 @@ public class GameBoardController implements Initializable {
 		double startX = token.getX() + TILESIZE / 2.d;
 		double startY = token.getY() + TILESIZE / 2.d;
 		double goalX = points.get(to).getX() + (TILESIZE / 2.d) + (4 * piece);
-		double goalY = points.get(to).getY() + (TILESIZE / 2) + (4 * piece);
+		double goalY = points.get(to).getY() + (TILESIZE / 2.d) + (4 * piece);
 
 		// Setup initial placement for animation
 		Path path = new Path();

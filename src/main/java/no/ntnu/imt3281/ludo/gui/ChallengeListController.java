@@ -44,7 +44,8 @@ public class ChallengeListController {
                 challengeMessage += labelText + ",";
                 Client.getLudoController().getChallengeContoller().addChallengerName(labelText);
             }
-            Client.sendMessage("Ludo.Challenge:" + challengeMessage.substring(0, challengeMessage.lastIndexOf(",")));   
+            Client.sendMessage("Ludo.Challenge:"
+                    + challengeMessage.substring(0, challengeMessage.lastIndexOf(",")));
             closeWindow();
         }
     }

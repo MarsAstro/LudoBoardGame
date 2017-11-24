@@ -23,10 +23,10 @@ public class ChallengeController implements Initializable {
     private ResourceBundle messages;
     private ObservableList<Label> challengers = FXCollections.observableArrayList();
     private ArrayList<Boolean> playerConfirmed = new ArrayList<>();
-    private boolean playableGame = false;
+    private ArrayList<Boolean> playerAccepted = new ArrayList<>();
 
     @FXML // fx:id="ChallengedPlayers"
-    private ListView<Label> challengedPlayers; 
+    private ListView<Label> challengedPlayers;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -42,6 +42,7 @@ public class ChallengeController implements Initializable {
         challengers.add(new Label(name + ": " + messages.getString("challenge.waiting")));
         challengedPlayers.setItems(challengers);
         playerConfirmed.add(false);
+        playerAccepted.add(false);
     }
 
     /**
@@ -60,7 +61,7 @@ public class ChallengeController implements Initializable {
                 String status;
                 if (confirm == true) {
                     status = ": " + messages.getString("challenge.accepted");
-                    playableGame = true;
+                    playerAccepted.set(i, true);
                 } else {
                     status = ": " + messages.getString("challenge.declined");
                 }
@@ -68,9 +69,19 @@ public class ChallengeController implements Initializable {
                 playerConfirmed.set(i, true);
             }
         }
-        
+
         if (allConfirmed() == true) {
-            Client.sendMessage("Ludo.ChallengeValidation:" + playableGame);
+            String players = "";
+            boolean hasAcceptedPlayers = false;
+            for (int i = 0; i < challengers.size(); i++) {
+                if (playerAccepted.get(i) == true) {
+                    players += challengers.get(i).getText().substring(0,
+                            challengers.get(i).getText().indexOf(":")) + ",";
+                    hasAcceptedPlayers = true;
+                }
+            }
+            Client.sendMessage("Ludo.ChallengeValidation:" + hasAcceptedPlayers + ","
+                    + players.substring(0, players.lastIndexOf(",")));
             closeWindow();
         }
     }
@@ -85,7 +96,7 @@ public class ChallengeController implements Initializable {
         }
         return allConfirmed;
     }
-    
+
     /**
      * Closes window
      */
