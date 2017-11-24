@@ -45,6 +45,7 @@ import no.ntnu.imt3281.ludo.client.Client;
 public class ConnectController implements Initializable {
     private ResourceBundle messages;
     private static final Logger LOGGER = Logger.getLogger(ConnectController.class.getName());
+    private String charSet = "UTF-8";
 
     @FXML // fx:id="IPAddress"
     private TextField ipAddress;
@@ -170,7 +171,7 @@ public class ConnectController implements Initializable {
                     FileOutputStream userFile = new FileOutputStream(detailsFileNames[1], false);
                     FileOutputStream passFile = new FileOutputStream(detailsFileNames[2], false)) {
                 if (rememberMe.isSelected()) {
-                    ipFile.write(ipAddress.getText().getBytes("UTF-8"));
+                    ipFile.write(ipAddress.getText().getBytes(charSet));
                     userFile.write(encrypt(username.getText()));
                     passFile.write(encrypt(password.getText()));
                 } else {
@@ -226,10 +227,10 @@ public class ConnectController implements Initializable {
 
         Cipher cipher;
         try {
-            Key aesKey = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+            Key aesKey = new SecretKeySpec(key.getBytes(charSet), "AES");
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.ENCRYPT_MODE, aesKey);
-            result = cipher.doFinal(message.getBytes("UTF-8"));
+            result = cipher.doFinal(message.getBytes(charSet));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException
                 | IllegalBlockSizeException | BadPaddingException
                 | UnsupportedEncodingException e) {
@@ -246,7 +247,7 @@ public class ConnectController implements Initializable {
 
         Cipher cipher;
         try {
-            Key aesKey = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+            Key aesKey = new SecretKeySpec(key.getBytes(charSet), "AES");
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, aesKey);
             result = new String(cipher.doFinal(message));

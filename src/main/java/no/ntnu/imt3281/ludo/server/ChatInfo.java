@@ -78,7 +78,7 @@ public class ChatInfo {
     /**
      * Sends message to chat
      * 
-     * @param message
+     * @param sayMessage
      *            The message sent to chat
      */
     public void say(String sayMessage) {

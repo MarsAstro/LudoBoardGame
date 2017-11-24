@@ -12,7 +12,7 @@ import java.util.logging.Logger;
  *
  */
 public class ClientInputTask implements Runnable {
-    
+
     private static final Logger LOGGER = Logger.getLogger(ClientInputTask.class.getName());
     private byte[] inputData = new byte[256];
 
@@ -45,15 +45,15 @@ public class ClientInputTask implements Runnable {
      *            The received packet
      */
     private void handleReceivedPacket(String message) {
-        int tagEndIndex = message.indexOf(".") + 1;
+        int tagEndIndex = message.indexOf('.') + 1;
         String tag = message.substring(0, tagEndIndex);
         String ackMessage = message.substring(tagEndIndex);
         switch (tag) {
             case "User." :
-            	ClientUserTask.addNewTask(ackMessage);
+                ClientUserTask.addNewTask(ackMessage);
                 break;
             case "Ludo." :
-            	ClientLudoTask.addNewTask(ackMessage);
+                ClientLudoTask.addNewTask(ackMessage);
                 break;
             case "Chat." :
                 ClientChatTask.addNewTask(ackMessage);

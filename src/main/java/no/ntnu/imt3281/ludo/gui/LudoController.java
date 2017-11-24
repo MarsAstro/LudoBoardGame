@@ -39,9 +39,10 @@ public class LudoController implements Initializable {
     private ResourceBundle messages;
     private ArrayList<GameBoardController> gameBoards;
     private ArrayList<ChatWindowController> chatWindows;
-    private ChatListController chatList;
-    private ChallengeListController challengeList;
-    private ChallengeController challengeController;
+    private ChatListController chatList = null;
+    private ChallengeListController challengeList = null;
+    private ChallengeController challengeController = null;
+    private Alert challengeAlert = null;
     private Tab mainTab;
     private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
     private String username;
@@ -140,6 +141,7 @@ public class LudoController implements Initializable {
 
     @FXML
     void openChallengeList(ActionEvent event) {
+        challenge.setDisable(true);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ChallengeList.fxml"));
         loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
 
@@ -248,7 +250,7 @@ public class LudoController implements Initializable {
         int gameID = handleServerJoinGame(ackMessage);
         Client.sendMessage("Ludo.Init:" + gameID);
     }
-    
+
     /**
      * Handles received ackMessage when trying to join a game
      * 
@@ -353,17 +355,18 @@ public class LudoController implements Initializable {
      *            The acknowledgement from server
      */
     public void handleServerChallengeGame(String ackMessage) {
+        challenge.setDisable(true);
         ButtonType acceptButton = new ButtonType(messages.getString("challenge.accept"),
                 ButtonBar.ButtonData.OK_DONE);
         ButtonType declineButton = new ButtonType(messages.getString("challenge.decline"),
                 ButtonBar.ButtonData.CANCEL_CLOSE);
 
-        Alert alert = new Alert(AlertType.CONFIRMATION, "", acceptButton, declineButton);
-        alert.setTitle(messages.getString("challenge.title"));
-        alert.setHeaderText(ackMessage + messages.getString("challenge.header"));
-        alert.setContentText(messages.getString("challenge.content"));
+        challengeAlert = new Alert(AlertType.CONFIRMATION, "", acceptButton, declineButton);
+        challengeAlert.setTitle(messages.getString("challenge.title"));
+        challengeAlert.setHeaderText(ackMessage + messages.getString("challenge.header"));
+        challengeAlert.setContentText(messages.getString("challenge.content"));
 
-        Optional<ButtonType> result = alert.showAndWait();
+        Optional<ButtonType> result = challengeAlert.showAndWait();
         if (result.get() == acceptButton) {
             Client.sendMessage("Ludo.ChallengeConfirm:" + true);
         } else {
@@ -454,6 +457,13 @@ public class LudoController implements Initializable {
     }
 
     /**
+     * @return The challengeAlert dialog box
+     */
+    public Alert getChallengeAlert() {
+        return challengeAlert;
+    }
+
+    /**
      * Adds a number of wins to the clients wins display
      * 
      * @param numToAdd
@@ -461,5 +471,21 @@ public class LudoController implements Initializable {
      */
     public void addWins(int numToAdd) {
         winsNum.setText(Integer.toString((Integer.parseInt(winsNum.getText()) + numToAdd)));
+    }
+
+    /**
+     * Sets challengeAlert to null
+     */
+    public void resetChallengeAlert() {
+        challengeAlert = null;
+        challenge.setDisable(false);
+    }
+
+    /**
+     * Sets challenge controller to null
+     */
+    public void resetChallengeController() {
+        challengeController = null;
+        challenge.setDisable(false);
     }
 }

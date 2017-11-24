@@ -1,9 +1,11 @@
 package no.ntnu.imt3281.ludo.server;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -21,362 +23,403 @@ import no.ntnu.imt3281.ludo.logic.PlayerEvent;
  *
  */
 public class LudoTask implements Runnable {
-    private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
-    private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
-    private static ArrayList<Challenge> challenges = new ArrayList<>();
+	private static ArrayBlockingQueue<String> ludoTasks = new ArrayBlockingQueue<>(256);
+	private static final Logger LOGGER = Logger.getLogger(LudoTask.class.getName());
+	static ArrayList<Challenge> challenges = new ArrayList<>();
+	static ReadWriteLock challengesLock;
+	static int nextChallengeID = 0;
 
-    private static ArrayList<ClientInfo> randomQueue;
-    private static ReadWriteLock randomQueueLock;
-    private String currentTask;
-    private int nextChallengeID = 0;
+	private static ArrayList<ClientInfo> randomQueue;
+	private static ReadWriteLock randomQueueLock;
+	private String currentTask;
 
-    @Override
-    public void run() {
-        randomQueue = new ArrayList<>();
-        randomQueueLock = new ReentrantReadWriteLock();
+	@Override
+	public void run() {
+		randomQueue = new ArrayList<>();
+		randomQueueLock = new ReentrantReadWriteLock();
+		challengesLock = new ReentrantReadWriteLock();
 
-        while (!Server.serverSocket.isClosed()) {
-            try {
-                currentTask = ludoTasks.take();
+		while (!Server.serverSocket.isClosed()) {
+			try {
+				currentTask = ludoTasks.take();
 
-                int endIDIndex = currentTask.indexOf(".");
-                int clientID = Integer.parseInt(currentTask.substring(0, endIDIndex));
+				int endIDIndex = currentTask.indexOf(".");
+				int clientID = Integer.parseInt(currentTask.substring(0, endIDIndex));
 
-                handleMessage(clientID, currentTask.substring(endIDIndex + 1));
-            } catch (InterruptedException e) {
-                LOGGER.log(Level.WARNING, e.getMessage(), e);
-            }
-        }
-    }
+				handleMessage(clientID, currentTask.substring(endIDIndex + 1));
+			} catch (InterruptedException e) {
+				LOGGER.log(Level.WARNING, e.getMessage(), e);
+			}
+		}
+	}
 
-    /**
-     * Put a new task in queue
-     * 
-     * @param message
-     *            Message to be put in queue
-     */
-    public static void blockingPut(String message) {
-        try {
-            ludoTasks.put(message);
-        } catch (InterruptedException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
-        }
-    }
+	/**
+	 * Put a new task in queue
+	 * 
+	 * @param message
+	 *            Message to be put in queue
+	 */
+	public static void blockingPut(String message) {
+		try {
+			ludoTasks.put(message);
+		} catch (InterruptedException e) {
+			LOGGER.log(Level.WARNING, e.getMessage(), e);
+		}
+	}
 
-    private void handleMessage(int clientID, String message) {
-        int tagEndIndex = message.indexOf(":") + 1;
-        String tag = message.substring(0, tagEndIndex);
+	private void handleMessage(int clientID, String message) {
+		int tagEndIndex = message.indexOf(":") + 1;
+		String tag = message.substring(0, tagEndIndex);
 
-        switch (tag) {
-            case "Throw:" :
-                handleLudoThrowPacket(clientID, message.substring(tagEndIndex));
-                break;
-            case "Move:" :
-                handleLudoMovePacket(clientID, message.substring(tagEndIndex));
-                break;
-            case "JoinRandom:" :
-                handleLudoJoinRandomPacket(clientID, message.substring(tagEndIndex));
-                break;
-            case "Challenge:" :
-                handleLudoChallengePacket(clientID, message.substring(tagEndIndex));
-                break;
-            case "ChallengeConfirm:" :
-                handleLudoChallengeConfirmPacket(clientID, message.substring(tagEndIndex));
-                break;
-            case "ChallengeValidation:" :
-                handleLudoChallengeValidationPacket(clientID, message.substring(tagEndIndex));
-                break;
-            case "Init:" :
-                handleLudoInitPacket(message.substring(tagEndIndex));
-                break;
-            case "Leave:" :
-                handleLudoLeavePacket(clientID, message.substring(tagEndIndex));
-                break;
-            case "Chat:" :
-                handleLudoChatPacket(clientID, message.substring(tagEndIndex));
-                break;
-            default :
-                break;
-        }
-    }
+		switch (tag) {
+		case "Throw:":
+			handleLudoThrowPacket(clientID, message.substring(tagEndIndex));
+			break;
+		case "Move:":
+			handleLudoMovePacket(clientID, message.substring(tagEndIndex));
+			break;
+		case "JoinRandom:":
+			handleLudoJoinRandomPacket(clientID, message.substring(tagEndIndex));
+			break;
+		case "Challenge:":
+			handleLudoChallengePacket(clientID, message.substring(tagEndIndex));
+			break;
+		case "ChallengeConfirm:":
+			handleLudoChallengeConfirmPacket(clientID, message.substring(tagEndIndex));
+			break;
+		case "ChallengeValidation:":
+			handleLudoChallengeValidationPacket(clientID, message.substring(tagEndIndex));
+			break;
+		case "Init:":
+			handleLudoInitPacket(message.substring(tagEndIndex));
+			break;
+		case "Leave:":
+			handleLudoLeavePacket(clientID, message.substring(tagEndIndex));
+			break;
+		case "Chat:":
+			handleLudoChatPacket(clientID, message.substring(tagEndIndex));
+			break;
+		default:
+			break;
+		}
+	}
 
-    private void handleLudoChallengeValidationPacket(int clientID, String message) {
+	private void handleLudoChallengeValidationPacket(int clientID, String message) {
+		boolean playableGame = false;
+		String[] playerNames = null;
+		Challenge curChallenge = null;
+		int endIndex = message.indexOf(",");
 
-        Challenge curChallenge = null;
-        boolean playableGame = Boolean.parseBoolean(message);
-        
-        for (int challenge = 0; challenge < challenges.size(); challenge++) {
-            if (challenges.get(challenge).clientIDs.get(0) == clientID) {
-                curChallenge = challenges.get(challenge);
-            }
-            break;
-        }
+		if (endIndex >= 0) {
+			playableGame = Boolean.parseBoolean(message.substring(0, endIndex));
+			playerNames = message.substring(endIndex + 1).split(",");
+			System.out.println(message);
+		} else {
+			playableGame = Boolean.parseBoolean(message);
+		}
 
-        if (playableGame == true && curChallenge != null) {
-            int index = Server.clients.indexOf(new ClientInfo(clientID));
-            ClientInfo newClient = Server.clients.get(index);
+		challengesLock.readLock().lock();
+		for (int challenge = 0; challenge < challenges.size(); challenge++) {
+			if (challenges.get(challenge).clients.get(0).clientID == clientID) {
+				curChallenge = challenges.get(challenge);
+			}
+			break;
+		}
+		challengesLock.readLock().unlock();
 
-            Server.gameLock.writeLock().lock();
-            Server.games.add(new GameInfo(Server.nextGameID++, newClient));
-            Server.gameLock.writeLock().unlock();
+		if (playableGame == true && curChallenge != null) {
+			Server.clientLock.readLock().lock();
+			int index = Server.clients.indexOf(new ClientInfo(clientID));
+			ClientInfo newClient = Server.clients.get(index);
+			Server.clientLock.readLock().unlock();
 
-            GameInfo newGame = Server.games.get(Server.games.size() - 1);
+			Server.gameLock.writeLock().lock();
+			Server.games.add(new GameInfo(Server.nextGameID++, newClient));
 
-            for (int i = 0; i < curChallenge.clientIDs.size(); i++) {
-                int cliID = curChallenge.clientIDs.get(i);
-                int newPlayerIndex = Server.clients.indexOf(new ClientInfo(cliID));
-                newGame.addPlayer(Server.clients.get(newPlayerIndex));
-                SendToClientTask.send(cliID + ".Ludo.Join:" + newGame.gameID + "," + i);
-            }
-            challenges.remove(curChallenge);
-            Platform.runLater(() -> Server.serverGUIController.updateGameList());
-            initGameForAllClients(newGame);
-        } else if (curChallenge != null) {
-            challenges.remove(curChallenge);
-        }
-    }
+			GameInfo newGame = Server.games.get(Server.games.size() - 1);
+			Server.gameLock.writeLock().unlock();
 
-    private void handleLudoChallengeConfirmPacket(int clientID, String message) {
-        boolean confirm = Boolean.parseBoolean(message);
+			Server.clientLock.readLock().lock();
+			SendToClientTask.send(curChallenge.clients.get(0).clientID + ".Ludo.Join:" + newGame.gameID + "," + 0);
+			for (int i = 1; i < curChallenge.clients.size(); i++) {
+				for (int name = 0; name < playerNames.length; name++) {
+					if (curChallenge.clients.get(i).username.equals(playerNames[name])) {
+						int cliID = curChallenge.clients.get(i).clientID;
+						int newPlayerIndex = Server.clients.indexOf(new ClientInfo(cliID));
+						newGame.addPlayer(Server.clients.get(newPlayerIndex));
+						SendToClientTask.send(cliID + ".Ludo.Join:" + newGame.gameID + "," + i);
+					}
+				}
+			}
+			Server.clientLock.readLock().unlock();
 
-        for (int challenge = 0; challenge < challenges.size(); challenge++) {
-            for (int challengedClientID = 1; challengedClientID < challenges
-                    .get(challenge).clientIDs.size(); challengedClientID++) {
-                int cliID = challenges.get(challenge).clientIDs.get(challengedClientID);
-                if (clientID == cliID) {
-                    Server.clientLock.readLock().lock();
-                    int clientIndex = Server.clients.indexOf(new ClientInfo(cliID));
+			challengesLock.writeLock().lock();
+			challenges.remove(curChallenge);
+			nextChallengeID--;
+			challengesLock.writeLock().unlock();
+			Platform.runLater(() -> Server.serverGUIController.updateGameList());
+			initGameForAllClients(newGame);
+		} else if (curChallenge != null) {
+			challengesLock.writeLock().lock();
+			challenges.remove(curChallenge);
+			nextChallengeID--;
+			challengesLock.writeLock().unlock();
+		}
+	}
 
-                    if (clientIndex >= 0) {
-                        SendToClientTask
-                                .send(challenges.get(challenge).clientIDs.get(0) + ".Ludo.ChallengeConfirm:"
-                                        + Server.clients.get(clientIndex).username + ","
-                                        + Boolean.toString(confirm));
-                    }
-                    Server.clientLock.readLock().unlock();
-                }
-            }
-        }
-    }
+	private void handleLudoChallengeConfirmPacket(int clientID, String message) {
+		boolean confirm = Boolean.parseBoolean(message);
 
-    private void handleLudoChallengePacket(int clientID, String packetMessage) {
-        String[] usernames = packetMessage.split(",");
+		challengesLock.readLock().lock();
+		for (int challenge = 0; challenge < challenges.size(); challenge++) {
+			for (int challengedClient = 1; challengedClient < challenges.get(challenge).clients
+					.size(); challengedClient++) {
+				int cliID = challenges.get(challenge).clients.get(challengedClient).clientID;
+				if (clientID == cliID) {
+					Server.clientLock.readLock().lock();
+					int clientIndex = Server.clients.indexOf(new ClientInfo(cliID));
 
-        challenges.add(new Challenge(nextChallengeID++, clientID));
+					if (clientIndex >= 0) {
+						SendToClientTask
+								.send(challenges.get(challenge).clients.get(0).clientID + ".Ludo.ChallengeConfirm:"
+										+ Server.clients.get(clientIndex).username + "," + Boolean.toString(confirm));
+					}
+					Server.clientLock.readLock().unlock();
+				}
+			}
+		}
+		challengesLock.readLock().unlock();
+	}
 
-        Server.clientLock.readLock().lock();
-        for (String user : usernames) {
-            for (ClientInfo client : Server.clients) {
-                if (user.equals(client.username)) {
-                    challenges.get(nextChallengeID - 1).clientIDs.add(client.clientID);
-                    SendToClientTask.send(client.clientID + ".Ludo.Challenge:" + client.username);
-                }
-            }
-        }
-        Server.clientLock.readLock().unlock();
-    }
+	private void handleLudoChallengePacket(int clientID, String packetMessage) {
+		String[] usernames = packetMessage.split(",");
 
-    private void handleLudoChatPacket(int clientID, String message) {
-        int endGameIDIndex = message.indexOf(",");
-        int gameID = Integer.parseInt(message.substring(0, endGameIDIndex));
+		int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
 
-        Server.gameLock.readLock().lock();
-        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
-        Server.chatLock.readLock().lock();
-        int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
-        if (gameIndex >= 0 && clientIndex >= 0) {
-            String talkingClientName = Server.clients.get(clientIndex).username;
-            GameInfo gameInfo = Server.games.get(gameIndex);
-            for (ClientInfo client : gameInfo.clients) {
-                SendToClientTask.send(client.clientID + ".Ludo.Chat:" + gameInfo.gameID + ","
-                        + talkingClientName + ": " + message.substring(endGameIDIndex + 1));
-            }
-        }
-        Server.chatLock.readLock().unlock();
-        Server.gameLock.readLock().unlock();
-    }
+		if (clientIndex >= 0) {
+			challengesLock.writeLock().lock();
+			challenges.add(new Challenge(nextChallengeID++, Server.clients.get(clientIndex)));
 
-    private void handleLudoInitPacket(String message) {
-        int gameID = Integer.parseInt(message);
+			for (String user : usernames) {
+				for (ClientInfo client : Server.clients) {
+					if (user.equals(client.username)) {
+						challengesLock.writeLock().lock();
+						challenges.get(challenges.size() - 1).clients.add(client);
+						challengesLock.writeLock().unlock();
+						SendToClientTask.send(client.clientID + ".Ludo.Challenge:" + client.username);
+					}
+				}
+			}
+			challengesLock.writeLock().unlock();
+		}
+	}
 
-        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
-        if (gameIndex >= 0) {
-            GameInfo game = Server.games.get(gameIndex);
-            initGameForAllClients(game);
-        }
-    }
+	private void handleLudoChatPacket(int clientID, String message) {
+		int endGameIDIndex = message.indexOf(",");
+		int gameID = Integer.parseInt(message.substring(0, endGameIDIndex));
 
-    private void initGameForAllClients(GameInfo game) {
-        for (ClientInfo clientInGame : game.clients) {
-            for (int playerIndex = 0; playerIndex < game.ludo.nrOfPlayers(); playerIndex++) {
-                SendToClientTask.send(clientInGame.clientID + ".Ludo.Name:" + game.gameID + ","
-                        + playerIndex + "," + game.ludo.getPlayerName(playerIndex));
-                if (game.ludo.activePlayers() > 1) {
-                    SendToClientTask.send(clientInGame.clientID + ".Ludo.Player:" + game.gameID
-                            + "," + Ludo.RED + "," + PlayerEvent.PLAYING);
-                }
-            }
-        }
-    }
+		Server.gameLock.readLock().lock();
+		int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+		Server.chatLock.readLock().lock();
+		int clientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+		if (gameIndex >= 0 && clientIndex >= 0) {
+			String talkingClientName = Server.clients.get(clientIndex).username;
+			GameInfo gameInfo = Server.games.get(gameIndex);
+			for (ClientInfo client : gameInfo.clients) {
+				SendToClientTask.send(client.clientID + ".Ludo.Chat:" + gameInfo.gameID + "," + talkingClientName + ": "
+						+ message.substring(endGameIDIndex + 1));
+			}
+			FileOutputStream chatLog;
+			try {
+				chatLog = new FileOutputStream("chatLogs\\gameChat\\" + gameID + ".txt", true);
+				String fileLog = Calendar.getInstance().getTime().toString() + ": " + clientID + ", "
+						+ talkingClientName + ": " + message.substring(endGameIDIndex + 1) + "\n";
+				chatLog.write(fileLog.getBytes());
+				chatLog.close();
+			} catch (IOException e) {
+				LOGGER.log(Level.WARNING, e.getMessage(), e);
+			}
+		}
+		Server.chatLock.readLock().unlock();
+		Server.gameLock.readLock().unlock();
+	}
 
-    /**
-     * Removes a client from queues he is in
-     * 
-     * @param client
-     *            client to be removed
-     */
-    public static void removeFromQueue(ClientInfo client) {
-        randomQueueLock.writeLock().lock();
-        randomQueue.remove(client);
-        randomQueueLock.writeLock().unlock();
-    }
+	private void handleLudoInitPacket(String message) {
+		int gameID = Integer.parseInt(message);
 
-    private void handleLudoJoinRandomPacket(int clientID, String message) {
-        int index = Server.clients.indexOf(new ClientInfo(clientID));
-        ClientInfo newClient = Server.clients.get(index);
+		int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+		if (gameIndex >= 0) {
+			GameInfo game = Server.games.get(gameIndex);
+			initGameForAllClients(game);
+		}
+	}
 
-        randomQueueLock.writeLock().lock();
-        if (!randomQueue.contains(newClient)) {
-            randomQueue.add(newClient);
-            SendToClientTask.send(newClient.clientID + ".Ludo.RandomSuccess:");
+	private void initGameForAllClients(GameInfo game) {
+		for (ClientInfo clientInGame : game.clients) {
+			for (int playerIndex = 0; playerIndex < game.ludo.nrOfPlayers(); playerIndex++) {
+				SendToClientTask.send(clientInGame.clientID + ".Ludo.Name:" + game.gameID + "," + playerIndex + ","
+						+ game.ludo.getPlayerName(playerIndex));
+				if (game.ludo.activePlayers() > 1) {
+					SendToClientTask.send(clientInGame.clientID + ".Ludo.Player:" + game.gameID + "," + Ludo.RED + ","
+							+ PlayerEvent.PLAYING);
+				}
+			}
+		}
+	}
 
-            if (randomQueue.size() == 4) {
-                Server.gameLock.writeLock().lock();
-                Server.games.add(new GameInfo(Server.nextGameID++, randomQueue.get(0)));
-                Server.gameLock.writeLock().unlock();
+	/**
+	 * Removes a client from queues he is in
+	 * 
+	 * @param client
+	 *            client to be removed
+	 */
+	public static void removeFromQueue(ClientInfo client) {
+		randomQueueLock.writeLock().lock();
+		randomQueue.remove(client);
+		randomQueueLock.writeLock().unlock();
+	}
 
-                GameInfo newGame = Server.games.get(Server.games.size() - 1);
-                newGame.addPlayer(randomQueue.get(1));
-                newGame.addPlayer(randomQueue.get(2));
-                newGame.addPlayer(randomQueue.get(3));
+	private void handleLudoJoinRandomPacket(int clientID, String message) {
+		int index = Server.clients.indexOf(new ClientInfo(clientID));
+		ClientInfo newClient = Server.clients.get(index);
 
-                Platform.runLater(() -> Server.serverGUIController.updateGameList());
+		randomQueueLock.writeLock().lock();
+		if (!randomQueue.contains(newClient)) {
+			randomQueue.add(newClient);
+			SendToClientTask.send(newClient.clientID + ".Ludo.RandomSuccess:");
 
-                for (int clientIndex = 0; clientIndex < randomQueue.size(); clientIndex++) {
-                    SendToClientTask.send(randomQueue.get(clientIndex).clientID
-                            + ".Ludo.JoinRandom:" + newGame.gameID + "," + clientIndex);
-                }
+			if (randomQueue.size() == 4) {
+				Server.gameLock.writeLock().lock();
+				Server.games.add(new GameInfo(Server.nextGameID++, randomQueue.get(0)));
+				Server.gameLock.writeLock().unlock();
 
-                initGameForAllClients(newGame);
-                randomQueue.clear();
-            }
-        }
-        randomQueueLock.writeLock().unlock();
-    }
+				GameInfo newGame = Server.games.get(Server.games.size() - 1);
+				newGame.addPlayer(randomQueue.get(1));
+				newGame.addPlayer(randomQueue.get(2));
+				newGame.addPlayer(randomQueue.get(3));
 
-    private void handleLudoThrowPacket(int clientID, String message) {
-        int gameID = Integer.parseInt(message);
+				Platform.runLater(() -> Server.serverGUIController.updateGameList());
 
-        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
-        if (gameIndex >= 0) {
-            GameInfo game = Server.games.get(gameIndex);
-            game.ludo.throwDice();
-        }
-    }
+				for (int clientIndex = 0; clientIndex < randomQueue.size(); clientIndex++) {
+					SendToClientTask.send(randomQueue.get(clientIndex).clientID + ".Ludo.JoinRandom:" + newGame.gameID
+							+ "," + clientIndex);
+				}
 
-    private void handleLudoMovePacket(int clientID, String message) {
-        String[] messages = message.split(",");
-        int gameID = Integer.parseInt(messages[0]);
-        int playerID = Integer.parseInt(messages[1]);
-        int from = Integer.parseInt(messages[2]);
-        int to = Integer.parseInt(messages[3]);
-        int piece = Integer.parseInt(messages[4]);
+				initGameForAllClients(newGame);
+				randomQueue.clear();
+			}
+		}
+		randomQueueLock.writeLock().unlock();
+	}
 
-        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
-        if (gameIndex >= 0) {
-            GameInfo game = Server.games.get(gameIndex);
+	private void handleLudoThrowPacket(int clientID, String message) {
+		int gameID = Integer.parseInt(message);
 
-            int[][] globalPiecePositions = game.ludo.getGlobalPiecePositions();
-            int[][] piecePositions = game.ludo.getPiecePositions();
+		int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+		if (gameIndex >= 0) {
+			GameInfo game = Server.games.get(gameIndex);
+			game.ludo.throwDice();
+		}
+	}
 
-            int newFrom = globalPiecePositions[playerID][piece] == from
-                    ? piecePositions[playerID][piece]
-                    : -1;
-            int newTo = -1;
+	private void handleLudoMovePacket(int clientID, String message) {
+		String[] messages = message.split(",");
+		int gameID = Integer.parseInt(messages[0]);
+		int playerID = Integer.parseInt(messages[1]);
+		int from = Integer.parseInt(messages[2]);
+		int to = Integer.parseInt(messages[3]);
+		int piece = Integer.parseInt(messages[4]);
 
-            if (from < 16 && newFrom != -1) {
-                newFrom = 0;
-                newTo = 1;
-            } else if (to < from) {
-                newTo = newFrom + to - from + 52;
-            } else if (to < 68) {
-                newTo = newFrom + (to - from);
-            } else {
-                newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
-            }
+		int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+		if (gameIndex >= 0) {
+			GameInfo game = Server.games.get(gameIndex);
 
-            if (newFrom != -1 && newTo != -1) {
-                game.ludo.setSelectedPiece(piece);
-                game.ludo.movePiece(playerID, newFrom, newTo);
-            }
+			int[][] globalPiecePositions = game.ludo.getGlobalPiecePositions();
+			int[][] piecePositions = game.ludo.getPiecePositions();
 
-            CheckWinner(game);
-        }
-    }
+			int newFrom = globalPiecePositions[playerID][piece] == from ? piecePositions[playerID][piece] : -1;
+			int newTo = -1;
 
-    private void CheckWinner(GameInfo game) {
-        int winner = game.ludo.getWinner();
+			if (from < 16 && newFrom != -1) {
+				newFrom = 0;
+				newTo = 1;
+			} else if (to < from) {
+				newTo = newFrom + to - from + 52;
+			} else if (to < 68) {
+				newTo = newFrom + (to - from);
+			} else {
+				newTo = game.ludo.finalTilesLudoBoardGridToUserGrid(playerID, to);
+			}
 
-        if (winner != -1) {
-            String winnerName = game.ludo.getPlayerName(winner);
-            String strippedName = winnerName.substring(winnerName.indexOf(":") + 2);
-            int clientID = -1;
+			if (newFrom != -1 && newTo != -1) {
+				game.ludo.setSelectedPiece(piece);
+				game.ludo.movePiece(playerID, newFrom, newTo);
+			}
 
-            for (ClientInfo client : game.clients) {
-                SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID + "," + winner
-                        + "," + winnerName);
-                
-                if (client.username.equals(strippedName))
-                {
-                    clientID = client.clientID;
-                }
-            }
+			CheckWinner(game);
+		}
+	}
 
-            try {
-                PreparedStatement userQuery;
-                userQuery = Server.database
-                        .prepareStatement("UPDATE Accounts SET Wins = Wins + 1 WHERE Username = ?");
-                userQuery.setString(1, strippedName);
-                userQuery.executeQuery();
-                
-                SendToClientTask.send(clientID + ".User.Wins:1");
-            } catch (SQLException e) {
-                LOGGER.log(Level.WARNING, e.getMessage(), e);
-            }
-        }
-    }
+	private void CheckWinner(GameInfo game) {
+		int winner = game.ludo.getWinner();
 
-    private void handleLudoLeavePacket(int clientID, String message) {
-        int gameID = Integer.parseInt(message);
+		if (winner != -1) {
+			String winnerName = game.ludo.getPlayerName(winner);
+			String strippedName = winnerName.substring(winnerName.indexOf(":") + 2);
+			int clientID = -1;
 
-        Server.gameLock.writeLock().lock();
-        int gameIndex = Server.games.indexOf(new GameInfo(gameID));
-        if (gameIndex >= 0) {
-            GameInfo game = Server.games.get(gameIndex);
-            Server.clientLock.readLock().lock();
-            int removeClientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+			for (ClientInfo client : game.clients) {
+				SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID + "," + winner + "," + winnerName);
 
-            if (removeClientIndex >= 0) {
-                String removeClientName = Server.clients.get(removeClientIndex).username;
+				if (client.username.equals(strippedName)) {
+					clientID = client.clientID;
+				}
+			}
 
-                int playerIndex = game.ludo.getIndexOfPlayer(removeClientName);
+			try {
+				PreparedStatement userQuery;
+				userQuery = Server.database.prepareStatement("UPDATE Accounts SET Wins = Wins + 1 WHERE Username = ?");
+				userQuery.setString(1, strippedName);
+				userQuery.executeQuery();
 
-                if (playerIndex >= 0) {
-                    String newName = game.removePlayer(clientID);
-                    if (game.ludo.activePlayers() > 0) {
-                        for (ClientInfo client : game.clients) {
-                            SendToClientTask.send(client.clientID + ".Ludo.Name:" + game.gameID
-                                    + "," + playerIndex + "," + newName);
-                        }
-                    } else {
-                        Server.games.remove(game);
-                    }
-                }
-            }
+				SendToClientTask.send(clientID + ".User.Wins:1");
+			} catch (SQLException e) {
+				LOGGER.log(Level.WARNING, e.getMessage(), e);
+			}
+		}
+	}
 
-            Server.clientLock.readLock().unlock();
-            Platform.runLater(() -> Server.serverGUIController.updateGameList());
-        }
-        Server.gameLock.writeLock().unlock();
-    }
+	private void handleLudoLeavePacket(int clientID, String message) {
+		int gameID = Integer.parseInt(message);
+
+		Server.gameLock.writeLock().lock();
+		int gameIndex = Server.games.indexOf(new GameInfo(gameID));
+		if (gameIndex >= 0) {
+			GameInfo game = Server.games.get(gameIndex);
+			Server.clientLock.readLock().lock();
+			int removeClientIndex = Server.clients.indexOf(new ClientInfo(clientID));
+
+			if (removeClientIndex >= 0) {
+				String removeClientName = Server.clients.get(removeClientIndex).username;
+
+				int playerIndex = game.ludo.getIndexOfPlayer(removeClientName);
+
+				if (playerIndex >= 0) {
+					String newName = game.removePlayer(clientID);
+					if (game.ludo.activePlayers() > 0) {
+						for (ClientInfo client : game.clients) {
+							SendToClientTask.send(
+									client.clientID + ".Ludo.Name:" + game.gameID + "," + playerIndex + "," + newName);
+						}
+					} else {
+						Server.games.remove(game);
+					}
+				}
+			}
+
+			Server.clientLock.readLock().unlock();
+			Platform.runLater(() -> Server.serverGUIController.updateGameList());
+		}
+		Server.gameLock.writeLock().unlock();
+	}
 }
