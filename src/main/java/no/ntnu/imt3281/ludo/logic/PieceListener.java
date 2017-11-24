@@ -3,7 +3,7 @@ package no.ntnu.imt3281.ludo.logic;
 import java.util.EventListener;
 
 /**
- * Listens to pieces
+ * Listens to piece events.
  * 
  * @author Marius
  *

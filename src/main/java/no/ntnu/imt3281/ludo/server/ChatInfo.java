@@ -2,6 +2,12 @@ package no.ntnu.imt3281.ludo.server;
 
 import java.util.ArrayList;
 
+/**
+ * Data structure containing information about a chat room.
+ * 
+ * @author Charles the Gentle
+ *
+ */
 public class ChatInfo {
     int chatID;
     String name;

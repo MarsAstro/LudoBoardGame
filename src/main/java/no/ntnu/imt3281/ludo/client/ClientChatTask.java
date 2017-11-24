@@ -9,7 +9,7 @@ import no.ntnu.imt3281.ludo.gui.ChatListController;
 import no.ntnu.imt3281.ludo.gui.ChatWindowController;
 
 /**
- * Handles tasks releated to chat rooms and messages
+ * Handles tasks related to chat rooms and messages
  * 
  * @author oyste
  *

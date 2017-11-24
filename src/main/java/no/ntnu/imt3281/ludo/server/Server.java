@@ -23,10 +23,9 @@ import javafx.stage.Stage;
 
 /**
  * 
- * This is the main class for the server. **Note, change this to extend other
- * classes if desired.**
+ * This is the main class for the server.
  * 
- * @author
+ * @author Oystein
  *
  */
 public class Server extends Application {
@@ -130,9 +129,15 @@ public class Server extends Application {
 
         File chatLogs = new File("chatLogs");
         if (!chatLogs.exists()) {
-            chatLogs.mkdir();
+            if (!chatLogs.mkdir()) {
+                LOGGER.log(Level.WARNING, "Chatlog directory was not created");
+            }
+
             File gameLogs = new File("chatLogs\\gameChat");
-            gameLogs.mkdir();
+            if (!gameLogs.mkdir()) {
+                LOGGER.log(Level.WARNING, "Chatlog subdirectory was not created");
+            }
+
         }
 
         launch(args);

@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Sends all messages from server to clients.
  * 
  * @author Marius
  *
@@ -23,7 +24,7 @@ public class SendToClientTask implements Runnable {
 
                 int idEndIndex = currentTask.indexOf(".");
                 Integer clientID = Integer.parseInt(currentTask.substring(0, idEndIndex));
-                currentTask = currentTask.substring(idEndIndex + 1) + ";";
+                currentTask = currentTask.substring(idEndIndex + 1) + ";kk;";
 
                 Server.clientLock.readLock().lock();
                 int connectionIndex = Server.clients.indexOf(new ClientInfo(clientID));

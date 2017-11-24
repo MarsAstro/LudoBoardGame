@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A player event
+ * Player state change event.
  * 
  * @author Marius
  *
@@ -33,7 +33,7 @@ public class PlayerEvent extends EventObject implements PlayerListener {
      * Constant for the WON state
      */
     public static final int WON = 3;
-    
+
     /**
      * Constant for the DONE state
      */
@@ -53,7 +53,7 @@ public class PlayerEvent extends EventObject implements PlayerListener {
     }
 
     /**
-     * A constructor
+     * A constructor with event values
      * 
      * @param ludo
      *            The gameboard to construct this event with

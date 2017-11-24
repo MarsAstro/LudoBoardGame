@@ -8,6 +8,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -36,6 +37,9 @@ import no.ntnu.imt3281.ludo.client.Client;
  *
  */
 public class LudoController implements Initializable {
+    private static final String I18NPATH = "no.ntnu.imt3281.i18n.i18n";
+    private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
+
     private ResourceBundle messages;
     private ArrayList<GameBoardController> gameBoards;
     private ArrayList<ChatWindowController> chatWindows;
@@ -44,7 +48,6 @@ public class LudoController implements Initializable {
     private ChallengeController challengeController = null;
     private Alert challengeAlert = null;
     private Tab mainTab;
-    private static final Logger LOGGER = Logger.getLogger(LudoController.class.getName());
     private String username;
 
     @FXML // fx:id="spinner"
@@ -91,7 +94,7 @@ public class LudoController implements Initializable {
      * Connects the user to a random game
      * 
      * @param event
-     *            The event caused by the buttonpress
+     *            The event caused by the button press
      */
     @FXML
     public void joinRandomGame(ActionEvent event) {
@@ -101,7 +104,7 @@ public class LudoController implements Initializable {
     @FXML
     void openLoginRegisterGUI(ActionEvent event) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Connect.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        loader.setResources(ResourceBundle.getBundle(I18NPATH));
 
         try {
             BorderPane root = (BorderPane) loader.load();
@@ -122,7 +125,7 @@ public class LudoController implements Initializable {
     @FXML
     void openChatList(ActionEvent event) {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatList.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        loader.setResources(ResourceBundle.getBundle(I18NPATH));
 
         try {
             GridPane root = (GridPane) loader.load();
@@ -143,7 +146,7 @@ public class LudoController implements Initializable {
     void openChallengeList(ActionEvent event) {
         challenge.setDisable(true);
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ChallengeList.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        loader.setResources(ResourceBundle.getBundle(I18NPATH));
 
         try {
             GridPane root = (GridPane) loader.load();
@@ -165,7 +168,7 @@ public class LudoController implements Initializable {
      */
     public void openChallenge() {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("Challenge.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        loader.setResources(ResourceBundle.getBundle(I18NPATH));
 
         try {
             GridPane root = (GridPane) loader.load();
@@ -198,7 +201,7 @@ public class LudoController implements Initializable {
         loggedInUser.setText(messages.getString("ludo.menubar.user.logintext") + " " + username);
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatWindow.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        loader.setResources(ResourceBundle.getBundle(I18NPATH));
 
         try {
             GridPane mainChat = loader.load();
@@ -232,9 +235,13 @@ public class LudoController implements Initializable {
             logoutButton.setDisable(true);
             loginButton.setDisable(false);
             loggedInUser.setText(messages.getString("ludo.menubar.user.nouser"));
-            tabbedPane.getTabs().remove(mainTab);
+            tabbedPane.getTabs().removeAll(tabbedPane.getTabs());
             chatWindows.clear();
             gameBoards.clear();
+            challengeList = null;
+            chatList = null;
+            challengeController = null;
+            challengeAlert = null;
         }
     }
 
@@ -276,7 +283,7 @@ public class LudoController implements Initializable {
         int playerID = Integer.parseInt(ackMessage.substring(endIndex + 1));
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("GameBoard.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        loader.setResources(ResourceBundle.getBundle(I18NPATH));
 
         try {
             AnchorPane gameBoard = loader.load();
@@ -288,6 +295,7 @@ public class LudoController implements Initializable {
                 gameBoards.remove(newController);
             });
             tabbedPane.getTabs().add(tab);
+            tabbedPane.getSelectionModel().select(tab);
 
             newController.gameID = gameID;
             newController.playerID = playerID;
@@ -318,16 +326,16 @@ public class LudoController implements Initializable {
      *            The received acknowledge message from server
      */
     public void handleServerInitChat(String ackMessage) {
-        String[] messages = ackMessage.split(",");
-        int chatID = Integer.parseInt(messages[0]);
-        String chatName = messages[1];
+        String[] ackMessages = ackMessage.split(",");
+        int chatID = Integer.parseInt(ackMessages[0]);
+        String chatName = ackMessages[1];
 
         if (chatList != null) {
             chatList.closeWindow();
         }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ChatWindow.fxml"));
-        loader.setResources(ResourceBundle.getBundle("no.ntnu.imt3281.i18n.i18n"));
+        loader.setResources(ResourceBundle.getBundle(I18NPATH));
 
         try {
             GridPane chatWindow = loader.load();
@@ -387,7 +395,7 @@ public class LudoController implements Initializable {
         }
         Stage stage = (Stage) tabbedPane.getScene().getWindow();
         stage.close();
-        System.exit(0);
+        Platform.exit();
     }
 
     /**

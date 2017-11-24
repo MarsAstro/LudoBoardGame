@@ -38,10 +38,10 @@ public class ChallengeListController {
     void challenge(ActionEvent event) {
         if (!challengers.isEmpty()) {
             Client.getLudoController().openChallenge();
-            String challengeMessage = "";
+            StringBuilder challengeMessage = new StringBuilder();
             for (Label label : challengers) {
                 String labelText = label.getText();
-                challengeMessage += labelText + ",";
+                challengeMessage.append(labelText + ",");
                 Client.getLudoController().getChallengeContoller().addChallengerName(labelText);
             }
             Client.sendMessage("Ludo.Challenge:"

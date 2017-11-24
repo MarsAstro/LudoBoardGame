@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 
 /**
- * Handles tasks releated to a user account
+ * Handles tasks related to a user account
  * 
  * @author oyste
  *

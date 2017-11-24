@@ -7,7 +7,8 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 
 /**
- * Removes users from server
+ * Removes users from server, games and chat rooms. Cleans up empty games and
+ * chat rooms.
  * 
  * @author Marius
  *
@@ -28,6 +29,7 @@ public class UserCleanupTask implements Runnable {
 
                 cleanupChats(clientID);
 
+                LudoTask.randomQueueLock.writeLock().lock();
                 LudoTask.removeFromQueue(new ClientInfo(clientID));
 
                 Platform.runLater(() -> {
@@ -36,6 +38,8 @@ public class UserCleanupTask implements Runnable {
                 });
             } catch (InterruptedException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
+            } finally {
+                LudoTask.randomQueueLock.writeLock().unlock();
             }
         }
     }

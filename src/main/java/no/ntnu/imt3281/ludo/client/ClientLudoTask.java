@@ -92,7 +92,7 @@ public class ClientLudoTask implements Runnable {
                 Platform.runLater(() -> Client.ludoController.joinRandomSuccess());
                 break;
             case "Chat:" :
-                HandleRecivedLudoChatPackage(ackMessage);
+                handleRecivedLudoChatPackage(ackMessage);
                 break;
             default :
                 break;
@@ -112,9 +112,9 @@ public class ClientLudoTask implements Runnable {
     }
 
     private void handleReceivedLudoChallengeConfirmPacket(String ackMessage) {
-        String[] messages = ackMessage.split(",");
-        String clientName = messages[0];
-        boolean confirm = Boolean.parseBoolean(messages[1]);
+        String[] ackMessages = ackMessage.split(",");
+        String clientName = ackMessages[0];
+        boolean confirm = Boolean.parseBoolean(ackMessages[1]);
 
         Platform.runLater(() -> Client.ludoController.getChallengeContoller()
                 .setConfirmation(clientName, confirm));
@@ -124,7 +124,7 @@ public class ClientLudoTask implements Runnable {
         Platform.runLater(() -> Client.ludoController.handleServerChallengeGame(ackMessage));
     }
 
-    private void HandleRecivedLudoChatPackage(String ackMessage) {
+    private void handleRecivedLudoChatPackage(String ackMessage) {
         int endGameIDIndex = ackMessage.indexOf(",");
         int gameID = Integer.parseInt(ackMessage.substring(0, endGameIDIndex));
         GameBoardController gbc = Client.ludoController.getGameBoardController(gameID);

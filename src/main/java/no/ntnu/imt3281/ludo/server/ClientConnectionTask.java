@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import javafx.application.Platform;
 
 /**
- * Handles incoming connection requests from clients
+ * Handles incoming connection requests from clients.
  * 
  * @author Marius
  *
@@ -105,7 +105,7 @@ public class ClientConnectionTask implements Runnable {
             if (newClient != null) {
                 SendToClientTask.send(newClient.clientID + "." + ackMessage);
             } else {
-                ackMessage += ";";
+                ackMessage += ";kk;";
                 newClientSocket.getOutputStream().write(ackMessage.getBytes(charset));
                 newClientSocket.getOutputStream().flush();
             }
@@ -161,7 +161,7 @@ public class ClientConnectionTask implements Runnable {
                 SendToClientTask.send(newClient.clientID + "." + ackMessage);
                 SendToClientTask.send(newClient.clientID + ".User.Wins:" + wins);
             } else {
-                ackMessage += ";";
+                ackMessage += ";kk;";
                 newClientSocket.getOutputStream().write(ackMessage.getBytes(charset));
                 newClientSocket.getOutputStream().flush();
             }

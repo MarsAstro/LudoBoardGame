@@ -4,10 +4,13 @@
 package no.ntnu.imt3281.ludo.client;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Handles raw packets from server and delegates tasks
+ * 
  * @author Marius
  *
  */
@@ -26,15 +29,19 @@ public class ClientInputTask implements Runnable {
                 int length = Client.socket.getInputStream().read(inputData);
 
                 if (length != -1) {
-                    String packet = new String(inputData, 0, length, "UTF-8");
-                    String[] messages = packet.split(";");
-                    for (String message : messages) {
-                        handleReceivedPacket(message);
-                    }
+                    handleRawInputBytes(length);
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.INFO, e.getMessage(), e);
             }
+        }
+    }
+
+    private void handleRawInputBytes(int length) throws UnsupportedEncodingException {
+        String packet = new String(inputData, 0, length, "UTF-8");
+        String[] messages = packet.split(";kk;");
+        for (String message : messages) {
+            handleReceivedPacket(message);
         }
     }
 

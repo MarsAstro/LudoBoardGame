@@ -6,27 +6,24 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Challenge
+ * Data structure containing information about a challenge. Times out by itself,
+ * and notifies ChallengeTimeoutTask.
  * 
  * @author Charles The Gentle
  *
  */
 public class Challenge {
-    int challengeID;
     ArrayList<ClientInfo> clients;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    private final int TIMEOUT = 10;
+    private static final int TIMEOUT = 30;
 
     /**
      * Initializes challenge with initial client and challenge id
      * 
-     * @param challengeID
-     *            This challenge's ID
      * @param client
      *            The client that challenges other clients
      */
-    public Challenge(int challengeID, ClientInfo client) {
-        this.challengeID = challengeID;
+    public Challenge(ClientInfo client) {
         clients = new ArrayList<>();
         clients.add(client);
         scheduler.scheduleAtFixedRate(() -> {

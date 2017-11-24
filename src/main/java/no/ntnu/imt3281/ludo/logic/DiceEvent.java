@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * I know, man
+ * Dice throw event
  * 
  * @author oyste
  *
@@ -27,7 +27,7 @@ public class DiceEvent extends EventObject implements DiceListener {
     }
 
     /**
-     * A constructor
+     * A constructor with event values
      * 
      * @param ludo
      *            The gameboard to construct this event with

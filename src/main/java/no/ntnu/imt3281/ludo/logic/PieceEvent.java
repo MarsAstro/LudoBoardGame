@@ -5,7 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * A piece event
+ * Piece moved event.
  * 
  * @author Marius
  *
@@ -29,7 +29,7 @@ public class PieceEvent extends EventObject implements PieceListener {
     }
 
     /**
-     * A constructor
+     * A constructor with event values
      * 
      * @param ludo
      *            The gameboard to construct this event with

@@ -4,7 +4,7 @@ import java.net.Socket;
 
 /**
  * Data structure containing the data the server needs to identify a logged in
- * user
+ * user.
  * 
  * @author Mars
  */

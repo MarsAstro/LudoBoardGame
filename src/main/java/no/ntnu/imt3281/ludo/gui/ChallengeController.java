@@ -14,7 +14,7 @@ import javafx.stage.Stage;
 import no.ntnu.imt3281.ludo.client.Client;
 
 /**
- * Controller for the challenge
+ * Controller for the challenge pop-up window
  * 
  * @author Charles The Gentle
  *
@@ -37,6 +37,7 @@ public class ChallengeController implements Initializable {
      * Adds challenger name to the list
      * 
      * @param name
+     *            The name of the challenger
      */
     public void addChallengerName(String name) {
         challengers.add(new Label(name + ": " + messages.getString("challenge.waiting")));
@@ -59,7 +60,7 @@ public class ChallengeController implements Initializable {
             String labelName = curLabel.getText().substring(0, curLabel.getText().indexOf(":"));
             if (name.equals(labelName)) {
                 String status;
-                if (confirm == true) {
+                if (confirm) {
                     status = ": " + messages.getString("challenge.accepted");
                     playerAccepted.set(i, true);
                 } else {
@@ -70,13 +71,13 @@ public class ChallengeController implements Initializable {
             }
         }
 
-        if (allConfirmed() == true) {
-            String players = "";
+        if (allConfirmed()) {
+            StringBuilder players = new StringBuilder();
             boolean hasAcceptedPlayers = false;
             for (int i = 0; i < challengers.size(); i++) {
-                if (playerAccepted.get(i) == true) {
-                    players += challengers.get(i).getText().substring(0,
-                            challengers.get(i).getText().indexOf(":")) + ",";
+                if (playerAccepted.get(i)) {
+                    players.append(challengers.get(i).getText().substring(0,
+                            challengers.get(i).getText().indexOf(":")) + ",");
                     hasAcceptedPlayers = true;
                 }
             }
@@ -88,8 +89,8 @@ public class ChallengeController implements Initializable {
 
     private boolean allConfirmed() {
         boolean allConfirmed = true;
-        for (Boolean bool : playerConfirmed) {
-            if (bool == false) {
+        for (Boolean confirm : playerConfirmed) {
+            if (!confirm) {
                 allConfirmed = false;
                 break;
             }

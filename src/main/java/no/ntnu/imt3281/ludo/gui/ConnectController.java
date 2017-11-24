@@ -37,7 +37,7 @@ import javafx.stage.Stage;
 import no.ntnu.imt3281.ludo.client.Client;
 
 /**
- * Handles logging the user in and connecting to server
+ * Handles logging in and registering the user and connecting to server
  * 
  * @author Marius
  *
@@ -62,7 +62,8 @@ public class ConnectController implements Initializable {
     @FXML // fx:id="rememberMe"
     private CheckBox rememberMe;
 
-    private String[] detailsFileNames = {"ipdetails.txt", "userdetails.txt", "passdetails.txt"};
+    private String[] detailsFileNames = {"details\\ipdetails.txt", "details\\userdetails.txt",
+            "details\\passdetails.txt"};
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -71,20 +72,14 @@ public class ConnectController implements Initializable {
         File[] files = {new File(detailsFileNames[0]), new File(detailsFileNames[1]),
                 new File(detailsFileNames[2])};
 
-        if ((files[0].exists() && !files[0].isDirectory())
-                && (files[1].exists() && !files[1].isDirectory())
-                && (files[2].exists() && !files[2].isDirectory())) {
+        if (files[0].exists() && files[1].exists() && files[2].exists()) {
             rememberMe.setSelected(true);
             try {
                 byte[][] bytes = {new byte[16], new byte[16], new byte[16]};
 
-                for (int fileIndex = 0; fileIndex < 3; fileIndex++) {
-                    FileInputStream readFile = new FileInputStream(files[fileIndex]);
-                    readFile.read(bytes[fileIndex]);
-                    readFile.close();
-                }
+                readDetailsFiles(files, bytes);
 
-                String ip = new String(bytes[0]);
+                String ip = new String(bytes[0], charSet);
 
                 ipAddress.setText(ip);
                 username.setText(decrypt(bytes[1]));
@@ -92,6 +87,17 @@ public class ConnectController implements Initializable {
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }
+        }
+    }
+
+    private void readDetailsFiles(File[] files, byte[][] bytes) throws IOException {
+        for (int fileIndex = 0; fileIndex < 3; fileIndex++) {
+            FileInputStream readFile = new FileInputStream(files[fileIndex]);
+            int length = readFile.read(bytes[fileIndex]);
+            if (fileIndex > 0 && length != 16) {
+                LOGGER.log(Level.INFO, "Userdetails file wrong size");
+            }
+            readFile.close();
         }
     }
 
@@ -175,12 +181,7 @@ public class ConnectController implements Initializable {
                     userFile.write(encrypt(username.getText()));
                     passFile.write(encrypt(password.getText()));
                 } else {
-                    ipFile.close();
-                    userFile.close();
-                    passFile.close();
-                    new File(detailsFileNames[0]).delete();
-                    new File(detailsFileNames[1]).delete();
-                    new File(detailsFileNames[2]).delete();
+                    cleanupFiles(ipFile, userFile, passFile);
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
@@ -189,6 +190,19 @@ public class ConnectController implements Initializable {
 
         Stage stage = (Stage) username.getScene().getWindow();
         stage.close();
+    }
+
+    private void cleanupFiles(FileOutputStream ipFile, FileOutputStream userFile,
+            FileOutputStream passFile) throws IOException {
+        ipFile.close();
+        userFile.close();
+        passFile.close();
+        for (int index = 0; index < 3; index++) {
+            boolean deleted = new File(detailsFileNames[index]).delete();
+            if (!deleted) {
+                LOGGER.log(Level.INFO, "Failed to clean up old user details");
+            }
+        }
     }
 
     /**
@@ -250,7 +264,7 @@ public class ConnectController implements Initializable {
             Key aesKey = new SecretKeySpec(key.getBytes(charSet), "AES");
             cipher = Cipher.getInstance("AES");
             cipher.init(Cipher.DECRYPT_MODE, aesKey);
-            result = new String(cipher.doFinal(message));
+            result = new String(cipher.doFinal(message), charSet);
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchPaddingException
                 | IllegalBlockSizeException | BadPaddingException
                 | UnsupportedEncodingException e) {

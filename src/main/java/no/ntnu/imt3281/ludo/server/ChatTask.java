@@ -8,14 +8,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Handles tasks related to chat actions
+ * Handles tasks related to chat actions.
  * 
  * @author Marius
  *
  */
 public class ChatTask implements Runnable {
-    private static ArrayBlockingQueue<String> chatTasks = new ArrayBlockingQueue<>(256);
+    private static final String CHATNAMETAG = ".Chat.Name:";
     private static final Logger LOGGER = Logger.getLogger(ChatTask.class.getName());
+
+    private static ArrayBlockingQueue<String> chatTasks = new ArrayBlockingQueue<>(256);
     String currentTask;
 
     @Override
@@ -80,23 +82,22 @@ public class ChatTask implements Runnable {
                 ChatInfo chat = Server.chats.get(chatIndex);
                 ClientInfo newClient = Server.clients.get(clientIndex);
 
-                for (ClientInfo client : chat.clients) {
-                    if (client != newClient) {
-                        SendToClientTask.send(newClient.clientID + ".Chat.Name:" + chatID + ","
-                                + client.username);
-                    }
-                }
-
-                for (ClientInfo client : chat.clients) {
-                    if (client != newClient) {
-                        SendToClientTask.send(client.clientID + ".Chat.Name:" + chatID + ","
-                                + newClient.username);
-                    }
-                }
+                sendInitChatNames(chatID, chat, newClient);
             }
             Server.clientLock.readLock().unlock();
         }
         Server.chatLock.readLock().unlock();
+    }
+
+    private void sendInitChatNames(int chatID, ChatInfo chat, ClientInfo newClient) {
+        for (ClientInfo client : chat.clients) {
+            if (client != newClient) {
+                SendToClientTask
+                        .send(newClient.clientID + CHATNAMETAG + chatID + "," + client.username);
+                SendToClientTask
+                        .send(client.clientID + CHATNAMETAG + chatID + "," + newClient.username);
+            }
+        }
     }
 
     private void handleCreateChatPacket(int clientID, String name) {
@@ -168,14 +169,14 @@ public class ChatTask implements Runnable {
 
                 for (ClientInfo client : chat.clients) {
                     SendToClientTask.send(
-                            newClient.clientID + ".Chat.Name:" + chatID + "," + client.username);
+                            newClient.clientID + CHATNAMETAG + chatID + "," + client.username);
                 }
 
                 chat.addClient(newClient);
 
                 for (ClientInfo client : chat.clients) {
                     SendToClientTask.send(
-                            client.clientID + ".Chat.Name:" + chatID + "," + newClient.username);
+                            client.clientID + CHATNAMETAG + chatID + "," + newClient.username);
                 }
             }
             Server.clientLock.readLock().unlock();
@@ -199,25 +200,30 @@ public class ChatTask implements Runnable {
                 Server.clientLock.readLock().lock();
                 int clientConnection = Server.clients.indexOf(new ClientInfo(clientID));
 
-                if (clientConnection >= 0) {
-                    String talkingClientName = Server.clients.get(clientConnection).username;
-                    chat.say(talkingClientName + ": " + sayMessage);
-
-                    FileOutputStream chatLog;
-                    try {
-                        chatLog = new FileOutputStream("chatLogs\\" + chat.name + ".txt", true);
-                        String fileLog = Calendar.getInstance().getTime().toString() + ": "
-                                + clientID + ", " + talkingClientName + ": " + sayMessage + "\n";
-                        chatLog.write(fileLog.getBytes());
-                        chatLog.close();
-                    } catch (IOException e) {
-                        LOGGER.log(Level.WARNING, e.getMessage(), e);
-                    }
-                }
+                sendSayPackets(clientID, sayMessage, chat, clientConnection);
                 Server.clientLock.readLock().unlock();
             }
         }
         Server.chatLock.readLock().unlock();
+    }
+
+    private void sendSayPackets(int clientID, String sayMessage, ChatInfo chat,
+            int clientConnection) {
+        if (clientConnection >= 0) {
+            String talkingClientName = Server.clients.get(clientConnection).username;
+            chat.say(talkingClientName + ": " + sayMessage);
+
+            FileOutputStream chatLog;
+            try {
+                chatLog = new FileOutputStream("chatLogs\\" + chat.name + ".txt", true);
+                String fileLog = Calendar.getInstance().getTime().toString() + ": " + clientID
+                        + ", " + talkingClientName + ": " + sayMessage + "\n";
+                chatLog.write(fileLog.getBytes("UTF-8"));
+                chatLog.close();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e.getMessage(), e);
+            }
+        }
     }
 
     private void handleListChatPacket(int clientID) {

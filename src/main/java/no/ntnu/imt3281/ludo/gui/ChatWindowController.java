@@ -11,7 +11,7 @@ import javafx.scene.control.TextField;
 import no.ntnu.imt3281.ludo.client.Client;
 
 /**
- * Handles chat windows
+ * Handles a chat window
  * 
  * @author Marius
  *

@@ -20,6 +20,8 @@ import javafx.stage.Stage;
 import no.ntnu.imt3281.ludo.client.Client;
 
 /**
+ * Handles window for listing chat rooms
+ * 
  * @author Charles The Gentle
  *
  */

@@ -1,5 +1,6 @@
 package no.ntnu.imt3281.ludo.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -20,10 +21,9 @@ import no.ntnu.imt3281.ludo.gui.LudoController;
 
 /**
  * 
- * This is the main class for the client. **Note, change this to extend other
- * classes if desired.**
+ * This is the main class for the client.
  * 
- * @author
+ * @author oyste
  *
  */
 public class Client extends Application {
@@ -62,6 +62,10 @@ public class Client extends Application {
      *            Command line arguments
      */
     public static void main(String[] args) {
+        File detailsDir = new File("details");
+        if (!detailsDir.exists() && !detailsDir.mkdir()) {
+            LOGGER.log(Level.WARNING, "Details directory was not created");
+        }
         launch(args);
     }
 
@@ -101,7 +105,7 @@ public class Client extends Application {
      */
     public static void sendMessage(String message) {
         try {
-            message += ";";
+            message += ";kk;";
             socket.getOutputStream().write(message.getBytes("UTF-8"));
             socket.getOutputStream().flush();
         } catch (IOException e) {

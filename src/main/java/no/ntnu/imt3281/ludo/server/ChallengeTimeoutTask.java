@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Removes a timed out challenge.
  * 
  * @author Charles The Gentle
  *
@@ -26,7 +27,6 @@ public class ChallengeTimeoutTask implements Runnable {
                 }
                 LudoTask.challengesLock.writeLock().lock();
                 LudoTask.challenges.remove(currentChallenge);
-                LudoTask.nextChallengeID--;
                 LudoTask.challengesLock.writeLock().unlock();
 
             } catch (InterruptedException e) {

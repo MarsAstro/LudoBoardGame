@@ -3,7 +3,7 @@ package no.ntnu.imt3281.ludo.logic;
 import java.util.EventListener;
 
 /**
- * Listens to players
+ * Listens to player events.
  * 
  * @author Marius
  * 

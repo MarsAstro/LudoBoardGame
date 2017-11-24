@@ -4,13 +4,14 @@
 package no.ntnu.imt3281.ludo.server;
 
 import java.io.IOException;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import no.ntnu.imt3281.ludo.client.Client;
 
 /**
+ * Loops through clients and delegates tasks
+ * 
  * @author Marius
  *
  */
@@ -27,23 +28,27 @@ public class ServerInputTask implements Runnable {
             Server.clientLock.readLock().lock();
             for (ClientInfo client : Server.clients) {
                 try {
-                    if (client.connection.getInputStream().available() > 0) {
-
-                        int length = client.connection.getInputStream().read(inputData);
-
-                        String packet = new String(inputData, 0, length, "UTF-8");
-                        String[] messages = packet.split(";");
-                        for (String message : messages) {
-                            handleMessage(client.clientID, message);
-                        }
-                    } else if (client.connection.isClosed()) {
-                        UserCleanupTask.removeUser(client.clientID);
-                    }
+                    handleClient(client);
                 } catch (IOException e) {
                     LOGGER.log(Level.WARNING, e.getMessage(), e);
                 }
             }
             Server.clientLock.readLock().unlock();
+        }
+    }
+
+    private void handleClient(ClientInfo client) throws IOException {
+        if (client.connection.getInputStream().available() > 0) {
+
+            int length = client.connection.getInputStream().read(inputData);
+
+            String packet = new String(inputData, 0, length, "UTF-8");
+            String[] messages = packet.split(";kk;");
+            for (String message : messages) {
+                handleMessage(client.clientID, message);
+            }
+        } else if (client.connection.isClosed()) {
+            UserCleanupTask.removeUser(client.clientID);
         }
     }
 

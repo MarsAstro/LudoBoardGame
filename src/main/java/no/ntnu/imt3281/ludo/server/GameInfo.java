@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import no.ntnu.imt3281.ludo.logic.Ludo;
 
 /**
- * @author Marius $Disgusting guy}
+ * Data structure containing information about a ludo game.
+ * 
+ * @author Marius
  */
 public class GameInfo {
     int gameID;
