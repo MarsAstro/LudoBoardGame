@@ -431,6 +431,7 @@ public class GameBoardController implements Initializable {
         // Setup how to move to final placement of animation
         // Wonky bezier curve between two of maps corners when moving to goal,
         // straight line otherwise
+        int duration = 0;
         if (to == 73 || to == 79 || to == 85 || to == 91) {
             int mapEdge = 15 * TILESIZE;
 
@@ -441,11 +442,13 @@ public class GameBoardController implements Initializable {
                     : new Point(mapEdge, mapEdge);
             path.getElements().add(new CubicCurveTo(firstPoint.getX(), firstPoint.getY(),
                     secondPoint.getX(), secondPoint.getY(), goalX, goalY));
+            duration = 1500;
         } else {
             path.getElements().add(new LineTo(goalX, goalY));
+            duration = 200;
         }
 
-        PathTransition pathTransition = new PathTransition(Duration.millis(200), path);
+        PathTransition pathTransition = new PathTransition(Duration.millis(duration), path);
         pathTransition.setNode(token);
 
         playerTokens[playerID][piece].setX(points.get(to).getX() + 4 * piece);
