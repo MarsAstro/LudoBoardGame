@@ -94,7 +94,7 @@ public class Ludo {
         if (nrOfPlayers() < 2) {
             throw new NotEnoughPlayersException();
         }
-        
+
         for (int player = 0; player < 4; player++) {
             for (int piece = 0; piece < 4; piece++) {
                 globalPiecePositions[player][piece] = piece + player * 4;
@@ -360,8 +360,7 @@ public class Ludo {
     private boolean noPlayingPlayers() {
         boolean bool = true;
         for (int player = 0; player < playerNames.size(); player++) {
-            if (playerNames.get(player) != null && !(playerNames.get(player) == null
-                    || playerNames.get(player).contains("Inactive: ")
+            if (playerNames.get(player) != null && !(playerNames.get(player).contains("Inactive: ")
                     || playerNames.get(player).contains(WINNER)
                     || playerNames.get(player).contains(DONE))) {
                 bool = false;
