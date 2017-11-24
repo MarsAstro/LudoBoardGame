@@ -394,13 +394,11 @@ public class LudoTask implements Runnable {
             try (PreparedStatement userQuery = Server.database
                     .prepareStatement("UPDATE Accounts SET Wins = Wins + 1 WHERE Username = ?")) {
                 userQuery.setString(1, strippedName);
-                ResultSet resultSet = userQuery.executeQuery();
+                boolean success = userQuery.execute();
 
-                if (resultSet.next()) {
+                if (success) {
                     SendToClientTask.send(clientID + ".User.Wins:1");
                 }
-
-                resultSet.close();
             } catch (SQLException e) {
                 LOGGER.log(Level.WARNING, e.getMessage(), e);
             }

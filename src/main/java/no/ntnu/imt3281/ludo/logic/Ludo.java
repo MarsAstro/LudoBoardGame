@@ -598,6 +598,7 @@ public class Ludo {
                         piecePositions[otherPlayer][piece], 0));
             }
             piecePositions[otherPlayer][piece] = 0;
+            globalPiecePositions[otherPlayer][piece] = 4 * otherPlayer;
         }
     }
 
