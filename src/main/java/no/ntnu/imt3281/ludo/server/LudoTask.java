@@ -3,7 +3,6 @@ package no.ntnu.imt3281.ludo.server;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
