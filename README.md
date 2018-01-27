@@ -2,7 +2,7 @@
 
 ## MySql
 
-We are using the NTNU database service to save information in a MySQL database. 
+We are using the NTNU database service to save information in a MySQL database, which only works on an NTNU network. If you want to try the program, you'll have to set up your own database and replace the DB connection code. 
 Currently username and passwords are saved to the database.
 
 ### Drivers
