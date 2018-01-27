@@ -16,7 +16,7 @@ To get the project to work with these drivers the mysql .jar needs to be added i
 The main method for the client application is located in the Client.java file. For server it is located in the Server.java file.
 
 ## Data storage
-![How the server stores data in memory and permanently](https://bitbucket.org/repo/daRbxoA/images/4161267439-DataStorage.png)
+![How the server stores data in memory and permanently](https://lh6.googleusercontent.com/IfJB3QEwylZN0GP0LuCNYiVARE8xf-nTnSAFXti-BRAIsg35WiEFJ005hJWyrjhqId57zSkpEdIpVibah_XF=w1920-h900)
 
 ### Memory
 
@@ -86,7 +86,7 @@ Our server and clients communicates by sending packets preceded by tags. These a
 ## Structure
 
 ### Server
-![The servers multithreading structure](https://bitbucket.org/repo/daRbxoA/images/2828161834-ServerStructure.png)
+![The servers multithreading structure](https://lh5.googleusercontent.com/JUKXaPzclGzEOC1cXA-dLocRc_WD-h9cx9v29ZYwjQk-CBq2IS9WdFnBwyVMGg5Y4uJSsTehhztiXDoJpc9y=w1920-h900-rw)
 
 **The GUI Thread**
 is handled through JavaFX and is spoken to by the rest of the program through its controller. Whenever one of the other threads changes something about the information the GUI displays, it performs a runLater update on the GUI.
@@ -110,7 +110,7 @@ blocks until it has work to do. When it has work to do, it simply parses the cli
 has work it waits until all other threads are finished reading from the list of connected clients, and then removes from the connected clients list the client that it has been tasked with removing.
 
 ### Client
-![The client multithreading structure](https://bitbucket.org/repo/daRbxoA/images/913381503-ClientStructure.png)
+![The client multithreading structure](https://lh4.googleusercontent.com/l-Q_jAGMVMcejBqFYCpMWCab6tRZKFN-YQTdyzpVnkqcvWd-U6oYNTOyDiwjOV7vFro5sd_ALKGUdg=w1920-h949-rw)
 
 **The GUI Thread**
 is handled through JavaFX and is spoken to by the rest of the program through its various controllers. As the GUI will display several tabs and windows over its lifetime, there are plenty of controllers and functions for getting the correct one when the other threads needs to communicate with the GUI. Whenever something communicates with the GUI, it does so by doing a runLater on functions in the relevant controller. This thread does most of the clients packet sending to server, and it does this through a generic static sending function located in the Client class itself.
